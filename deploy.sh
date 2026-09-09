@@ -179,22 +179,62 @@ fi
 # The chmod is not paranoia: cPanel's Fix Permissions tool strips executable
 # bits under $HOME. A non-executable node is invisible — PATH lookup falls
 # through to the old system binary and fails much later as a confusing error.
-NODE_BIN_DIR=""
-for candidate in "$HOME"/.nvm/versions/node/v2[0-9]*/bin "$HOME"/.nvm/versions/node/v1[89]*/bin /opt/cpanel/ea-nodejs*/bin; do
-    [ -f "$candidate/node" ] || continue
-    chmod +x "$candidate"/* 2>/dev/null
-    if [ -x "$candidate/node" ]; then
-        NODE_BIN_DIR="$candidate"
-        break
-    fi
-done
+# Matching the path is not enough: /opt/cpanel/ea-nodejs* also matches
+# ea-nodejs16, and picking it gets us all the way to Vite's config resolve
+# before dying with "crypto.getRandomValues is not a function" -- an error that
+# says nothing about the real cause. So ASK each candidate its version and take
+# the newest one that Vite actually supports.
+NODE_MIN_MAJOR=18
+NODE_BIN_DIR="${NODE_BIN_DIR:-}"
 if [ -n "$NODE_BIN_DIR" ]; then
     export PATH="$NODE_BIN_DIR:$PATH"
     hash -r
 fi
-if ! command -v node >/dev/null 2>&1; then
-    echo "❌ No node found — aborting before anything is touched."
-    echo "   Vite 6 needs ^18 || >=20. Looked in ~/.nvm/versions/node/* and /opt/cpanel/ea-nodejs*/bin."
+NODE_BIN_DIR=""
+NODE_BEST_MAJOR=0
+NODE_SEEN=""
+
+for candidate in "$HOME"/.nvm/versions/node/*/bin /opt/cpanel/ea-nodejs*/bin /usr/local/bin /usr/bin; do
+    [ -x "$candidate/node" ] || [ -f "$candidate/node" ] || continue
+    # cPanel's Fix Permissions tool strips executable bits under $HOME.
+    chmod +x "$candidate"/* 2>/dev/null
+    [ -x "$candidate/node" ] || continue
+
+    ver=$("$candidate/node" -v 2>/dev/null) || continue
+    major=${ver#v}; major=${major%%.*}
+    case "$major" in ''|*[!0-9]*) continue ;; esac
+
+    NODE_SEEN="$NODE_SEEN    $ver  $candidate/node
+"
+    if [ "$major" -ge "$NODE_MIN_MAJOR" ] && [ "$major" -gt "$NODE_BEST_MAJOR" ]; then
+        NODE_BEST_MAJOR=$major
+        NODE_BIN_DIR="$candidate"
+    fi
+done
+
+if [ -n "$NODE_BIN_DIR" ]; then
+    export PATH="$NODE_BIN_DIR:$PATH"
+    hash -r
+fi
+
+if ! command -v node >/dev/null 2>&1 || [ "$NODE_BEST_MAJOR" -lt "$NODE_MIN_MAJOR" ]; then
+    echo "❌ No Node $NODE_MIN_MAJOR+ found — aborting before anything is touched."
+    echo "   Vite 6 needs ^18 || >=20. Anything older fails at config resolve with"
+    echo "   \"crypto.getRandomValues is not a function\", which looks unrelated."
+    echo ""
+    if [ -n "$NODE_SEEN" ]; then
+        echo "   Node binaries found on this server:"
+        printf "%s" "$NODE_SEEN"
+    else
+        echo "   No node binary found at all."
+    fi
+    echo ""
+    echo "   Install a supported Node for this account:"
+    echo "     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
+    echo "     . ~/.nvm/nvm.sh && nvm install 20"
+    echo "     bash deploy.sh"
+    echo ""
+    echo "   Or point at one directly:  NODE_BIN_DIR=/path/to/node/bin bash deploy.sh"
     exit 1
 fi
 
@@ -215,8 +255,25 @@ if [ $BUILD_STATUS -ne 0 ]; then
     echo ""
     echo "❌ Frontend build FAILED (exit $BUILD_STATUS) — deploy aborted."
     echo "   The site is still serving the previous build; nothing was broken."
-    echo "   On cPanel this is usually the memory limit killing node. Retry with:"
-    echo "     cd $(pwd) && NODE_OPTIONS=--max-old-space-size=2048 npm run build"
+    echo ""
+    # Guessing "memory limit" for every failure sends people to the wrong fix.
+    # 137 is the kernel OOM-killing node; anything else usually is not.
+    if [ $BUILD_STATUS -eq 137 ] || [ $BUILD_STATUS -eq 134 ]; then
+        echo "   Exit $BUILD_STATUS means node was killed — almost always the account"
+        echo "   memory limit. Retry with more headroom:"
+        echo "     cd $(pwd) && NODE_OPTIONS=--max-old-space-size=2048 npm run build"
+    else
+        echo "   Read the error above; it is usually a TypeScript or import error."
+        echo "   Reproduce it on its own with:"
+        echo "     cd $(pwd) && npm run build"
+        echo ""
+        echo "   If it mentions crypto.getRandomValues, node is too old for Vite —"
+        echo "   this script now refuses to build on anything below $NODE_MIN_MAJOR, so that"
+        echo "   should not reach here. Running node: $(node -v 2>/dev/null)"
+        echo ""
+        echo "   If it is out of memory rather than a code error:"
+        echo "     NODE_OPTIONS=--max-old-space-size=2048 npm run build"
+    fi
     exit 1
 fi
 cd ..
