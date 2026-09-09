@@ -62,7 +62,9 @@ export function Hero() {
               'radial-gradient(115% 90% at 4% 62%, rgba(251,248,241,0.97) 0%, rgba(251,248,241,0.88) 22%, rgba(251,248,241,0.45) 42%, rgba(251,248,241,0) 62%)',
           }}
         />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-28 bg-gradient-to-b from-transparent to-cream lg:block" />
+        {/* No bottom fade. It bleached the last 112px of the scene -- the
+            garden and forecourt -- to blend into a cream section that the
+            picture already ends against cleanly. */}
       </div>
 
       <div className="shell relative order-2 pb-12 pt-8 sm:pb-14 sm:pt-10 lg:absolute lg:inset-0 lg:order-none lg:flex lg:flex-col lg:justify-center lg:py-0">

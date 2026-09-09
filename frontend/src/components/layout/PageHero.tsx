@@ -32,10 +32,9 @@ export function PageHero({ title, sub }: { title: string; sub?: string }) {
             'radial-gradient(95% 135% at 0% 50%, rgba(251,248,241,0.97) 0%, rgba(251,248,241,0.9) 26%, rgba(251,248,241,0.5) 46%, rgba(251,248,241,0) 66%)',
         }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-16 bg-gradient-to-b from-transparent to-cream"
-      />
+      {/* No fade to cream along the bottom edge. It bleached a 64px strip
+          clean across the photograph, which is more damage than the hairline
+          border it was there to soften. The border does that job on its own. */}
 
       <div className="shell relative">
         <h1 className="anim-rise text-section font-semibold uppercase tracking-[0.06em] text-navy-900">
