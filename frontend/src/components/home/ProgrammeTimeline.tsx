@@ -42,7 +42,7 @@ export function ProgrammeTimeline() {
                   dateTime={item.time}
                   className={cn(
                     'tnum block pl-8 font-display text-small font-semibold transition-colors duration-300 sm:w-26 sm:shrink-0 sm:pl-0 sm:text-right',
-                    crossed ? 'text-gold-600' : 'text-gold-600/55',
+                    crossed ? 'text-gold-700' : 'text-gold-700/55',
                   )}
                   style={{ minWidth: '6.5rem' }}
                 >
@@ -72,7 +72,7 @@ export function ProgrammeTimeline() {
                     {L(item.title)}
                   </p>
                   {item.detail && (
-                    <p className="mt-0.5 text-small italic text-slate">{L(item.detail)}</p>
+                    <p className="mt-0.5 text-small italic text-navy-800">{L(item.detail)}</p>
                   )}
                 </div>
               </Reveal>

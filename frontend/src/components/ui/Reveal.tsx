@@ -25,9 +25,12 @@ export function Reveal({
   as?: ElementType
   className?: string
 }) {
-  const ref = useReveal<HTMLDivElement>(delay)
+  const { ref, visible } = useReveal<HTMLDivElement>(delay)
   return (
-    <Tag ref={ref} className={cn('reveal', VARIANTS[variant], className)}>
+    <Tag
+      ref={ref}
+      className={cn('reveal', VARIANTS[variant], visible && 'is-visible', className)}
+    >
       {children}
     </Tag>
   )
@@ -70,9 +73,9 @@ function MaskedLine({
   delay: number
   className?: string
 }) {
-  const ref = useReveal<HTMLSpanElement>(delay)
+  const { ref, visible } = useReveal<HTMLSpanElement>(delay)
   return (
-    <span ref={ref} className={cn('line-mask', className)}>
+    <span ref={ref} className={cn('line-mask', visible && 'is-visible', className)}>
       {children}
     </span>
   )

@@ -11,7 +11,7 @@ export function About() {
     <>
       <PageHero title={t('about.title')} sub={t('hero.subtitle')} />
       <AboutSection withLink={false} showHeading={false} />
-      <ThemeSection />
+      <ThemeSection showHeading={false} />
       <div className="border-t border-hair bg-cream py-section text-center">
         <ButtonLink to="/rsvp" withArrow>
           {t('hero.cta')}

@@ -28,11 +28,20 @@ export function ProgrammeSection({
         loading="lazy"
         className="absolute inset-0 -z-10 h-full w-full scale-110 object-cover"
       />
-      {/* The colonnade photograph is much brighter and busier than the flat
-          graphic it replaced, so the veil is heavier and graded: near-opaque
-          where the timeline text sits, lighter at the edges so the columns
-          still read. */}
-      <div className="absolute inset-0 -z-10 bg-cream/95" />
+      {/*
+        The photograph is left at full strength on the right, where the pull
+        quote sits on bright marble. Over the timeline column it is veiled,
+        because measuring the text against the bare image put the gold times at
+        3.1:1 and the italic session details at 2.4:1 — both well under 4.5:1.
+        The gradient clears completely by 78%, so the colonnade still reads.
+      */}
+      <div
+        className="absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(251,248,241,0.94) 0%, rgba(251,248,241,0.90) 38%, rgba(251,248,241,0.55) 62%, rgba(251,248,241,0) 78%)',
+        }}
+      />
 
       <div className="shell">
         {showHeading && (
@@ -46,7 +55,11 @@ export function ProgrammeSection({
           </div>
 
           <Reveal variant="right" delay={180} className="lg:col-span-4">
-            <figure className="sticky top-28 border-l-2 border-gold-500 pl-6">
+            {/* The quote lands at ~81% across, past where the scrim clears, and
+              the colonnade has a deep navy wall exactly there — navy text on
+              it measured 2.8:1. Its own light panel makes it independent of
+              whatever the photograph happens to be doing behind it. */}
+            <figure className="sticky top-28 rounded-sm bg-cream/85 p-6 shadow-card backdrop-blur-[2px] border-l-2 border-gold-500">
               <QuoteMark className="h-6 w-8 text-gold-500/70" />
               <blockquote className="mt-4 font-display text-h3 italic leading-relaxed text-navy-800">
                 {t('programme.quote')}

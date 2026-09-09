@@ -45,18 +45,29 @@ function onScrollFrame(fn: () => void) {
 export type RevealVariant = 'up' | 'left' | 'right' | 'scale' | 'blur' | 'mask'
 
 /**
- * Adds `is-visible` the first time the element enters the viewport, driving the
- * `.reveal` transitions in the stylesheet.
+ * Reports when the element has first entered the viewport, so the caller can
+ * apply `is-visible` through React.
+ *
+ * This deliberately does NOT call classList.add. The elements it drives have
+ * React-controlled className attributes, so any later render of an ancestor
+ * reconciles className back to its computed value and silently strips a class
+ * that was added imperatively.
+ *
+ * That is not hypothetical. The seat count arrives from the API after mount
+ * and re-renders the homepage; every block that had already revealed lost the
+ * class, and with its observer long since disconnected it stayed at opacity 0
+ * permanently. The chairman's portrait vanished exactly this way.
  */
 export function useReveal<T extends HTMLElement = HTMLDivElement>(delayMs = 0) {
   const ref = useRef<T>(null)
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
     if (prefersReduced() || !('IntersectionObserver' in window)) {
-      el.classList.add('is-visible')
+      setVisible(true)
       return
     }
 
@@ -64,11 +75,9 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(delayMs = 0) {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue
-          entry.target.classList.add('is-visible')
-          observer.disconnect()
-        }
+        if (!entries.some((e) => e.isIntersecting)) return
+        setVisible(true)
+        observer.disconnect()
       },
       { threshold: 0, rootMargin: '0px 0px -60px 0px' },
     )
@@ -77,7 +86,7 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(delayMs = 0) {
     return () => observer.disconnect()
   }, [delayMs])
 
-  return ref
+  return { ref, visible }
 }
 
 /* -------------------------------------------------------------------------- */

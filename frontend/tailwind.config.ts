@@ -51,7 +51,10 @@ export default {
         shell: '80rem',
       },
       spacing: {
-        section: 'clamp(3.5rem, 7vw, 6.5rem)',
+        // Two stacked sections contribute their padding to the same gap, so
+        // this value is doubled wherever they meet. At the old 6.5rem that put
+        // ~190px of empty cream between blocks on a laptop.
+        section: 'clamp(1.75rem, 3vw, 2.75rem)',
       },
       boxShadow: {
         card: '0 2px 14px rgba(11, 33, 64, 0.07)',
