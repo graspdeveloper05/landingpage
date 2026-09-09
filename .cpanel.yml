@@ -1,9 +1,11 @@
 ---
 # cPanel Git Version Control deployment.
 #
-# How this runs: cPanel clones this repo into ~/repositories/<name>, and
-# "Deploy HEAD Commit" (or a push, with automatic deployment enabled) checks
-# out the branch and then runs the tasks below from the clone's root.
+# How this runs: cPanel clones this repo into the Repository Path set in Git
+# Version Control (here ~/serinegara), and "Deploy HEAD Commit" -- or a push,
+# with automatic deployment enabled -- checks out the branch and then runs the
+# tasks below from the clone's root. The path is arbitrary: deploy.sh locates
+# itself from $0, so moving the clone does not break it.
 #
 # The checkout has already happened by the time these tasks run, which is why
 # SKIP_GIT_SYNC=1 is passed — deploy.sh's own fetch-and-reset is for the case
