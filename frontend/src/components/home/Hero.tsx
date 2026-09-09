@@ -43,7 +43,25 @@ export function Hero() {
           className="block w-full"
           imgClassName="block h-auto w-full"
         />
-        <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-cream via-cream/85 to-transparent lg:block" />
+        {/*
+          The lift is local to the copy, not a wash across the left half.
+
+          Measured against the scene: the headline sits on bright sunset sky
+          and clears 10:1 unaided, but the date, time and venue lines fall on
+          dark foliage at 2.2:1 and 3.3:1 — well under the 4.5:1 small text
+          needs. A flat gradient strong enough to fix those milks out the whole
+          picture, which is the opposite of what the photograph is for.
+
+          So: an ellipse centred on the copy column, fully clear by 60% across.
+          The mansion, skyline, flag and people keep their full strength.
+        */}
+        <div
+          className="pointer-events-none absolute inset-0 hidden lg:block"
+          style={{
+            backgroundImage:
+              'radial-gradient(115% 90% at 4% 62%, rgba(251,248,241,0.97) 0%, rgba(251,248,241,0.88) 22%, rgba(251,248,241,0.45) 42%, rgba(251,248,241,0) 62%)',
+          }}
+        />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-28 bg-gradient-to-b from-transparent to-cream lg:block" />
       </div>
 
@@ -68,7 +86,8 @@ export function Hero() {
           <Ornament className="anim-rise mt-4 !justify-start" />
 
           <p
-            className="anim-rise mt-4 text-small font-medium uppercase tracking-[0.2em] text-slate"
+            // slate measured 4.26:1 over the scene — just under the 4.5:1 floor.
+            className="anim-rise mt-4 text-small font-medium uppercase tracking-[0.2em] text-navy-800"
             style={{ animationDelay: '0.36s' }}
           >
             {t('hero.subtitle')}
