@@ -1,0 +1,60 @@
+# Apache config for the built SPA's document root on cPanel.
+#
+# deploy.sh copies this in as .htaccess beside index.html. It is NOT in
+# frontend/public/, because Vite's handling of dotfiles there is not something
+# a deploy should depend on — being copied explicitly is the point.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # React Router owns the URL space. Anything that is not a real file or
+    # directory is a client route and must be answered with index.html, or
+    # /about and /speakers return Apache's 404 on a hard refresh or a shared
+    # link — the most common way an SPA looks broken on shared hosting.
+    #
+    # Real files fall through untouched, so /assets/*.js keeps its own 404
+    # rather than being served index.html as text/html, which the browser
+    # would then refuse as a module script (a blank page, hard to read).
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Hashed filenames change whenever their contents do, so they can be
+    # cached hard and forever.
+    <FilesMatch "\.(js|css|woff2|woff|ttf|otf|jpg|jpeg|png|gif|webp|avif|svg|ico)$">
+        ExpiresDefault "access plus 1 year"
+        Header set Cache-Control "public, immutable"
+    </FilesMatch>
+
+    # index.html is the one file with a stable name, so it must never be
+    # cached — a stale copy points at hashed assets that the prune has since
+    # removed, and every deploy would break returning visitors.
+    <FilesMatch "\.(html)$">
+        ExpiresDefault "access plus 0 seconds"
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Never serve source maps or dotfiles from a public root.
+<FilesMatch "\.(map|env|json~)$">
+    Require all denied
+</FilesMatch>
+
+ErrorDocument 404 /index.html

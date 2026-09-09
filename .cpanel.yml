@@ -1,0 +1,21 @@
+---
+# cPanel Git Version Control deployment.
+#
+# How this runs: cPanel clones this repo into ~/repositories/<name>, and
+# "Deploy HEAD Commit" (or a push, with automatic deployment enabled) checks
+# out the branch and then runs the tasks below from the clone's root.
+#
+# The checkout has already happened by the time these tasks run, which is why
+# SKIP_GIT_SYNC=1 is passed — deploy.sh's own fetch-and-reset is for the case
+# where you SSH in and run it by hand, and repeating it here would fight
+# cPanel for control of the working tree.
+#
+# Everything else — where the SPA is published, whether the API deploys —
+# comes from ~/seri-negara-deploy.env on the server, so this file never needs
+# editing per environment. See deploy.sh for the settings it reads.
+deployment:
+  tasks:
+    # Tasks are concatenated into one bash script run from the repository
+    # root, so the export carries into the line below it.
+    - export SKIP_GIT_SYNC=1
+    - /bin/bash deploy.sh

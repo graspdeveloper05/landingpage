@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "🚀 Seri Negara Dialogue — deploy"
-
 # ── Run from a copy of this script ────────────────────────────────────────
 # Below, this script git-resets the very checkout it lives in, which can
 # replace this file mid-run. bash does not load a script whole: it re-reads
@@ -30,23 +28,57 @@ if [ "${DEPLOY_FROM_COPY:-}" != "1" ]; then
     exit $DEPLOY_RC
 fi
 
+echo "🚀 Seri Negara Dialogue — deploy"
+
 # ── Layout ────────────────────────────────────────────────────────────────
 FRONTEND_DIR="frontend"
 BACKEND_DIR="backend"
 
-# Phase 1 ships the SPA and the API as two independent things — the frontend
-# does not call the backend yet. Set SERVE_SPA_FROM_LARAVEL=1 only once the
-# backend has an SPA catch-all route to serve the built index.html.
-SERVE_SPA_FROM_LARAVEL="${SERVE_SPA_FROM_LARAVEL:-0}"
+# Per-server settings live OUTSIDE git, so the same commit deploys to staging
+# and production without edits. Create ~/seri-negara-deploy.env on the server:
+#
+#     SPA_DOC_ROOT="$HOME/public_html"
+#     API_DOC_ROOT="$HOME/api.example.com"     # blank = do not publish the API
+#
+DEPLOY_ENV_FILE="${DEPLOY_ENV_FILE:-$HOME/seri-negara-deploy.env}"
+# shellcheck source=/dev/null
+[ -f "$DEPLOY_ENV_FILE" ] && . "$DEPLOY_ENV_FILE"
+
+# Where the built SPA is published. On cPanel the primary domain serves
+# ~/public_html; an addon domain or subdomain has its own directory.
+SPA_DOC_ROOT="${SPA_DOC_ROOT:-$HOME/public_html}"
+
+# Document root for the API subdomain, pointed at backend/public. Leave empty
+# to skip publishing it — useful while only the SPA is going live.
+API_DOC_ROOT="${API_DOC_ROOT:-}"
+
+# Phase 1 puts only the SPA in front of visitors — the frontend does not call
+# the API yet. So the backend stage (composer, migrations, caches) is opt-in:
+# running it without a backend/.env and a database would abort a deploy whose
+# frontend half was perfectly fine. Set DEPLOY_BACKEND=1 once the two are
+# wired together, or leave it unset and it turns itself on as soon as a
+# backend/.env appears on the server.
+DEPLOY_BACKEND="${DEPLOY_BACKEND:-auto}"
+
+# cPanel's own Git Version Control has already checked out the commit being
+# deployed before .cpanel.yml runs, so the fetch-and-reset below would be a
+# no-op at best and a fight at worst. .cpanel.yml sets this to 1.
+SKIP_GIT_SYNC="${SKIP_GIT_SYNC:-0}"
+
+# Hashed assets from recent builds are kept alongside the current ones. A tab
+# left open across a deploy still asks for the chunks it loaded with, and
+# keeping a few days of them means it keeps working instead of white-screening.
+PRUNE_KEEP_DAYS="${PRUNE_KEEP_DAYS:-3}"
 
 # The cPanel PHP. Override for other hosts: PHP_BIN=/usr/bin/php bash deploy.sh
 PHP_BIN="${PHP_BIN:-/opt/cpanel/ea-php82/root/usr/bin/php}"
 if [ ! -x "$PHP_BIN" ]; then
     PHP_BIN="$(command -v php)" || true
 fi
+# Not fatal on its own — a frontend-only deploy never touches PHP. The backend
+# stage below checks again before it needs it.
 if [ -z "$PHP_BIN" ]; then
-    echo "❌ No PHP binary found. Set PHP_BIN=/path/to/php and retry."
-    exit 1
+    echo "  ⚠️ No PHP binary found. Set PHP_BIN=/path/to/php if the backend is deploying."
 fi
 
 for dir in "$FRONTEND_DIR" "$BACKEND_DIR"; do
@@ -71,6 +103,10 @@ fi
 # blank. The previous build stays on disk until a new one succeeds.
 
 # ── Sync to origin ────────────────────────────────────────────────────────
+if [ "$SKIP_GIT_SYNC" = "1" ]; then
+    BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+    echo "⏭️ Skipping git sync — cPanel already checked out $(git log --oneline -1 2>/dev/null)"
+else
 echo "🔄 Resetting tracked files..."
 git checkout -- "$FRONTEND_DIR/package-lock.json" 2>/dev/null
 
@@ -127,6 +163,7 @@ fi
 
 git stash drop 2>/dev/null
 chmod +x deploy.sh
+fi
 
 echo "🔄 Restoring server-specific files..."
 if [ -f /tmp/.sn-backend-env.backup ]; then
@@ -186,6 +223,27 @@ cd ..
 echo "  ✅ Frontend built to $FRONTEND_DIR/dist"
 
 # ── Backend ───────────────────────────────────────────────────────────────
+if [ "$DEPLOY_BACKEND" = "auto" ]; then
+    if [ -f "$BACKEND_DIR/.env" ]; then
+        DEPLOY_BACKEND=1
+    else
+        DEPLOY_BACKEND=0
+    fi
+fi
+
+if [ "$DEPLOY_BACKEND" != "1" ]; then
+    if [ -f "$BACKEND_DIR/.env" ]; then
+        echo "⏭️ Skipping the backend — DEPLOY_BACKEND=$DEPLOY_BACKEND."
+    else
+        echo "⏭️ Skipping the backend — no $BACKEND_DIR/.env on this server."
+        echo "   To bring the API up: add $BACKEND_DIR/.env, then re-run."
+    fi
+    echo "   The SPA deploys on its own; nothing below depends on the API."
+else
+if [ -z "$PHP_BIN" ]; then
+    echo "❌ The backend needs PHP and none was found. Set PHP_BIN=/path/to/php."
+    exit 1
+fi
 cd "$BACKEND_DIR" || exit 1
 
 echo "🎼 Installing Laravel dependencies..."
@@ -244,19 +302,84 @@ $PHP_BIN artisan route:cache
 $PHP_BIN artisan view:cache
 
 cd ..
+fi
 
-# ── Optionally publish the SPA into Laravel's public/ ─────────────────────
-# Off by default: Phase 1 runs them separately. Turning this on without an SPA
-# catch-all route in the backend gives 404s on every route except "/".
-if [ "$SERVE_SPA_FROM_LARAVEL" = "1" ]; then
-    echo "📤 Publishing SPA into $BACKEND_DIR/public/..."
-    mkdir -p "$BACKEND_DIR/public/assets"
-    cp -r "$FRONTEND_DIR/dist/." "$BACKEND_DIR/public/"
-    echo "  ✅ SPA published"
+# ── Publish the SPA into its cPanel document root ─────────────────────────
+# Copy-then-prune, never wipe-then-copy: if this step dies halfway, the old
+# index.html and its assets are still on disk and the site keeps serving.
+echo "📤 Publishing SPA to $SPA_DOC_ROOT..."
+if [ ! -d "$SPA_DOC_ROOT" ]; then
+    echo "❌ $SPA_DOC_ROOT does not exist. Create the domain in cPanel first,"
+    echo "   or set SPA_DOC_ROOT in $DEPLOY_ENV_FILE."
+    exit 1
+fi
+
+mkdir -p "$SPA_DOC_ROOT/assets"
+cp -r "$FRONTEND_DIR/dist/." "$SPA_DOC_ROOT/" || {
+    echo "❌ Could not copy the build into $SPA_DOC_ROOT — deploy aborted."
+    exit 1
+}
+cp deploy/spa.htaccess "$SPA_DOC_ROOT/.htaccess"
+echo "  ✅ SPA published"
+
+# Prune superseded hashed assets.
+#
+# The keep-list is the set of files this build just produced, NOT the files
+# named in index.html. index.html names only the entry chunk and the
+# stylesheet; every route chunk is imported dynamically from inside the entry
+# JS and appears nowhere in the HTML. Scanning the HTML would keep two files
+# and delete the rest, and every lazy route would 404 into the SPA catch-all,
+# come back as text/html, and be refused as a module script — a blank page.
+echo "🗑️ Pruning superseded assets (keeping the last ${PRUNE_KEEP_DAYS} days)..."
+if [ -d "$SPA_DOC_ROOT/assets" ] && [ -d "$FRONTEND_DIR/dist/assets" ]; then
+    KEEP=" $(cd "$FRONTEND_DIR/dist/assets" && ls -1 2>/dev/null | tr '
+' ' ')"
+    if [ -z "${KEEP// }" ]; then
+        echo "  ⚠️ This build produced no assets — skipping prune rather than emptying the directory."
+    else
+        KEPT=0; REMOVED=0
+        for f in "$SPA_DOC_ROOT"/assets/*; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f")
+            case "$KEEP " in
+                *" $base "*) KEPT=$((KEPT+1)); continue ;;
+            esac
+            # Not in this build, but keep it while it is recent so tabs opened
+            # before this deploy can still load their chunks.
+            if [ -n "$(find "$f" -mtime -"$PRUNE_KEEP_DAYS" 2>/dev/null)" ]; then
+                KEPT=$((KEPT+1))
+            else
+                rm -f "$f"; REMOVED=$((REMOVED+1))
+            fi
+        done
+        echo "  Kept $KEPT, removed $REMOVED."
+    fi
 else
-    echo "ℹ️ SPA left in $FRONTEND_DIR/dist (SERVE_SPA_FROM_LARAVEL=0)."
-    echo "   Point the web root at $FRONTEND_DIR/dist, or set the flag once the"
-    echo "   backend has an SPA catch-all route."
+    echo "  ⚠️ No assets directory — skipping prune."
+fi
+
+# ── Point the API document root at Laravel's public/ ──────────────────────
+# A symlink, so Laravel's own public/.htaccess and index.php stay canonical in
+# git rather than being copied and drifting.
+if [ -n "$API_DOC_ROOT" ]; then
+    echo "🔗 Publishing API at $API_DOC_ROOT..."
+    API_TARGET="$(pwd)/$BACKEND_DIR/public"
+    if [ -L "$API_DOC_ROOT" ]; then
+        rm -f "$API_DOC_ROOT"
+    elif [ -d "$API_DOC_ROOT" ]; then
+        # A real directory here is cPanel's auto-created docroot. Move it aside
+        # once rather than deleting anything the account may still want.
+        mv "$API_DOC_ROOT" "$API_DOC_ROOT.replaced-$(date +%Y%m%d%H%M%S)"
+    fi
+    if ln -s "$API_TARGET" "$API_DOC_ROOT"; then
+        echo "  ✅ $API_DOC_ROOT → $API_TARGET"
+    else
+        echo "  ⚠️ Could not symlink. Set the subdomain's document root to:"
+        echo "     $API_TARGET"
+    fi
+else
+    echo "ℹ️ API_DOC_ROOT is unset — the API was built but not published."
+    echo "   Set it in $DEPLOY_ENV_FILE once the subdomain exists."
 fi
 
 rm -f /tmp/.sn-backend-env.backup
