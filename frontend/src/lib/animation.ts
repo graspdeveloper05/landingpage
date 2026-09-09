@@ -79,7 +79,14 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(delayMs = 0) {
         setVisible(true)
         observer.disconnect()
       },
-      { threshold: 0, rootMargin: '0px 0px -60px 0px' },
+      // The bottom edge is pulled up by 14% of the viewport so a block starts
+      // moving once it is genuinely on screen. At -60px it fired the instant a
+      // single pixel cleared the bottom edge, so the 0.75s transition ran while
+      // the block was still below the fold and was over before anyone scrolled
+      // far enough to look at it — the animations were there and never seen.
+      // Nothing revealed sits at the very bottom of the document (the footer
+      // carries no Reveal), so no block can be stranded above this line.
+      { threshold: 0, rootMargin: '0px 0px -14% 0px' },
     )
 
     observer.observe(el)
