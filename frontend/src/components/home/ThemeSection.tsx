@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
-import { Fluting } from '@/components/ui/Fluting'
 import { ExternalIcon, QuoteMark } from '@/components/ui/Icons'
 
 /** §6 item 02 — the 2026 theme, its questions, and the pull quote. */
@@ -17,9 +16,8 @@ export function ThemeSection({
   const { t, tList } = useI18n()
 
   return (
-    <section id="theme" className="relative isolate scroll-mt-24 overflow-hidden border-t border-hair bg-cream-deep py-section">
-      <Fluting />
-      <div className="shell relative grid items-start gap-x-12 gap-y-8 lg:grid-cols-12">
+    <section id="theme" className="scroll-mt-24 border-t border-hair bg-cream-deep py-section">
+      <div className="shell grid items-start gap-x-12 gap-y-8 lg:grid-cols-12">
         <Reveal variant="left" className="lg:col-span-7">
           {showHeading && (
             <>

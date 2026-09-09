@@ -34,7 +34,16 @@ export function SpeakerGrid({
 
   return (
     <>
-      <ul className={cn('grid gap-5 sm:gap-6', COLUMNS[columns])}>
+      {/* The four-up grid is held to 62rem rather than the full shell, so a
+          card lands near 220px instead of 300px. At full width the portraits
+          dominated every other element on the page. */}
+      <ul
+        className={cn(
+          'mx-auto grid gap-4 sm:gap-5',
+          COLUMNS[columns],
+          columns === 4 && 'max-w-[62rem]',
+        )}
+      >
         {speakers.map((speaker, i) => (
           <Reveal as="li" key={speaker.id} variant="scale" delay={(i % columns) * 90} className="h-full">
             <button
@@ -49,7 +58,7 @@ export function SpeakerGrid({
                   width={600}
                   height={720}
                   loading="lazy"
-                  className="aspect-[5/6] w-full object-cover transition-transform duration-500 ease-gentle group-hover:scale-[1.04]"
+                  className="aspect-[4/5] w-full object-cover transition-transform duration-500 ease-gentle group-hover:scale-[1.04]"
                 />
                 {speaker.role === 'moderator' && (
                   <span className="absolute right-0 top-3 bg-gold-500 px-3 py-1 text-micro font-semibold uppercase tracking-[0.14em] text-navy-950">
@@ -58,7 +67,7 @@ export function SpeakerGrid({
                 )}
               </span>
 
-              <span className="flex flex-1 flex-col p-3.5 sm:p-4">
+              <span className="flex flex-1 flex-col p-3 sm:p-3.5">
                 <span className="text-balance font-display text-small font-semibold leading-snug text-navy-900 sm:text-body">
                   {speaker.name}
                 </span>

@@ -3,7 +3,6 @@ import { chairman } from '@/data'
 import { useI18n, useLocalized } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
-import { Fluting } from '@/components/ui/Fluting'
 import { ExternalIcon, QuoteMark } from '@/components/ui/Icons'
 
 /**
@@ -18,9 +17,8 @@ export function ChairmanWelcome() {
   const L = useLocalized()
 
   return (
-    <section id="chairman" className="relative isolate scroll-mt-24 overflow-hidden border-t border-hair bg-cream py-section">
-      <Fluting />
-      <div className="shell relative grid items-start gap-x-10 gap-y-8 lg:grid-cols-12">
+    <section id="chairman" className="scroll-mt-24 border-t border-hair bg-cream py-section">
+      <div className="shell grid items-start gap-x-10 gap-y-8 lg:grid-cols-12">
         <Reveal variant="left" className="lg:col-span-3 lg:self-center">
           <figure className="relative mx-auto max-w-[220px] lg:mx-0">
             <span aria-hidden className="absolute -inset-1.5 rounded-sm border border-gold-500/35" />
