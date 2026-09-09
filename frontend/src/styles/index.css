@@ -1,0 +1,314 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --navy: #0b2140;
+    --gold: #c9a227;
+    --cream: #fbf8f1;
+
+    /* Appended by the locale provider only when a non-Latin script is chosen. */
+    --font-display-local: 'Noto Serif SC', 'Noto Serif Tamil';
+    --font-sans-local: 'Noto Sans SC', 'Noto Sans Tamil';
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    /* The directional reveals slide elements in from ±38px. `clip` contains
+       that without creating a scroll container, so the sticky header and
+       scroll-margin anchors keep working. */
+    overflow-x: clip;
+    background-color: theme('colors.cream.DEFAULT');
+    color: theme('colors.ink');
+    font-family: theme('fontFamily.sans');
+    font-size: theme('fontSize.body[0]');
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: theme('fontFamily.display');
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.gold.600');
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: theme('colors.navy.900');
+    color: theme('colors.cream.DEFAULT');
+  }
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-shell px-5 sm:px-8 lg:px-12;
+  }
+
+  .prose-measure {
+    @apply max-w-measure text-body text-slate;
+  }
+  .prose-measure > * + * {
+    @apply mt-4;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The gold ornament that sits under every centred section heading in the
+     concept: a hairline rule broken by a small diamond. */
+  .ornament {
+    @apply flex items-center justify-center gap-3;
+  }
+  .ornament::before,
+  .ornament::after {
+    content: '';
+    @apply block h-px w-14 bg-gradient-to-r from-transparent to-gold-500;
+  }
+  .ornament::after {
+    @apply bg-gradient-to-l from-transparent to-gold-500;
+  }
+
+  .gold-rule {
+    @apply h-px w-16 bg-gold-500;
+  }
+
+  /* Cards in the concept lift on hover rather than changing colour. */
+  .lift {
+    @apply transition duration-300 ease-gentle hover:-translate-y-1 hover:shadow-cardHover;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion
+ * ------------------------------------------------------------------------ */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes growLine {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes slowPan {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.05) translate3d(-0.8%, 0, 0);
+  }
+}
+
+@keyframes floatY {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -180% 0;
+  }
+  to {
+    background-position: 180% 0;
+  }
+}
+
+.anim-rise {
+  animation: rise 0.8s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+}
+.anim-fade {
+  animation: fade 0.9s ease both;
+}
+.anim-line {
+  animation: growLine 0.9s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+  transform-origin: center;
+}
+.anim-pan {
+  animation: slowPan 26s ease-in-out infinite alternate;
+}
+.anim-float {
+  animation: floatY 2.6s ease-in-out infinite;
+}
+
+/* Scroll-triggered reveal, driven by IntersectionObserver in useReveal().
+   Scoped to `.js` so that without JavaScript — or if the observer never
+   runs — the content is simply visible rather than stuck at opacity 0. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 0.68, 0.28, 1),
+    transform 0.75s cubic-bezier(0.22, 0.68, 0.28, 1),
+    filter 0.75s cubic-bezier(0.22, 0.68, 0.28, 1),
+    clip-path 0.9s cubic-bezier(0.22, 0.68, 0.28, 1);
+}
+
+/* Directional and treatment variants. */
+.js .reveal-left {
+  transform: translateX(-20px);
+}
+.js .reveal-right {
+  transform: translateX(20px);
+}
+@media (min-width: 768px) {
+  .js .reveal-left {
+    transform: translateX(-38px);
+  }
+  .js .reveal-right {
+    transform: translateX(38px);
+  }
+}
+.js .reveal-scale {
+  transform: scale(0.94);
+}
+.js .reveal-blur {
+  filter: blur(10px);
+  transform: translateY(18px);
+}
+.js .reveal-mask {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 100% 0);
+}
+
+/* IMPORTANT: `clip-path` and `filter` are applied only to the variants that
+   need them, never to `.reveal` generally. A non-none value on either makes
+   the element a containing block for `position: fixed` descendants, which
+   pulls any modal rendered inside a revealed section out of the viewport. */
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.js .reveal-blur.is-visible {
+  filter: blur(0);
+}
+.js .reveal-mask.is-visible {
+  clip-path: inset(0 0 0 0);
+}
+
+/* Lines of a headline rising from behind their own mask. */
+.line-mask {
+  display: block;
+  overflow: hidden;
+}
+.js .line-mask > span {
+  display: block;
+  transform: translateY(105%);
+  transition: transform 0.85s cubic-bezier(0.22, 0.9, 0.24, 1);
+}
+.js .line-mask.is-visible > span {
+  transform: none;
+}
+
+/* Gold rule that draws itself down the programme as you read. */
+.draw-line {
+  transform-origin: top center;
+  transform: scaleY(0);
+}
+
+/* Images that resolve as they load. */
+.img-load {
+  filter: blur(14px);
+  transform: scale(1.03);
+  transition:
+    filter 0.6s ease,
+    transform 0.6s ease;
+}
+.img-load.is-loaded {
+  filter: none;
+  transform: none;
+}
+
+/* Gold sweep across the primary button. */
+.btn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.btn-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 65%
+  );
+  background-size: 220% 100%;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.btn-sheen:hover::after {
+  opacity: 1;
+  animation: shimmer 0.9s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .js .reveal,
+  .js .reveal-left,
+  .js .reveal-right,
+  .js .reveal-scale,
+  .js .reveal-blur,
+  .js .reveal-mask {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    clip-path: none;
+  }
+  .js .line-mask > span {
+    transform: none;
+  }
+  .draw-line {
+    transform: scaleY(1) !important;
+  }
+  .img-load {
+    filter: none;
+    transform: none;
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "_status": "authored",
+  "meta": {
+    "name": "English",
+    "short": "EN",
+    "htmlLang": "en"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "speakers": "Speakers",
+    "programme": "Programme",
+    "rsvp": "RSVP",
+    "menu": "Menu",
+    "close": "Close",
+    "language": "Language",
+    "skip": "Skip to content"
+  },
+  "hero": {
+    "line1": "Many Histories.",
+    "line2": "One Future.",
+    "eventName": "Seri Negara Dialogue 2026",
+    "subtitle": "A National Conversation on Malaysia's Future",
+    "date": "8 October 2026",
+    "time": "2.30 PM onwards",
+    "venue": "Muzium Negara, Kuala Lumpur",
+    "cta": "Register now",
+    "merdeka": "From Merdeka 70 towards Malaysia 100",
+    "scroll": "Scroll to explore",
+    "imageAlt": "The Kuala Lumpur skyline behind a Malaysian heritage building, with the national flag flying.",
+    "peopleAlt": "Malaysians of different backgrounds standing together."
+  },
+  "pillars": {
+    "historyTitle": "Our History",
+    "historyText": "A shared journey",
+    "peopleTitle": "Our People",
+    "peopleText": "A stronger Malaysia",
+    "futureTitle": "Our Future",
+    "futureText": "Generations to come"
+  },
+  "about": {
+    "title": "About the Dialogue",
+    "body": [
+      "Seri Negara Dialogue is a national platform for thoughtful conversation on Malaysia’s journey — from Merdeka 70 towards Malaysia 100.",
+      "It brings together leaders, thinkers and citizens to reflect on our shared history, address contemporary challenges, and explore a more united and prosperous future."
+    ],
+    "cta": "Learn more",
+    "ambitionTitle": "Long-term ambition",
+    "ambitionBody": "The first Dialogue is held in 2026. It is built to return each year, so the conversation accumulates rather than restarts."
+  },
+  "theme": {
+    "title": "2026 Theme",
+    "name": "Many Histories. One Future.",
+    "body": "How do we draw strength from our past, examine today’s realities, and build a stronger, more inclusive Malaysia for the next generation?",
+    "cta": "Read more",
+    "quote": "From the signing of our independence to the conversations that will shape our future, Seri Negara remains a home for the nation.",
+    "questionsTitle": "Questions before the room",
+    "questions": [
+      "What does shared prosperity mean when growth and wages have moved apart?",
+      "Which institutions still earn public trust, and what restores the ones that do not?",
+      "How does a plural society argue well in public?",
+      "What should a Malaysian born in 2026 be able to expect?"
+    ]
+  },
+  "chairman": {
+    "title": "Organising Chairman’s Welcome",
+    "cta": "Read full message"
+  },
+  "speakers": {
+    "title": "Speakers & Moderator",
+    "sub": "Distinguished voices. A shared future.",
+    "moderatorBadge": "Moderator",
+    "viewProfile": "View profile",
+    "profileOf": "Profile of {{name}}",
+    "externalLink": "Visit {{label}}",
+    "seeAll": "See all speakers"
+  },
+  "programme": {
+    "title": "Programme",
+    "sub": "A timely conversation for a stronger tomorrow.",
+    "quote": "A platform for meaningful dialogue across generations.",
+    "note": "Timings may be adjusted closer to the event.",
+    "seeFull": "See the full programme"
+  },
+  "eventInfo": {
+    "title": "Event Information",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "venueLabel": "Venue",
+    "directions": "Open in Google Maps",
+    "mapTitle": "Map showing Muzium Negara, Kuala Lumpur"
+  },
+  "rsvp": {
+    "title": "Attend the Dialogue",
+    "sub": "Be part of the conversation.",
+    "note": "Seats are limited. Kindly register to confirm your attendance.",
+    "cta": "Register",
+    "capacity": "{{remaining}} of {{total}} seats remaining",
+    "capacityLabel": "Seats remaining",
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email address",
+      "mobile": "Mobile number",
+      "organisation": "Organisation",
+      "designation": "Designation",
+      "dietary": "Dietary requirement",
+      "dietaryHint": "Leave blank if none.",
+      "optional": "Optional",
+      "pdpa": "I have read the PDPA notice and consent to the processing of my personal data for this event.",
+      "pdpaLink": "Read the privacy notice"
+    },
+    "submit": "Submit registration",
+    "submitting": "Sending…",
+    "errors": {
+      "fullName": "Enter your full name.",
+      "email": "Enter a valid email address.",
+      "mobile": "Enter a valid mobile number.",
+      "organisation": "Enter your organisation.",
+      "designation": "Enter your designation.",
+      "pdpa": "Tick the box to continue.",
+      "generic": "The registration did not go through. Try again."
+    },
+    "success": {
+      "title": "You have a seat.",
+      "body": "We have your place at the Seri Negara Dialogue on 8 October 2026 at Muzium Negara. Keep your reference — you will be asked for it at the door.",
+      "referenceLabel": "Your reference",
+      "addAnother": "Register someone else"
+    },
+    "full": {
+      "title": "Registration is closed.",
+      "body": "All 200 seats for the 2026 Dialogue are taken. Write to the organising team if you would like to be told about the next edition."
+    }
+  },
+  "devices": {
+    "title": "A seamless experience across devices",
+    "mobile": "Mobile friendly",
+    "share": "Easy to share",
+    "register": "Simple registration",
+    "languages": "Four languages",
+    "future": "Built for the future"
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "body": [
+      "This website is published by the organising team of Seri Negara Dialogue to provide information about the event on 8 October 2026 and to accept registrations for it.",
+      "Programme details, speakers and timings may change before the event. Registration does not guarantee entry if capacity is reached or if the details given cannot be verified at the door.",
+      "Content on this site, including text and images, belongs to the organising entity unless otherwise credited. Links to other organisations are provided for reference and do not imply any partnership."
+    ]
+  },
+  "privacy": {
+    "title": "Privacy notice",
+    "body": [
+      "The details you give when registering are collected by the organising team of Seri Negara Dialogue for one purpose: managing attendance at the event on 8 October 2026.",
+      "They are used to confirm your place, to plan seating and catering, and to contact you about this event. They are not sold, and they are not shared with third parties beyond what the venue requires for access.",
+      "You may ask for your details to be corrected or removed at any time by writing to the organising team."
+    ]
+  },
+  "footer": {
+    "quickLinks": "Quick Links",
+    "followUs": "Follow the Dialogue",
+    "socialOn": "Seri Negara Dialogue on {{network}}",
+    "terms": "Terms of Use",
+    "contact": "Contact",
+    "copyright": "© 2026 Seri Negara Dialogue. Convened by Chevening Alumni Malaysia.",
+    "linksNote": "Listed for reference. No partnership or sponsorship is implied.",
+    "convenedBy": "Convened by",
+    "tagline": "A stronger, more inclusive Malaysia",
+    "privacy": "Privacy notice",
+    "rights": "Seri Negara Dialogue"
+  },
+  "common": {
+    "newTab": "opens in a new tab",
+    "backToTop": "Back to top"
+  }
+}

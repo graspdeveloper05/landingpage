@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="460" viewBox="0 0 620 460" role="img">
+  <rect x="120" y="200" width="380" height="200" fill="#F6F2E9" stroke="#DCD3BF"/>
+  <path d="M96 200L310 92l214 108z" fill="#8C4A38" stroke="#6F3A2C"/>
+  <rect x="278" y="270" width="64" height="130" fill="#8C4A38" opacity="0.82"/>
+  <rect x="150" y="252" width="40" height="66" fill="#1B3E68" opacity="0.28"/><rect x="206" y="252" width="40" height="66" fill="#1B3E68" opacity="0.28"/><rect x="374" y="252" width="40" height="66" fill="#1B3E68" opacity="0.28"/><rect x="430" y="252" width="40" height="66" fill="#1B3E68" opacity="0.28"/>
+  <rect x="134" y="336" width="11" height="64" fill="#E2DAC8"/><rect x="200" y="336" width="11" height="64" fill="#E2DAC8"/><rect x="266" y="336" width="11" height="64" fill="#E2DAC8"/><rect x="354" y="336" width="11" height="64" fill="#E2DAC8"/><rect x="420" y="336" width="11" height="64" fill="#E2DAC8"/><rect x="466" y="336" width="11" height="64" fill="#E2DAC8"/>
+  <rect x="110" y="398" width="400" height="8" fill="#E2DAC8"/>
+</svg>

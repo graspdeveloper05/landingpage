@@ -1,0 +1,175 @@
+{
+  "_status": "authored",
+  "meta": {
+    "name": "Bahasa Malaysia",
+    "short": "BM",
+    "htmlLang": "ms"
+  },
+  "nav": {
+    "home": "Utama",
+    "about": "Mengenai",
+    "speakers": "Pembentang",
+    "programme": "Atur Cara",
+    "rsvp": "RSVP",
+    "menu": "Menu",
+    "close": "Tutup",
+    "language": "Bahasa",
+    "skip": "Terus ke kandungan"
+  },
+  "hero": {
+    "line1": "Pelbagai Sejarah.",
+    "line2": "Satu Masa Depan.",
+    "eventName": "Dialog Seri Negara 2026",
+    "subtitle": "Perbualan Nasional Mengenai Masa Depan Malaysia",
+    "date": "8 Oktober 2026",
+    "time": "2.30 petang dan seterusnya",
+    "venue": "Muzium Negara, Kuala Lumpur",
+    "cta": "Daftar sekarang",
+    "merdeka": "Daripada Merdeka 70 menuju Malaysia 100",
+    "scroll": "Tatal untuk meneroka",
+    "imageAlt": "Panorama Kuala Lumpur di belakang bangunan warisan Malaysia, dengan Jalur Gemilang berkibar.",
+    "peopleAlt": "Rakyat Malaysia daripada pelbagai latar belakang berdiri bersama."
+  },
+  "pillars": {
+    "historyTitle": "Sejarah Kita",
+    "historyText": "Perjalanan bersama",
+    "peopleTitle": "Rakyat Kita",
+    "peopleText": "Malaysia yang lebih kukuh",
+    "futureTitle": "Masa Depan Kita",
+    "futureText": "Generasi akan datang"
+  },
+  "about": {
+    "title": "Mengenai Dialog",
+    "body": [
+      "Dialog Seri Negara ialah platform nasional untuk perbualan yang bermakna mengenai perjalanan Malaysia — daripada Merdeka 70 menuju Malaysia 100.",
+      "Ia menghimpunkan pemimpin, pemikir dan rakyat untuk merenung sejarah bersama, menangani cabaran semasa, dan meneroka masa depan yang lebih bersatu dan makmur."
+    ],
+    "cta": "Ketahui lanjut",
+    "ambitionTitle": "Hasrat jangka panjang",
+    "ambitionBody": "Dialog pertama diadakan pada 2026. Ia dibina untuk kembali setiap tahun, supaya perbualan ini terus berkembang dan bukan bermula semula."
+  },
+  "theme": {
+    "title": "Tema 2026",
+    "name": "Pelbagai Sejarah. Satu Masa Depan.",
+    "body": "Bagaimana kita menimba kekuatan daripada masa lalu, meneliti realiti hari ini, dan membina Malaysia yang lebih kukuh dan inklusif untuk generasi akan datang?",
+    "cta": "Baca lanjut",
+    "quote": "Daripada pemeteraian kemerdekaan kita sehingga perbualan yang akan membentuk masa depan, Seri Negara kekal sebagai rumah untuk negara.",
+    "questionsTitle": "Persoalan di hadapan kita",
+    "questions": [
+      "Apakah maksud kemakmuran bersama apabila pertumbuhan dan gaji semakin berjauhan?",
+      "Institusi manakah yang masih mendapat kepercayaan rakyat, dan apa yang memulihkan yang selebihnya?",
+      "Bagaimana masyarakat majmuk berhujah dengan baik di ruang awam?",
+      "Apakah yang wajar diharapkan oleh rakyat Malaysia yang lahir pada 2026?"
+    ]
+  },
+  "chairman": {
+    "title": "Ucapan Aluan Pengerusi Penganjur",
+    "cta": "Baca ucapan penuh"
+  },
+  "speakers": {
+    "title": "Pembentang & Moderator",
+    "sub": "Suara terkemuka. Masa depan bersama.",
+    "moderatorBadge": "Moderator",
+    "viewProfile": "Lihat profil",
+    "profileOf": "Profil {{name}}",
+    "externalLink": "Lawati {{label}}",
+    "seeAll": "Lihat semua pembentang"
+  },
+  "programme": {
+    "title": "Atur Cara",
+    "sub": "Perbualan tepat pada masanya untuk hari esok yang lebih kukuh.",
+    "quote": "Platform untuk dialog bermakna merentas generasi.",
+    "note": "Masa mungkin diselaraskan menghampiri tarikh acara.",
+    "seeFull": "Lihat atur cara penuh"
+  },
+  "eventInfo": {
+    "title": "Maklumat Acara",
+    "dateLabel": "Tarikh",
+    "timeLabel": "Masa",
+    "venueLabel": "Tempat",
+    "directions": "Buka dalam Google Maps",
+    "mapTitle": "Peta menunjukkan Muzium Negara, Kuala Lumpur"
+  },
+  "rsvp": {
+    "title": "Sertai Dialog",
+    "sub": "Jadilah sebahagian daripada perbualan ini.",
+    "note": "Tempat duduk terhad. Sila daftar untuk mengesahkan kehadiran anda.",
+    "cta": "Daftar",
+    "capacity": "{{remaining}} daripada {{total}} tempat masih ada",
+    "capacityLabel": "Tempat yang masih ada",
+    "fields": {
+      "fullName": "Nama penuh",
+      "email": "Alamat e-mel",
+      "mobile": "Nombor telefon bimbit",
+      "organisation": "Organisasi",
+      "designation": "Jawatan",
+      "dietary": "Keperluan pemakanan",
+      "dietaryHint": "Biarkan kosong jika tiada.",
+      "optional": "Pilihan",
+      "pdpa": "Saya telah membaca notis PDPA dan bersetuju data peribadi saya diproses untuk acara ini.",
+      "pdpaLink": "Baca notis privasi"
+    },
+    "submit": "Hantar pendaftaran",
+    "submitting": "Menghantar…",
+    "errors": {
+      "fullName": "Masukkan nama penuh anda.",
+      "email": "Masukkan alamat e-mel yang sah.",
+      "mobile": "Masukkan nombor telefon bimbit yang sah.",
+      "organisation": "Masukkan organisasi anda.",
+      "designation": "Masukkan jawatan anda.",
+      "pdpa": "Tandakan kotak ini untuk meneruskan.",
+      "generic": "Pendaftaran tidak berjaya. Sila cuba lagi."
+    },
+    "success": {
+      "title": "Tempat anda telah disahkan.",
+      "body": "Tempat anda di Dialog Seri Negara pada 8 Oktober 2026 di Muzium Negara telah direkodkan. Simpan nombor rujukan anda — ia akan diminta di pintu masuk.",
+      "referenceLabel": "Nombor rujukan anda",
+      "addAnother": "Daftar orang lain"
+    },
+    "full": {
+      "title": "Pendaftaran telah ditutup.",
+      "body": "Kesemua 200 tempat untuk Dialog 2026 telah penuh. Hubungi pihak penganjur jika anda ingin dimaklumkan mengenai edisi akan datang."
+    }
+  },
+  "devices": {
+    "title": "Pengalaman lancar merentas peranti",
+    "mobile": "Mesra mudah alih",
+    "share": "Mudah dikongsi",
+    "register": "Pendaftaran mudah",
+    "languages": "Empat bahasa",
+    "future": "Dibina untuk masa depan"
+  },
+  "terms": {
+    "title": "Terma Penggunaan",
+    "body": [
+      "Laman web ini diterbitkan oleh pihak penganjur Dialog Seri Negara untuk memberikan maklumat mengenai acara pada 8 Oktober 2026 dan menerima pendaftaran untuknya.",
+      "Butiran atur cara, pembentang dan masa mungkin berubah sebelum acara. Pendaftaran tidak menjamin kemasukan sekiranya kapasiti telah penuh atau maklumat yang diberikan tidak dapat disahkan di pintu masuk.",
+      "Kandungan di laman ini, termasuk teks dan imej, adalah milik entiti penganjur melainkan dinyatakan sebaliknya. Pautan kepada organisasi lain disediakan sebagai rujukan dan tidak menyiratkan sebarang perkongsian."
+    ]
+  },
+  "privacy": {
+    "title": "Notis privasi",
+    "body": [
+      "Maklumat yang anda berikan semasa mendaftar dikumpul oleh pihak penganjur Dialog Seri Negara untuk satu tujuan sahaja: menguruskan kehadiran pada acara 8 Oktober 2026.",
+      "Ia digunakan untuk mengesahkan tempat anda, merancang tempat duduk dan jamuan, serta menghubungi anda mengenai acara ini. Maklumat ini tidak dijual dan tidak dikongsi dengan pihak ketiga melebihi keperluan akses di lokasi acara.",
+      "Anda boleh meminta maklumat anda dibetulkan atau dipadam pada bila-bila masa dengan menghubungi pihak penganjur."
+    ]
+  },
+  "footer": {
+    "quickLinks": "Pautan Pantas",
+    "followUs": "Ikuti Dialog",
+    "socialOn": "Dialog Seri Negara di {{network}}",
+    "terms": "Terma Penggunaan",
+    "contact": "Hubungi",
+    "copyright": "© 2026 Dialog Seri Negara. Dianjurkan oleh Chevening Alumni Malaysia.",
+    "linksNote": "Disenaraikan sebagai rujukan. Tiada perkongsian atau penajaan tersirat.",
+    "convenedBy": "Dianjurkan oleh",
+    "tagline": "Malaysia yang lebih kukuh dan inklusif",
+    "privacy": "Notis privasi",
+    "rights": "Dialog Seri Negara"
+  },
+  "common": {
+    "newTab": "dibuka dalam tab baharu",
+    "backToTop": "Kembali ke atas"
+  }
+}
