@@ -31,3 +31,6 @@ Thumbs.db
 
 # ── Session scratch ─────────────────────────────────────────────────────────
 .remember
+
+# TypeScript incremental build cache
+frontend/tsconfig.tsbuildinfo

@@ -1,0 +1,21 @@
+# Default: let git normalise text in the repo.
+* text=auto
+
+# Anything the Linux server executes or parses must arrive with LF endings.
+# A deploy.sh checked out with CRLF fails on the server as
+# "/bin/bash^M: bad interpreter" or a syntax error at a line that looks fine,
+# which is a genuinely confusing hour to lose.
+*.sh text eol=lf
+.cpanel.yml text eol=lf
+*.htaccess text eol=lf
+deploy/** text eol=lf
+
+# Binary assets git should never try to normalise.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
