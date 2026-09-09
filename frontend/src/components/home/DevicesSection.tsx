@@ -41,7 +41,17 @@ export function DevicesSection() {
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover object-[64%_40%]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/70 to-cream/95" />
+                {/* The wash used to cover the whole screen and left the mockup looking
+                    like a faded print. It now lifts only the top half, where the
+                    crest, headline and event lines sit; below the button the
+                    photograph runs at full strength. */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage:
+                      'linear-gradient(to bottom, rgba(251,248,241,0.95) 0%, rgba(251,248,241,0.88) 42%, rgba(251,248,241,0.45) 68%, rgba(251,248,241,0) 88%)',
+                  }}
+                />
                 <div className="relative px-5 pt-6 text-center">
                   <img src="/brand/emblem.webp" alt="" width={320} height={166} className="mx-auto h-7 w-auto" />
                   <p className="mt-3 font-display text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-navy-900">
