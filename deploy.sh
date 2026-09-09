@@ -377,6 +377,23 @@ cp -r "$FRONTEND_DIR/dist/." "$SPA_DOC_ROOT/" || {
     exit 1
 }
 cp deploy/spa.htaccess "$SPA_DOC_ROOT/.htaccess"
+
+# cPanel drops a placeholder index.php into a new document root, and Apache's
+# DirectoryIndex prefers .php over .html -- so the site serves "welcome
+# <domain>" while index.html sits right beside it, published and unreachable.
+# Renamed rather than deleted, and only when it is small enough to be the stub;
+# anything larger is somebody's real file and is left alone with a warning.
+if [ -f "$SPA_DOC_ROOT/index.php" ]; then
+    PHP_SIZE=$(wc -c < "$SPA_DOC_ROOT/index.php" 2>/dev/null || echo 0)
+    if [ "$PHP_SIZE" -lt 512 ]; then
+        mv "$SPA_DOC_ROOT/index.php" "$SPA_DOC_ROOT/index.php.disabled-$(date +%Y%m%d%H%M%S)"
+        echo "  ↪️ Moved cPanel's placeholder index.php aside — it was shadowing index.html."
+    else
+        echo "  ⚠️ $SPA_DOC_ROOT/index.php is ${PHP_SIZE} bytes and was left in place,"
+        echo "     but Apache serves it before index.html. Move it if the site looks wrong."
+    fi
+fi
+
 echo "  ✅ SPA published"
 
 # Prune superseded hashed assets.
