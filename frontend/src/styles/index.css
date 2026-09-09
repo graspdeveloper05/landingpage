@@ -54,7 +54,10 @@
   }
 
   .prose-measure {
-    @apply max-w-measure text-body text-slate;
+    /* Body copy sits in ink at 500, not slate at 400. At #5A6A80/400 it
+       read as bleached grey against the cream ground -- legible by the
+       numbers, but nothing like the weight the concept sets. */
+    @apply max-w-measure text-body font-medium text-ink;
   }
   .prose-measure > * + * {
     @apply mt-4;

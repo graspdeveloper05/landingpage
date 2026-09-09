@@ -30,7 +30,9 @@ export default {
           deep: '#F4EEE1',
         },
         ink: '#12233D',
-        slate: { DEFAULT: '#5A6A80' },
+        // Secondary text: designations, captions, small print. Was #5A6A80,
+        // which washed out against cream once set at anything under 600.
+        slate: { DEFAULT: '#41526B' },
         hair: '#E4DCC9',
       },
       fontFamily: {
