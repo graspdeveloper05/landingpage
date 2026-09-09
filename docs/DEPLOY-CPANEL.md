@@ -31,6 +31,11 @@ cPanel only creates a named folder for **addon** and **subdomains**. The
 
 ## 1 — Frontend
 
+Automatic deployment is **not available on this hosting plan**, so there is no
+`.cpanel.yml`. Use one of the two routes below.
+
+### Route A — build locally, upload the result (no server tooling needed)
+
 ```bash
 cd frontend
 npm ci
@@ -38,9 +43,36 @@ npm run build
 ```
 
 Upload the **contents of `dist/`** into `public_html` — not the `dist` folder
-itself. Via File Manager: zip the contents, upload, Extract, delete the zip.
+itself. Via File Manager: select all inside `dist`, compress to a zip, upload,
+Extract into `public_html`, delete the zip.
 
-Then in `public_html`:
+This is the reliable route. It needs nothing installed on the server, and the
+build happens on a machine you control.
+
+### Route B — pull in cPanel, build over SSH
+
+Works only if the plan gives you Terminal or SSH access **and** Node.js.
+
+1. cPanel → **Git Version Control** → *Create* with:
+   - Clone URL `https://github.com/graspdeveloper05/landingpage.git`
+   - Repository Path `landingpage` (i.e. `/home/serinegaradialog/landingpage`)
+2. To take a later change: **Manage** → *Pull or Deploy* → **Update from Remote**
+3. Then, in Terminal:
+
+```bash
+cd ~/landingpage
+bash deploy.sh
+```
+
+`deploy.sh` builds the frontend and copies `dist/` into `public_html`. It
+resolves its own directory, so the clone can sit anywhere outside the web root.
+
+If Node is missing, cPanel → *Setup Node.js App* can provide it — or fall back
+to Route A.
+
+### Either way, afterwards
+
+
 
 - **Delete the default `index.php`** (the 30-byte cPanel placeholder). Apache
   prefers `index.php` over `index.html`, so the site shows a blank page while
