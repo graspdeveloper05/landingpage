@@ -34,16 +34,16 @@ export function DevicesSection() {
             <div className="overflow-hidden rounded-[1.5rem] bg-cream pt-6">
               <div className="relative h-[420px]">
                 <img
-                  src="/hero/hero-scene.svg"
+                  src="/hero/hero-scene-960.jpg"
                   alt=""
-                  width={1600}
-                  height={1000}
+                  width={960}
+                  height={347}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover object-[64%_40%]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/70 to-cream/95" />
                 <div className="relative px-5 pt-6 text-center">
-                  <img src="/crest-navy.svg" alt="" width={34} height={34} className="mx-auto h-8 w-8" />
+                  <img src="/brand/emblem.webp" alt="" width={320} height={166} className="mx-auto h-7 w-auto" />
                   <p className="mt-3 font-display text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-navy-900">
                     Seri Negara Dialogue
                   </p>

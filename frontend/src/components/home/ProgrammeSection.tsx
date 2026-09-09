@@ -21,14 +21,18 @@ export function ProgrammeSection({
     <section id="programme" className="relative scroll-mt-24 overflow-hidden border-t border-hair py-section">
       <img
         ref={backdropRef}
-        src="/scenes/colonnade.svg"
+        src="/scenes/colonnade.jpg"
         alt=""
-        width={1600}
-        height={900}
+        width={768}
+        height={469}
         loading="lazy"
         className="absolute inset-0 -z-10 h-full w-full scale-110 object-cover"
       />
-      <div className="absolute inset-0 -z-10 bg-cream/88" />
+      {/* The colonnade photograph is much brighter and busier than the flat
+          graphic it replaced, so the veil is heavier and graded: near-opaque
+          where the timeline text sits, lighter at the edges so the columns
+          still read. */}
+      <div className="absolute inset-0 -z-10 bg-cream/95" />
 
       <div className="shell">
         {showHeading && (

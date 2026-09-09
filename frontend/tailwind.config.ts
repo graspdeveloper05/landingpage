@@ -21,6 +21,9 @@ export default {
           400: '#D9B84A',
           300: '#E7CE7E',
           600: '#A8861B',
+          // gold-600 on cream measures about 3:1 — fine for large display type,
+          // short of the 4.5:1 small text needs. This is the small-text gold.
+          700: '#755C12',
         },
         cream: {
           DEFAULT: '#FBF8F1',

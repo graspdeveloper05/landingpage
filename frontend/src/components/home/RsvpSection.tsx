@@ -36,10 +36,10 @@ export function RsvpSection({
     <section id="rsvp" className="relative scroll-mt-24 overflow-hidden bg-navy-900 py-section">
       <img
         ref={washRef}
-        src="/scenes/colonnade.svg"
+        src="/scenes/colonnade.jpg"
         alt=""
-        width={1600}
-        height={900}
+        width={768}
+        height={469}
         loading="lazy"
         className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.06]"
       />

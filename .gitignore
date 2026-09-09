@@ -34,3 +34,6 @@ Thumbs.db
 
 # TypeScript incremental build cache
 frontend/tsconfig.tsbuildinfo
+
+# sharp is installed ad-hoc for image work, never committed
+node_modules

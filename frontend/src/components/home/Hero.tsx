@@ -3,7 +3,7 @@ import { ButtonLink } from '@/components/ui/Button'
 import { Ornament } from '@/components/ui/Ornament'
 import { CalendarIcon, ChevronDown, ClockIcon, PinIcon } from '@/components/ui/Icons'
 import { RevealLines } from '@/components/ui/Reveal'
-import { SmartImage } from '@/components/ui/SmartImage'
+import { Picture } from '@/components/ui/Picture'
 import { useParallax } from '@/lib/animation'
 
 /**
@@ -22,12 +22,14 @@ export function Hero() {
       {/* Scene */}
       <div className="absolute inset-0 -z-10">
         <div ref={sceneRef} className="absolute inset-0 will-change-transform">
-          <SmartImage
-            src="/hero/hero-scene.svg"
+          <Picture
+            base="/hero/hero-scene"
+            narrow="/hero/hero-scene-960"
             alt={t('hero.imageAlt')}
-            width={1600}
-            height={900}
-            className="anim-pan h-full w-full object-cover object-bottom"
+            width={1536}
+            height={555}
+            className="block h-full w-full"
+            imgClassName="anim-pan h-full w-full object-cover object-[70%_center]"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-cream via-cream/85 to-cream/25" />
@@ -74,7 +76,7 @@ export function Hero() {
           </div>
         </div>
 
-        <p className="anim-fade mt-14 text-right text-micro font-medium uppercase leading-relaxed tracking-[0.16em] text-navy-800/70 lg:absolute lg:bottom-28 lg:right-12 lg:mt-0" style={{ animationDelay: '0.8s' }}>
+        <p className="anim-fade mt-14 text-right text-micro font-medium uppercase leading-relaxed tracking-[0.16em] text-navy-900 lg:absolute lg:bottom-28 lg:right-12 lg:mt-0 lg:rounded-sm lg:bg-cream/85 lg:px-4 lg:py-2 lg:backdrop-blur-[2px]" style={{ animationDelay: '0.8s' }}>
           {t('hero.merdeka')}
         </p>
       </div>

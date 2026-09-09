@@ -41,10 +41,10 @@ export function ThemeSection({ withQuestions = true }: { withQuestions?: boolean
           <figure className="relative h-full overflow-hidden rounded-sm bg-navy-900 p-8 sm:p-10">
             <img
               ref={quoteBgRef}
-              src="/hero/hero-scene.svg"
+              src="/hero/hero-scene-960.jpg"
               alt=""
-              width={1600}
-              height={900}
+              width={960}
+              height={347}
               loading="lazy"
               className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25"
             />

@@ -22,7 +22,7 @@
       content="A National Conversation on Malaysia's Future. 8 October 2026, Muzium Negara, Kuala Lumpur."
     />
     <meta property="og:url" content="https://serinegaradialogue.org/" />
-    <meta property="og:image" content="https://serinegaradialogue.org/og-image.svg" />
+    <meta property="og:image" content="https://serinegaradialogue.org/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_MY" />
@@ -35,10 +35,21 @@
       name="twitter:description"
       content="A National Conversation on Malaysia's Future. 8 October 2026, Muzium Negara, Kuala Lumpur."
     />
-    <meta name="twitter:image" content="https://serinegaradialogue.org/og-image.svg" />
+    <meta name="twitter:image" content="https://serinegaradialogue.org/og-image.jpg" />
 
     <!-- The hero image is the LCP element on every first visit. -->
-    <link rel="preload" as="image" href="/hero/hero-scene.svg" fetchpriority="high" />
+    <!-- The hero photograph is the LCP element on every first visit. imagesrcset
+         mirrors the <picture> in Hero.tsx so the preload matches what the
+         browser will actually choose, instead of fetching the desktop file on
+         a phone and then fetching the small one too. -->
+    <link
+      rel="preload"
+      as="image"
+      href="/hero/hero-scene.webp"
+      imagesrcset="/hero/hero-scene-960.webp 960w, /hero/hero-scene.webp 1536w"
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

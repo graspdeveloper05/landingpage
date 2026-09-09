@@ -9,10 +9,10 @@ export function PageHero({ title, sub }: { title: string; sub?: string }) {
     <section className="relative overflow-hidden bg-navy-900 py-16 sm:py-20">
       <img
         ref={bgRef}
-        src="/hero/hero-scene.svg"
+        src="/hero/hero-scene-960.jpg"
         alt=""
-        width={1600}
-        height={900}
+        width={960}
+        height={347}
         className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.13]"
       />
       <div className="shell relative text-center">

@@ -47,12 +47,12 @@ export function AboutSection({
 
         <Reveal variant="right" delay={140} className="lg:col-span-5">
           <img
-            src="/scenes/heritage.svg"
+            src="/scenes/heritage.jpg"
             alt=""
-            width={620}
-            height={460}
+            width={780}
+            height={555}
             loading="lazy"
-            className="mx-auto w-full max-w-md"
+            className="mx-auto w-full rounded-sm shadow-card"
           />
         </Reveal>
       </div>
