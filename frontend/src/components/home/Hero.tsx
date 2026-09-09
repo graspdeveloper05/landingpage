@@ -13,30 +13,41 @@ import { useParallax } from '@/lib/animation'
  */
 export function Hero() {
   const { t } = useI18n()
-  const sceneRef = useParallax(0.16, 80)
-  // The copy drifts a little slower than the scene behind it.
-  const copyRef = useParallax(-0.05, 40)
+  // No parallax on the scene itself: translating it would slide the image out
+  // of its box and clip an edge, and the point of this hero is that the whole
+  // picture is visible. The copy still drifts, which reads as depth anyway.
+  const copyRef = useParallax<HTMLDivElement>(-0.04, 30)
 
   return (
-    <section className="relative isolate overflow-hidden bg-cream">
-      {/* Scene */}
-      <div className="absolute inset-0 -z-10">
-        <div ref={sceneRef} className="absolute inset-0 will-change-transform">
-          <Picture
-            base="/hero/hero-scene"
-            narrow="/hero/hero-scene-960"
-            alt={t('hero.imageAlt')}
-            width={1536}
-            height={555}
-            className="block h-full w-full"
-            imgClassName="anim-pan h-full w-full object-cover object-[70%_center]"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-cream via-cream/85 to-cream/25" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-cream" />
+    <section className="relative isolate flex flex-col overflow-hidden bg-cream lg:block">
+      {/*
+        The scene is shown whole, never cropped.
+
+        The image sits in normal flow at its natural aspect, so IT sets the
+        section height. Previously the text set the height and the image was
+        absolutely positioned to fill it, which meant any picture taller than
+        the copy had its bottom clipped — the mansion's garden and foreground
+        simply vanished.
+
+        On lg and up the copy is overlaid on the left, where the gradient fades
+        the scene into the page. Below lg a 16:9 image is too short to hold the
+        copy legibly, so the two stack: text first, then the full picture.
+      */}
+      <div className="relative order-1 lg:order-none">
+        <Picture
+          base="/hero/hero-scene"
+          narrow="/hero/hero-scene-960"
+          alt={t('hero.imageAlt')}
+          width={1600}
+          height={900}
+          className="block w-full"
+          imgClassName="block h-auto w-full"
+        />
+        <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-cream via-cream/85 to-transparent lg:block" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-28 bg-gradient-to-b from-transparent to-cream lg:block" />
       </div>
 
-      <div className="shell relative pb-24 pt-16 sm:pb-28 lg:pb-32 lg:pt-24">
+      <div className="shell relative order-2 pb-12 pt-8 sm:pb-14 sm:pt-10 lg:absolute lg:inset-0 lg:order-none lg:flex lg:flex-col lg:justify-center lg:py-0">
         <div ref={copyRef} className="max-w-2xl">
           <RevealLines
             as="h1"
@@ -76,14 +87,14 @@ export function Hero() {
           </div>
         </div>
 
-        <p className="anim-fade mt-14 text-right text-micro font-medium uppercase leading-relaxed tracking-[0.16em] text-navy-900 lg:absolute lg:bottom-28 lg:right-12 lg:mt-0 lg:rounded-sm lg:bg-cream/85 lg:px-4 lg:py-2 lg:backdrop-blur-[2px]" style={{ animationDelay: '0.8s' }}>
+        <p className="anim-fade mt-8 text-right text-micro font-medium uppercase leading-relaxed tracking-[0.16em] text-navy-900 lg:absolute lg:bottom-10 lg:right-12 lg:mt-0 lg:rounded-sm lg:bg-cream/85 lg:px-4 lg:py-2 lg:backdrop-blur-[2px]" style={{ animationDelay: '0.8s' }}>
           {t('hero.merdeka')}
         </p>
       </div>
 
       <a
         href="#pillars"
-        className="anim-float absolute bottom-5 left-1/2 z-10 hidden h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-navy-900/20 text-navy-800 transition-colors hover:border-gold-500 hover:text-gold-600 sm:flex"
+        className="anim-float absolute bottom-5 left-1/2 z-10 hidden h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-navy-900/20 bg-cream/80 text-navy-800 backdrop-blur-[2px] transition-colors hover:border-gold-500 hover:text-gold-600 lg:flex"
       >
         <span className="sr-only">{t('hero.scroll')}</span>
         <ChevronDown className="h-5 w-5" />

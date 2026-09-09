@@ -22,7 +22,7 @@ const OUT = 'frontend/public'
 /** WebP for browsers that take it, JPEG so nothing is left without an image. */
 const JOBS = [
   {
-    src: 'heritage_mansion_skyline.png',
+    src: 'hero_scene.jpeg',
     out: 'hero/hero-scene',
     // The hero is full-bleed. 1920 covers most desktops without shipping a
     // 3x file to a phone; the 960 variant is what small screens actually load.
