@@ -47,12 +47,16 @@ export function AboutSection({
 
         <Reveal variant="right" delay={140} className="lg:col-span-5">
           <img
-            src="/scenes/heritage.jpg"
+            src="/scenes/heritage.webp"
             alt=""
-            width={780}
-            height={555}
+            width={1100}
+            height={712}
             loading="lazy"
-            className="mx-auto w-full rounded-sm shadow-card"
+            /* The rendering ships on a near-white ground with no alpha.
+               mix-blend-multiply drops that into the cream section, so the
+               drawing sits on the page rather than inside a white box --
+               no card, no shadow, no border. */
+            className="mx-auto w-full mix-blend-multiply"
           />
         </Reveal>
       </div>

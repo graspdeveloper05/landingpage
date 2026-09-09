@@ -48,13 +48,15 @@ const JOBS = [
     autocrop: true,
   },
   {
-    src: 'heritage_mansion_skyline.png',
+    src: 'heritage_mansion_drawing.jpeg',
     out: 'scenes/heritage',
-    // The About section shows the building alone, so this crops the mansion
-    // out of the wide hero rather than needing a second source image.
-    widths: [900],
-    quality: 80,
-    crop: { left: 640, top: 0, width: 780, height: 555 },
+    // A sepia architectural rendering, supplied on a near-white ground with no
+    // alpha. Autocrop trims the empty margin so the drawing can be sized by
+    // the building rather than its whitespace; the component then blends the
+    // remaining white into the cream section with mix-blend-multiply.
+    widths: [1100],
+    quality: 84,
+    autocrop: true,
   },
   {
     src: 'seri_negara_dialogue_logo.png',
