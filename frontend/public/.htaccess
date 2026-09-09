@@ -1,0 +1,76 @@
+# Seri Negara Dialogue — Apache config for cPanel shared hosting.
+# Copied into public_html alongside index.html by the deploy.
+
+# ---------------------------------------------------------------------------
+# Force HTTPS (§12 — SSL/HTTPS)
+# Enable only once a valid certificate is installed. With cPanel's self-signed
+# certificate still in place this will send visitors to a browser warning.
+# ---------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # RewriteCond %{HTTPS} !=on
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # -------------------------------------------------------------------------
+  # Single-page app routing
+  #
+  # React Router owns /about, /speakers, /programme and /rsvp. Apache looks for
+  # real directories with those names, finds none, and returns 404 — so anyone
+  # who refreshes, or opens a link shared on WhatsApp, gets an error page.
+  # Serving index.html for anything that is not a real file fixes it, and the
+  # router then reads the path client-side.
+  # -------------------------------------------------------------------------
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/api/
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Caching (§12 — good loading speed)
+# Vite fingerprints filenames in /assets, so those are safe to cache forever.
+# index.html must never be cached, or visitors keep an old build after deploy.
+# ---------------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css                "access plus 1 year"
+  ExpiresByType application/javascript  "access plus 1 year"
+  ExpiresByType image/svg+xml           "access plus 1 month"
+  ExpiresByType image/webp              "access plus 1 month"
+  ExpiresByType image/jpeg              "access plus 1 month"
+  ExpiresByType image/png               "access plus 1 month"
+  ExpiresByType font/woff2              "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(css|js|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Basic hardening (§12 — basic security)
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Compression
+# ---------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Never serve source or config files, whatever ends up uploaded by accident.
+# ---------------------------------------------------------------------------
+<FilesMatch "(^\.env|\.env\..*|composer\.(json|lock)|package(-lock)?\.json|\.map)$">
+  Require all denied
+</FilesMatch>
+
+Options -Indexes
