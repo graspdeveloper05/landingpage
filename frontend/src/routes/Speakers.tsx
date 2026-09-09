@@ -4,6 +4,7 @@ import { PageHero } from '@/components/layout/PageHero'
 import { SpeakerGrid } from '@/components/home/SpeakerGrid'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { ButtonLink } from '@/components/ui/Button'
+import { Fluting } from '@/components/ui/Fluting'
 
 export function Speakers() {
   const { t } = useI18n()
@@ -12,14 +13,16 @@ export function Speakers() {
     <>
       <PageHero title={t('speakers.title')} sub={t('speakers.sub')} />
 
-      <section className="bg-cream py-section">
-        <div className="shell">
+      <section className="relative isolate overflow-hidden bg-cream py-section">
+        <Fluting />
+        <div className="shell relative">
           <SpeakerGrid speakers={panelSpeakers} />
         </div>
       </section>
 
-      <section className="border-t border-hair bg-cream-deep py-section">
-        <div className="shell">
+      <section className="relative isolate overflow-hidden border-t border-hair bg-cream-deep py-section">
+        <Fluting />
+        <div className="shell relative">
           <SectionHeading title={t('speakers.moderatorBadge')} />
           {/* A single card, held to roughly one column of the grid above. */}
           <div className="mx-auto mt-12 w-full max-w-[17rem]">

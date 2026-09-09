@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
+import { Fluting } from '@/components/ui/Fluting'
 import { ExternalIcon } from '@/components/ui/Icons'
 
 /** §6 item 01 — purpose and long-term ambition, with the heritage illustration. */
@@ -16,8 +17,9 @@ export function AboutSection({
   const { t, tList } = useI18n()
 
   return (
-    <section id="about" className="scroll-mt-24 bg-cream py-section">
-      <div className="shell grid items-center gap-12 lg:grid-cols-12">
+    <section id="about" className="relative isolate scroll-mt-24 overflow-hidden bg-cream py-section">
+      <Fluting />
+      <div className="shell relative grid items-center gap-12 lg:grid-cols-12">
         <Reveal variant="left" className="lg:col-span-7">
           {showHeading && (
             <>
