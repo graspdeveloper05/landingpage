@@ -25,15 +25,19 @@ export default {
           // short of the 4.5:1 small text needs. This is the small-text gold.
           700: '#755C12',
         },
+        // The page ground. It ran warm (#FBF8F1 / #F4EEE1) and read as dim
+        // next to a plainly white site -- the cream sat closer to the navy
+        // than to white, so nothing on it looked crisp. Now near-white, with
+        // just enough warmth left that gold does not turn green against it.
         cream: {
-          DEFAULT: '#FBF8F1',
-          deep: '#F4EEE1',
+          DEFAULT: '#FCFCFB',
+          deep: '#F3F3F1',
         },
         ink: '#12233D',
         // Secondary text: designations, captions, small print. Was #5A6A80,
         // which washed out against cream once set at anything under 600.
         slate: { DEFAULT: '#41526B' },
-        hair: '#E4DCC9',
+        hair: '#E3E2DE',
       },
       fontFamily: {
         display: ['"Playfair Display"', 'var(--font-display-local)', 'Georgia', 'serif'],

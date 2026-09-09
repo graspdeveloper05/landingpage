@@ -59,7 +59,7 @@ export function Hero() {
           className="pointer-events-none absolute inset-0 hidden lg:block"
           style={{
             backgroundImage:
-              'radial-gradient(115% 90% at 4% 62%, rgba(251,248,241,0.97) 0%, rgba(251,248,241,0.88) 22%, rgba(251,248,241,0.45) 42%, rgba(251,248,241,0) 62%)',
+              'radial-gradient(115% 90% at 4% 62%, rgba(252,252,251,0.97) 0%, rgba(252,252,251,0.88) 22%, rgba(252,252,251,0.45) 42%, rgba(252,252,251,0) 62%)',
           }}
         />
         {/* No bottom fade. It bleached the last 112px of the scene -- the

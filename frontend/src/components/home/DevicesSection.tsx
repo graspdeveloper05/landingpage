@@ -49,7 +49,7 @@ export function DevicesSection() {
                   className="absolute inset-0"
                   style={{
                     backgroundImage:
-                      'linear-gradient(to bottom, rgba(251,248,241,0.95) 0%, rgba(251,248,241,0.88) 42%, rgba(251,248,241,0.45) 68%, rgba(251,248,241,0) 88%)',
+                      'linear-gradient(to bottom, rgba(252,252,251,0.95) 0%, rgba(252,252,251,0.88) 42%, rgba(252,252,251,0.45) 68%, rgba(252,252,251,0) 88%)',
                   }}
                 />
                 <div className="relative px-5 pt-6 text-center">

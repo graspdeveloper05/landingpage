@@ -39,7 +39,7 @@ export function ProgrammeSection({
         className="absolute inset-0 -z-10"
         style={{
           backgroundImage:
-            'linear-gradient(to right, rgba(251,248,241,0.94) 0%, rgba(251,248,241,0.90) 38%, rgba(251,248,241,0.55) 62%, rgba(251,248,241,0) 78%)',
+            'linear-gradient(to right, rgba(252,252,251,0.94) 0%, rgba(252,252,251,0.90) 38%, rgba(252,252,251,0.55) 62%, rgba(252,252,251,0) 78%)',
         }}
       />
 

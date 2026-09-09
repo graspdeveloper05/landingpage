@@ -29,7 +29,7 @@ export function PageHero({ title, sub }: { title: string; sub?: string }) {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           backgroundImage:
-            'radial-gradient(95% 135% at 0% 50%, rgba(251,248,241,0.97) 0%, rgba(251,248,241,0.9) 26%, rgba(251,248,241,0.5) 46%, rgba(251,248,241,0) 66%)',
+            'radial-gradient(95% 135% at 0% 50%, rgba(252,252,251,0.97) 0%, rgba(252,252,251,0.9) 26%, rgba(252,252,251,0.5) 46%, rgba(252,252,251,0) 66%)',
         }}
       />
       {/* No fade to cream along the bottom edge. It bleached a 64px strip
