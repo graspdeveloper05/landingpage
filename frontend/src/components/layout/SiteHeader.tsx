@@ -34,9 +34,11 @@ export function SiteHeader() {
     <header
       className={cn(
         'sticky top-0 z-50 border-b transition-all duration-300 ease-gentle',
+        // Navy bar, matching the footer, so the page opens and closes on the
+        // same ground and the ivory content sits between them.
         scrolled
-          ? 'border-hair bg-cream/95 shadow-card backdrop-blur-md'
-          : 'border-hair/60 bg-cream',
+          ? 'border-gold-500/30 bg-navy-950/95 shadow-bar backdrop-blur-md'
+          : 'border-gold-500/20 bg-navy-950',
       )}
     >
       <a
@@ -48,7 +50,7 @@ export function SiteHeader() {
 
       <div className={cn('shell flex items-center justify-between gap-4 transition-all duration-300', scrolled ? 'h-16' : 'h-20')}>
         <NavLink to="/" className="flex min-h-[44px] items-center">
-          <Wordmark tone="dark" />
+          <Wordmark tone="light" />
         </NavLink>
 
         <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
@@ -68,10 +70,10 @@ export function SiteHeader() {
                   const on = pathname === '/' ? spied : isActive
                   return cn(
                     'relative py-1.5 text-small transition-colors duration-200',
-                    'after:absolute after:-bottom-0.5 after:left-0 after:h-px after:bg-gold-600 after:transition-all after:duration-300',
+                    'after:absolute after:-bottom-0.5 after:left-0 after:h-px after:bg-gold-400 after:transition-all after:duration-300',
                     on
-                      ? 'text-gold-600 after:w-full'
-                      : 'text-navy-800/80 after:w-0 hover:text-navy-900 hover:after:w-full',
+                      ? 'text-gold-400 after:w-full'
+                      : 'text-cream/75 after:w-0 hover:text-cream hover:after:w-full',
                   )
                 }}
               >
@@ -82,13 +84,13 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-1">
-          <LanguageSwitcher tone="dark" className="hidden sm:flex" />
+          <LanguageSwitcher tone="light" className="hidden sm:flex" />
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            className="flex h-11 w-11 items-center justify-center text-navy-900 lg:hidden"
+            className="flex h-11 w-11 items-center justify-center text-cream lg:hidden"
           >
             <span className="sr-only">{open ? t('nav.close') : t('nav.menu')}</span>
             <svg width="22" height="14" viewBox="0 0 22 14" aria-hidden fill="none">
@@ -103,7 +105,7 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <nav id="mobile-nav" aria-label="Primary" className="border-t border-hair bg-cream lg:hidden">
+        <nav id="mobile-nav" aria-label="Primary" className="border-t border-gold-500/20 bg-navy-950 lg:hidden">
           <div className="shell py-2">
             {ROUTES.map(({ to, key }) => (
               <NavLink
@@ -112,15 +114,15 @@ export function SiteHeader() {
                 end={to === '/'}
                 className={({ isActive }) =>
                   cn(
-                    'flex min-h-[54px] items-center border-b border-hair text-body last:border-0',
-                    isActive ? 'text-gold-600' : 'text-navy-800',
+                    'flex min-h-[54px] items-center border-b border-cream/12 text-body last:border-0',
+                    isActive ? 'text-gold-400' : 'text-cream/85',
                   )
                 }
               >
                 {t(key)}
               </NavLink>
             ))}
-            <LanguageSwitcher tone="dark" className="py-3 sm:hidden" />
+            <LanguageSwitcher tone="light" className="py-3 sm:hidden" />
           </div>
         </nav>
       )}
