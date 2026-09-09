@@ -1,4 +1,20 @@
-User-agent: *
-Allow: /
+# ---------------------------------------------------------------------------
+# PRE-LAUNCH: crawling is blocked while the site still shows placeholder
+# content -- invented speaker names, generated artwork, and social links that
+# point nowhere. Indexing fabricated people against a real national event is
+# not something a robots.txt change can undo later.
+#
+# TO GO LIVE, replace this whole file with:
+#
+#     User-agent: *
+#     Allow: /
+#
+#     Sitemap: https://serinegaradialogue.org/sitemap.xml
+#
+# Do that only once `npm run check:placeholders` passes.
+# The Sitemap line is deliberately omitted below: advertising a sitemap while
+# disallowing the pages it lists invites crawlers to index the URLs anyway.
+# ---------------------------------------------------------------------------
 
-Sitemap: https://serinegaradialogue.org/sitemap.xml
+User-agent: *
+Disallow: /

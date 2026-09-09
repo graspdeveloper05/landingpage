@@ -54,10 +54,26 @@ console.log('  social links pointing nowhere        ', deadSocial)
 console.log('  locales pending human review         ', machineTranslated.length)
 console.log('  generated stand-in images            ', generatedImages)
 
+// A pre-launch site that is crawlable is the one thing here that cannot be
+// undone by editing a file later — once fabricated speaker names are indexed
+// against a real event, they are in search results and caches.
+const robots = fs.existsSync('public/robots.txt')
+  ? fs.readFileSync('public/robots.txt', 'utf8')
+  : ''
+const crawlBlocked = /^\s*Disallow:\s*\/\s*$/m.test(robots)
+console.log(
+  '  search engines blocked               ',
+  crawlBlocked ? 'yes (pre-launch)' : 'NO — site is indexable',
+)
+
 const blocking = records > 0 || machineTranslated.length > 0 || deadSocial > 0
 
 if (blocking) {
   console.log('\nNOT READY FOR PRODUCTION — see docs/PLACEHOLDERS.md')
+  if (!crawlBlocked) {
+    console.log('DANGER: placeholder content is present AND crawlable.')
+    console.log('        Set "Disallow: /" in public/robots.txt before deploying.')
+  }
   if (process.argv.includes('--ci')) process.exit(1)
 } else {
   console.log('\nNo placeholder content remaining.')
