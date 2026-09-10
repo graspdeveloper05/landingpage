@@ -426,6 +426,11 @@ if [ $COMPOSER_STATUS -ne 0 ]; then
 fi
 
 # ── APP_KEY ───────────────────────────────────────────────────────────────
+# NOTE: everything from here to the end of the backend stage runs INSIDE
+# backend/ -- the composer step cd'd there. So these say `.env` and `artisan`,
+# not `$BACKEND_DIR/...`: prefixing them resolved to backend/backend/ and the
+# check failed with "No such file or directory" on a server where the file was
+# there all along.
 # Checked before anything is published, because an empty key deploys a site
 # that returns 500 on every page while every step above reports success.
 #
@@ -434,16 +439,16 @@ fi
 # specified", which arrives after the old site has already been replaced.
 # .env.example ships APP_KEY empty, so anyone creating .env the documented way
 # lands here exactly once.
-if ! grep -qE '^APP_KEY=.+' "$BACKEND_DIR/.env"; then
+if ! grep -qE '^APP_KEY=.+' .env; then
     echo "  🔑 APP_KEY is empty — generating one..."
-    if $PHP_BIN "$BACKEND_DIR/artisan" key:generate --force; then
+    if $PHP_BIN artisan key:generate --force; then
         echo "  ✅ APP_KEY set"
     else
         echo ""
         echo "❌ Could not generate APP_KEY — deploy aborted before publishing."
         echo "   Without it Laravel cannot decrypt sessions and every page 500s."
         echo "   Set one by hand:"
-        echo "     cd $(pwd)/$BACKEND_DIR && $PHP_BIN artisan key:generate"
+        echo "     cd $(pwd) && $PHP_BIN artisan key:generate"
         exit 1
     fi
 fi
@@ -487,11 +492,11 @@ $PHP_BIN artisan migrate --force
 # uses updateOrCreate, so running it against a database the organising team
 # has since edited would quietly restore every placeholder over their work --
 # on every deploy, which is the kind of thing nobody notices for a week.
-SPEAKER_COUNT=$($PHP_BIN "$BACKEND_DIR/artisan" tinker --execute="echo App\Models\Speaker::count();" 2>/dev/null | tr -dc '0-9')
+SPEAKER_COUNT=$($PHP_BIN artisan tinker --execute="echo App\Models\Speaker::count();" 2>/dev/null | tr -dc '0-9')
 
 if [ "${SPEAKER_COUNT:-0}" = "0" ]; then
     echo "🌱 Seeding the shipped content (tables are empty)..."
-    $PHP_BIN "$BACKEND_DIR/artisan" db:seed --class=ContentSeeder --force \
+    $PHP_BIN artisan db:seed --class=ContentSeeder --force \
         && echo "  ✅ Speakers, programme and event details seeded" \
         || echo "  ⚠️ Seeding failed — the site falls back to its bundled copy, but the admin panel will look empty."
 else
