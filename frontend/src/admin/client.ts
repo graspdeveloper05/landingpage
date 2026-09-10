@@ -51,6 +51,42 @@ function ensureCsrf() {
   return csrfReady
 }
 
+/* -------------------------------------------------------------------------- */
+/* Request activity                                                           */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * A count of requests in flight, so the shell can show one progress bar for
+ * the whole panel.
+ *
+ * Counted rather than a boolean: a page that loads its list and its summary
+ * at once would otherwise have the first response to arrive switch the bar
+ * off while the second was still running.
+ */
+let inFlight = 0
+const busyListeners = new Set<(busy: boolean) => void>()
+
+function setBusy(delta: number) {
+  const wasBusy = inFlight > 0
+  inFlight = Math.max(0, inFlight + delta)
+  const isBusy = inFlight > 0
+  if (wasBusy !== isBusy) busyListeners.forEach((fn) => fn(isBusy))
+}
+
+/** Subscribe to "is the panel waiting on the server". Returns an unsubscribe. */
+export function onBusyChange(fn: (busy: boolean) => void) {
+  busyListeners.add(fn)
+  // Returns void, not Set.delete's boolean: React's cleanup contract rejects
+  // a function that returns a value.
+  return () => {
+    busyListeners.delete(fn)
+  }
+}
+
+export function isBusy() {
+  return inFlight > 0
+}
+
 type Body = Record<string, unknown> | FormData | undefined
 
 async function request<T>(method: string, path: string, body?: Body): Promise<T> {
@@ -74,12 +110,20 @@ async function request<T>(method: string, path: string, body?: Body): Promise<T>
   // boundary itself, and overriding it makes the upload unparseable.
   if (body && !isForm) headers['Content-Type'] = 'application/json'
 
-  const res = await fetch(`${API_BASE}/api${path}`, {
-    method,
-    credentials: 'include',
-    headers,
-    body: isForm ? body : body ? JSON.stringify(body) : undefined,
-  })
+  setBusy(1)
+  let res: Response
+  try {
+    res = await fetch(`${API_BASE}/api${path}`, {
+      method,
+      credentials: 'include',
+      headers,
+      body: isForm ? body : body ? JSON.stringify(body) : undefined,
+    })
+  } finally {
+    // In a finally, so a network failure leaves the bar off rather than
+    // spinning for the rest of the session.
+    setBusy(-1)
+  }
 
   if (res.status === 401) throw new NotSignedIn()
 

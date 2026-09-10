@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/cn'
-import type { AdminUser } from './client'
+import { onBusyChange, type AdminUser } from './client'
 
 /*
  * The panel's chrome.
@@ -132,7 +132,8 @@ export function Shell({
       </aside>
 
       <div className="lg:pl-60">
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-[#DDDCD8] bg-white px-4 sm:px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-[#DDDCD8] bg-white px-4 sm:px-6 relative">
+          <BusyBar />
           <button
             type="button"
             onClick={() => setNavOpen(true)}
@@ -160,6 +161,35 @@ export function Shell({
         */}
         <main className="w-full max-w-[1600px] p-4 sm:p-6">{children}</main>
       </div>
+    </div>
+  )
+}
+
+/**
+ * A progress bar across the top of the panel while anything is loading.
+ *
+ * Indeterminate on purpose: we cannot know how long the server will take, and
+ * a bar that fills to a percentage would be claiming knowledge it does not
+ * have. This one just says "working".
+ *
+ * It sits on the header's bottom edge rather than above it, so it never
+ * shifts the layout by a pixel when it appears -- a bar that pushes the page
+ * down on every request is worse than no bar.
+ */
+function BusyBar() {
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => onBusyChange(setBusy), [])
+
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        'pointer-events-none absolute inset-x-0 bottom-[-1px] h-0.5 overflow-hidden transition-opacity duration-200',
+        busy ? 'opacity-100' : 'opacity-0',
+      )}
+    >
+      {busy && <div className="admin-progress-bar h-full w-full bg-gold-500" />}
     </div>
   )
 }

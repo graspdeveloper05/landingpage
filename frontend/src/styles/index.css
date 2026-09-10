@@ -292,6 +292,79 @@
   animation: shimmer 0.9s ease forwards;
 }
 
+
+/* ── Admin panel motion ───────────────────────────────────────────────────
+   Kept as CSS rather than a motion library. The panel needs an entrance and
+   a progress bar, and both are keyframes; Framer Motion earns its 30-odd KB
+   on gestures, layout transitions and exit animations, none of which a login
+   screen has. The reduced-motion rule further down already covers everything
+   here, which a library would have needed telling separately. */
+
+@keyframes admin-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.admin-rise {
+  animation: admin-rise 0.5s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+}
+
+/* The card itself arrives slightly larger, so it settles rather than slides. */
+@keyframes admin-card {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.admin-card-in {
+  animation: admin-card 0.55s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+}
+
+/* A wrong password is worth feeling, not just reading. Short and small: this
+   is a correction, not an alarm. */
+@keyframes admin-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+.admin-shake {
+  animation: admin-shake 0.4s ease-in-out;
+}
+
+/* The indeterminate progress bar. Two runs at different speeds, so it reads
+   as activity rather than as a measured percentage -- we do not know how long
+   the server will take and should not imply that we do. */
+@keyframes admin-progress {
+  0% {
+    transform: translateX(-100%) scaleX(0.35);
+  }
+  55% {
+    transform: translateX(30%) scaleX(0.55);
+  }
+  100% {
+    transform: translateX(100%) scaleX(0.3);
+  }
+}
+
+.admin-progress-bar {
+  animation: admin-progress 1.15s cubic-bezier(0.45, 0, 0.35, 1) infinite;
+  transform-origin: left;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
