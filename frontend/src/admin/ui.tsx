@@ -6,6 +6,26 @@ import { LOCALE_TABS, type Locale, type Localized } from './client'
 /* Text input                                                                 */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Eye for the password reveal. `off` draws the struck-through variant, shown
+ * while the password is visible — the icon says what clicking will do next,
+ * which is the convention every browser and password manager follows.
+ */
+function EyeIcon({ off }: { off: boolean }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden>
+      <path
+        d="M1.7 10S4.7 4.6 10 4.6 18.3 10 18.3 10 15.3 15.4 10 15.4 1.7 10 1.7 10Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <circle cx="10" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.3" />
+      {off && <path d="M3.5 16.5 16.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />}
+    </svg>
+  )
+}
+
 export function AdminField({
   label,
   value,
@@ -29,6 +49,14 @@ export function AdminField({
 }) {
   const Tag = multiline ? 'textarea' : 'input'
 
+  // A password field gets a reveal toggle. Admin passwords here cannot be
+  // recovered — only reissued — so someone locked out by a typo they cannot
+  // see has to go and ask for a new one. Being able to check what was typed
+  // is the difference between a second and a support request.
+  const isPassword = type === 'password' && !multiline
+  const [revealed, setRevealed] = useState(false)
+  const inputType = isPassword && revealed ? 'text' : type
+
   return (
     /*
      * A column with the input pushed to the bottom.
@@ -49,21 +77,46 @@ export function AdminField({
           its gap from the label -- two margin-top utilities on one element,
           and which one wins depends on stylesheet order rather than intent. */}
       <span aria-hidden className="grow" />
-      <Tag
-        // A textarea has no type attribute; passing one is ignored but noisy.
-        {...(multiline ? { rows: 4 } : { type })}
-        value={value}
-        disabled={disabled}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        aria-invalid={error ? true : undefined}
-        className={cn(
-          'mt-1 block w-full rounded-sm border bg-white px-2.5 py-1.5 text-[0.85rem] text-navy-950',
-          'focus:outline-none focus:ring-2 focus:ring-gold-500/35',
-          'disabled:cursor-not-allowed disabled:bg-[#F1F1EF] disabled:text-slate',
-          error ? 'border-red-400' : 'border-[#DDDCD8] focus:border-gold-500',
+      <span className="relative mt-1 block">
+        <Tag
+          // A textarea has no type attribute; passing one is ignored but noisy.
+          {...(multiline ? { rows: 4 } : { type: inputType })}
+          value={value}
+          disabled={disabled}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          aria-invalid={error ? true : undefined}
+          className={cn(
+            'block w-full rounded-sm border bg-white px-2.5 py-1.5 text-[0.85rem] text-navy-950',
+            'focus:outline-none focus:ring-2 focus:ring-gold-500/35',
+            'disabled:cursor-not-allowed disabled:bg-[#F1F1EF] disabled:text-slate',
+            error ? 'border-red-400' : 'border-[#DDDCD8] focus:border-gold-500',
+            // Room for the toggle, so a long password does not run under it.
+            isPassword && 'pr-9',
+          )}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            // Inside a <form>, a button with no type submits it — here that
+            // would post a half-typed password on the first click.
+            onClick={() => setRevealed((v) => !v)}
+            // Keeps focus in the input, so revealing does not lose the caret
+            // position mid-word.
+            onMouseDown={(e) => e.preventDefault()}
+            disabled={disabled}
+            aria-label={revealed ? 'Hide password' : 'Show password'}
+            aria-pressed={revealed}
+            className={cn(
+              'absolute right-0 top-0 grid h-full w-9 place-items-center rounded-r-sm text-slate',
+              'transition-colors hover:text-navy-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/35',
+              'disabled:cursor-not-allowed disabled:text-[#B9B8B4]',
+            )}
+          >
+            <EyeIcon off={revealed} />
+          </button>
         )}
-      />
+      </span>
       {error && <span className="mt-1 block text-[0.7rem] text-red-600">{error}</span>}
     </label>
   )
