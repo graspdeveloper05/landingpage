@@ -30,9 +30,25 @@ export function AdminField({
   const Tag = multiline ? 'textarea' : 'input'
 
   return (
-    <label className="block">
+    /*
+     * A column with the input pushed to the bottom.
+     *
+     * Fields sit side by side in a grid, and their hints are different
+     * lengths: "Used by search engines" fits one line, "Pick a time. Visitors
+     * see the wording you set below." wraps to two. With everything in normal
+     * flow that pushed one input a line lower than its neighbour, and the row
+     * read as crooked. `h-full` takes the grid's stretched height and
+     * `mt-auto` drops the input to the bottom of it, so inputs line up however
+     * long the labels above them run.
+     */
+    <label className="flex h-full flex-col">
       <span className="block text-[0.78rem] font-semibold text-navy-900">{label}</span>
       {hint && <span className="mt-0.5 block text-[0.7rem] leading-snug text-slate">{hint}</span>}
+      {/* Takes up the slack so the input lands at the bottom of the row.
+          A margin-auto on the input itself would fight the mt-1 that gives it
+          its gap from the label -- two margin-top utilities on one element,
+          and which one wins depends on stylesheet order rather than intent. */}
+      <span aria-hidden className="grow" />
       <Tag
         // A textarea has no type attribute; passing one is ignored but noisy.
         {...(multiline ? { rows: 4 } : { type })}
