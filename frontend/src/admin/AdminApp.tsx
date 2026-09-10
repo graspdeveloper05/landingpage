@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { adminApi, AdminError, NotSignedIn, type AdminUser } from './client'
 import { AdminButton, AdminField, Notice } from './ui'
+import { AnalyticsAdmin } from './AnalyticsAdmin'
 import { EventAdmin } from './EventAdmin'
 import { SpeakersAdmin } from './SpeakersAdmin'
 import { ProgrammeAdmin } from './ProgrammeAdmin'
@@ -61,6 +62,7 @@ export default function AdminApp() {
     <Shell user={user} onSignOut={signOut}>
       <SessionBoundary onExpired={() => setUser(null)}>
         <Routes>
+          <Route path="analytics" element={<AnalyticsAdmin />} />
           <Route path="event" element={<EventAdmin />} />
           <Route path="speakers" element={<SpeakersAdmin />} />
           <Route path="programme" element={<ProgrammeAdmin />} />

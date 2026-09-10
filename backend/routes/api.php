@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AnalyticsController;
 use App\Http\Controllers\Api\Admin\EventAdminController;
 use App\Http\Controllers\Api\Admin\PortraitController;
 use App\Http\Controllers\Api\Admin\ProgrammeAdminController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Api\Admin\RegistrationExportController;
 use App\Http\Controllers\Api\Admin\SessionController;
 use App\Http\Controllers\Api\Admin\SpeakerAdminController;
 use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\PageViewController;
 use App\Http\Controllers\Api\ProgrammeController;
 use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Controllers\Api\SpeakerController;
@@ -35,6 +37,15 @@ Route::get('/programme', [ProgrammeController::class, 'index']);
 */
 Route::post('/registrations', [RegistrationController::class, 'store'])
     ->middleware('throttle:6,1');
+
+/*
+| §12 — basic analytics. Generous throttle because a genuine visitor sends one
+| of these per page they open, and a five-page site read in one sitting is
+| five in a minute; 60 stops a script inflating the numbers without ever
+| touching a real reader.
+*/
+Route::post('/analytics/pageview', [PageViewController::class, 'store'])
+    ->middleware('throttle:60,1');
 
 /*
 |--------------------------------------------------------------------------
@@ -69,6 +80,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/programme/reorder', [ProgrammeAdminController::class, 'reorder']);
     Route::put('/programme/{programme_item}', [ProgrammeAdminController::class, 'update']);
     Route::delete('/programme/{programme_item}', [ProgrammeAdminController::class, 'destroy']);
+
+    Route::get('/analytics', AnalyticsController::class);
 
     Route::get('/event', [EventAdminController::class, 'show']);
     Route::put('/event', [EventAdminController::class, 'update']);

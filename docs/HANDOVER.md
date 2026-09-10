@@ -71,7 +71,7 @@ node -e "const fs=require('fs');const flat=(o,p='')=>Object.entries(o).flatMap((
 - [ ] Point `robots.txt` and `sitemap.xml` at the real domain
 - [ ] Stand up the Laravel API and set `VITE_API_BASE_URL` (see `API-CONTRACT.md`)
 - [ ] Confirm the PDPA notice wording with whoever is accountable for the data
-- [ ] Add the analytics snippet
+- [x] Analytics — built in, see below
 - [ ] Confirm in writing before describing any organisation as a partner,
       supporter or sponsor — §10 of the brief forbids it otherwise
 
@@ -88,3 +88,41 @@ the client has not yet been told about:
 2. **§15 handover.** The plugin-licence and WordPress-admin items in the brief
    do not apply. Ownership of the domain, hosting, repository, database and
    registration data still transfers as described.
+
+## Analytics
+
+§12 asks for "basic website analytics" alongside "privacy/PDPA considerations"
+and a warning against unnecessary subscriptions. Those three pull in the same
+direction, so the site counts its own visitors rather than handing them to
+anyone else:
+
+- **No cookies, no third party.** The page posts a path to this site's own
+  Laravel app. Nothing is set in the browser and nothing leaves the server.
+- **No cookie banner needed.** That is a direct consequence of the above, not
+  an oversight. Google Analytics would have required one.
+- **Nothing identifying is stored.** There is no IP column. Repeat visits
+  within a day are matched by a hash of IP and browser salted with the app key
+  *and today's date*, so the same person tomorrow is an unlinkable new number.
+  The honest limit: daily unique counts, not a visitor history.
+- **Referrers keep the host only** — `google.com`, not the words someone
+  searched, which for a national event might be their own name.
+- **Do Not Track is honoured**, and the admin panel's own pages are never
+  counted.
+- **Free, and nothing to renew.**
+
+Read it at **/admin → Analytics**: visitors, page views, registrations and the
+percentage of visitors who register, over 7, 30 or 90 days, with a per-day
+chart and breakdowns by page, referrer and language.
+
+### If the client wants Google Analytics as well
+
+They may ask, because it is what they know. It can be added, but it changes
+the privacy position: third-party cookies, attendee browsing sent abroad, and
+a consent banner to be designed, translated into four languages and shown
+before the tag loads. Raise that before agreeing, rather than after.
+
+### Housekeeping
+
+`page_views` grows by one row per page opened. At this event's scale that is
+trivial, but it is attendee-adjacent data with no reason to be kept forever —
+clear rows older than a year once the 2026 edition is closed out.

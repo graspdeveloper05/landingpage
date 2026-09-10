@@ -12,6 +12,8 @@ import { Speakers } from '@/routes/Speakers'
 import { Programme } from '@/routes/Programme'
 import { Rsvp } from '@/routes/Rsvp'
 import { useEventStatus } from '@/lib/useEventStatus'
+import { usePageViews } from '@/lib/analytics'
+import { useI18n } from '@/i18n'
 
 /*
  * The admin panel is a separate chunk, fetched only when someone opens
@@ -47,7 +49,12 @@ export default function App() {
 /** §5 — five routes, and no more. */
 function PublicSite() {
   const { status, refresh } = useEventStatus()
+  const { locale } = useI18n()
   const remaining = status?.remaining ?? null
+
+  // §12 — counted here rather than in App, so the admin panel's own routes
+  // are never recorded as visits.
+  usePageViews(locale)
 
   return (
     <>

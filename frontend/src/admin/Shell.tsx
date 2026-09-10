@@ -18,6 +18,7 @@ const NAV = [
   { to: '/admin/speakers', label: 'Speakers', icon: PeopleIcon, hint: 'Line-up and portraits' },
   { to: '/admin/programme', label: 'Programme', icon: ListIcon, hint: 'Running order' },
   { to: '/admin/registrations', label: 'Registrations', icon: TicketIcon, hint: 'Attendees and export' },
+  { to: '/admin/analytics', label: 'Analytics', icon: ChartIcon, hint: 'Visitors and pages' },
 ]
 
 export function Shell({
@@ -166,6 +167,17 @@ export function Shell({
 /* -------------------------------------------------------------------------- */
 /* Icons — 16px, 1.4 stroke, drawn on the same grid so the rail reads evenly.  */
 /* -------------------------------------------------------------------------- */
+
+function ChartIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden>
+      <path d="M2 14h12" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="3" y="8" width="2.5" height="5" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="7" y="5" width="2.5" height="8" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="11" y="2.5" width="2.5" height="10.5" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  )
+}
 
 function CalendarIcon({ className }: { className?: string }) {
   return (
