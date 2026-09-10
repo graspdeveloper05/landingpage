@@ -44,7 +44,18 @@ export interface EventDetails {
   edition: number
   /** ISO date, used for <time datetime> and structured data. */
   date: string
+  /**
+   * The date as a visitor reads it, per language -- "8 October 2026",
+   * "8 Oktober 2026". Not a formatting of `date`: rendering a Malaysian date
+   * in Tamil is a translation, not a locale format string.
+   *
+   * Optional because the bundled fallback data has no copy; components fall
+   * back to the locale files when it is absent.
+   */
+  dateLabel?: Localized
   startTime: string
+  /** The start time as a visitor reads it, per language. */
+  timeLabel?: Localized
   venue: string
   venueAddress: string
   mapsUrl: string

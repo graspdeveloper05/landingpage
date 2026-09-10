@@ -1,5 +1,5 @@
-import { event } from '@/data'
 import { useI18n } from '@/i18n'
+import { useEventLabels } from '@/lib/useContent'
 import { Reveal } from '@/components/ui/Reveal'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { CalendarIcon, ClockIcon, ExternalIcon, PinIcon } from '@/components/ui/Icons'
@@ -7,6 +7,7 @@ import { CalendarIcon, ClockIcon, ExternalIcon, PinIcon } from '@/components/ui/
 /** §6 item 06 — date, time, venue and directions. */
 export function EventInfoSection() {
   const { t } = useI18n()
+  const { event, date, time } = useEventLabels()
 
   return (
     <section
@@ -40,13 +41,13 @@ export function EventInfoSection() {
                   icon={<CalendarIcon className="h-full w-full" />}
                   label={t('eventInfo.dateLabel')}
                 >
-                  <time dateTime={event.date}>{t('hero.date')}</time>
+                  <time dateTime={event.date}>{date}</time>
                 </Row>
                 <Row
                   icon={<ClockIcon className="h-full w-full" />}
                   label={t('eventInfo.timeLabel')}
                 >
-                  {t('hero.time')}
+                  {time}
                 </Row>
                 <Row icon={<PinIcon className="h-full w-full" />} label={t('eventInfo.venueLabel')}>
                   {event.venue}

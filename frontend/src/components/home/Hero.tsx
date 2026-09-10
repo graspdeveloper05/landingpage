@@ -5,6 +5,7 @@ import { CalendarIcon, ChevronDown, ClockIcon, PinIcon } from '@/components/ui/I
 import { RevealLines } from '@/components/ui/Reveal'
 import { Picture } from '@/components/ui/Picture'
 import { useParallax } from '@/lib/animation'
+import { useEventLabels } from '@/lib/useContent'
 
 /**
  * §6 — the visitor must immediately grasp what this is, why it matters, when
@@ -13,6 +14,7 @@ import { useParallax } from '@/lib/animation'
  */
 export function Hero() {
   const { t } = useI18n()
+  const { event, date, time } = useEventLabels()
   // No parallax on the scene itself: translating it would slide the image out
   // of its box and clip an edge, and the point of this hero is that the whole
   // picture is visible. The copy still drifts, which reads as depth anyway.
@@ -96,9 +98,9 @@ export function Hero() {
           </p>
 
           <dl className="anim-rise mt-9 space-y-3.5" style={{ animationDelay: '0.46s' }}>
-            <Detail icon={<CalendarIcon className="h-full w-full" />} label={t('eventInfo.dateLabel')} value={t('hero.date')} />
-            <Detail icon={<ClockIcon className="h-full w-full" />} label={t('eventInfo.timeLabel')} value={t('hero.time')} />
-            <Detail icon={<PinIcon className="h-full w-full" />} label={t('eventInfo.venueLabel')} value={t('hero.venue')} />
+            <Detail icon={<CalendarIcon className="h-full w-full" />} label={t('eventInfo.dateLabel')} value={date} />
+            <Detail icon={<ClockIcon className="h-full w-full" />} label={t('eventInfo.timeLabel')} value={time} />
+            <Detail icon={<PinIcon className="h-full w-full" />} label={t('eventInfo.venueLabel')} value={event.venue} />
           </dl>
 
           <div className="anim-rise mt-10" style={{ animationDelay: '0.58s' }}>

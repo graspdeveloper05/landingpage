@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\EventAdminController;
 use App\Http\Controllers\Api\Admin\PortraitController;
 use App\Http\Controllers\Api\Admin\ProgrammeAdminController;
 use App\Http\Controllers\Api\Admin\RegistrationAdminController;
@@ -68,6 +69,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/programme/reorder', [ProgrammeAdminController::class, 'reorder']);
     Route::put('/programme/{programme_item}', [ProgrammeAdminController::class, 'update']);
     Route::delete('/programme/{programme_item}', [ProgrammeAdminController::class, 'destroy']);
+
+    Route::get('/event', [EventAdminController::class, 'show']);
+    Route::put('/event', [EventAdminController::class, 'update']);
 
     Route::post('/portraits', [PortraitController::class, 'store']);
 

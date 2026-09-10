@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import { adminApi, AdminError, NotSignedIn, type AdminUser } from './client'
 import { AdminButton, AdminField, Notice } from './ui'
+import { EventAdmin } from './EventAdmin'
 import { SpeakersAdmin } from './SpeakersAdmin'
 import { ProgrammeAdmin } from './ProgrammeAdmin'
 import { RegistrationsAdmin } from './RegistrationsAdmin'
@@ -59,6 +60,7 @@ export default function AdminApp() {
 
           <nav className="flex gap-1">
             {[
+              { to: '/admin/event', label: 'Event' },
               { to: '/admin/speakers', label: 'Speakers' },
               { to: '/admin/programme', label: 'Programme' },
               { to: '/admin/registrations', label: 'Registrations' },
@@ -100,10 +102,11 @@ export default function AdminApp() {
       <main className="mx-auto max-w-6xl px-4 py-8">
         <SessionBoundary onExpired={() => setUser(null)}>
           <Routes>
+            <Route path="event" element={<EventAdmin />} />
             <Route path="speakers" element={<SpeakersAdmin />} />
             <Route path="programme" element={<ProgrammeAdmin />} />
             <Route path="registrations" element={<RegistrationsAdmin />} />
-            <Route path="*" element={<Navigate to="/admin/speakers" replace />} />
+            <Route path="*" element={<Navigate to="/admin/event" replace />} />
           </Routes>
         </SessionBoundary>
       </main>

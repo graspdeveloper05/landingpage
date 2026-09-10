@@ -1,4 +1,5 @@
 import { useI18n } from '@/i18n'
+import { useEventLabels } from '@/lib/useContent'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import {
@@ -16,6 +17,7 @@ import {
  */
 export function DevicesSection() {
   const { t } = useI18n()
+  const { event, date } = useEventLabels()
 
   const features = [
     { Icon: MobileIcon, label: t('devices.mobile') },
@@ -67,10 +69,10 @@ export function DevicesSection() {
                   <Ornament className="mt-3 scale-75" />
 
                   <p className="mt-3 text-[0.58rem] font-medium uppercase tracking-[0.13em] text-slate">
-                    {t('hero.date')}
+                    {date}
                   </p>
                   <p className="text-[0.58rem] font-medium uppercase tracking-[0.13em] text-slate">
-                    {t('hero.venue')}
+                    {event.venue}
                   </p>
 
                   <span className="mt-5 inline-block bg-gold-500 px-5 py-2 text-[0.55rem] font-semibold uppercase tracking-[0.14em] text-navy-950">
