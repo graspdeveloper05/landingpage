@@ -9,6 +9,7 @@ import {
   type Localized,
 } from './client'
 import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
+import { SkeletonRows } from './Loading'
 
 /** §8 — "the organising team must be able to update timings directly." */
 export function ProgrammeAdmin() {
@@ -110,7 +111,7 @@ export function ProgrammeAdmin() {
         </div>
       )}
 
-      {!list && <p className="text-small text-slate">Loading…</p>}
+      {!list && <SkeletonRows count={5} />}
 
       {list && list.length === 0 && !error && (
         <AdminCard>

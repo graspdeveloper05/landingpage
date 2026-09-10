@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { API_BASE } from '@/services/api'
 import { adminApi, reachable } from './client'
 import { AdminButton, AdminCard, AdminField, Notice } from './ui'
+import { SkeletonRows } from './Loading'
 
 interface Row {
   reference: string
@@ -109,7 +110,7 @@ export function RegistrationsAdmin() {
         />
       </div>
 
-      {!page && <p className="text-small text-slate">Loading…</p>}
+      {!page && <SkeletonRows count={5} />}
 
       {page && page.data.length === 0 && !error && (
         <AdminCard>

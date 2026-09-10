@@ -365,6 +365,40 @@
   transform-origin: left;
 }
 
+
+/* The seal breathes while the panel is waiting. Slow and shallow -- it is
+   there to say "still working", not to draw the eye away from the message
+   underneath it. */
+@keyframes admin-breathe {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.955);
+  }
+}
+
+.admin-breathe {
+  animation: admin-breathe 1.8s ease-in-out infinite;
+}
+
+/* Skeleton rows, standing in for content that has not arrived. A sweep of
+   light across a grey block, which reads as loading without pretending to
+   know how much is left. */
+.admin-skeleton {
+  background-image: linear-gradient(
+    90deg,
+    #E6E6E3 0%,
+    #EFEFEC 40%,
+    #E6E6E3 80%
+  );
+  background-size: 220% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

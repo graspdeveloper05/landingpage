@@ -8,6 +8,7 @@ import {
   type Locale,
 } from './client'
 import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
+import { SkeletonRows } from './Loading'
 
 /** §7 — speakers and the moderator, editable by the organising team. */
 export function SpeakersAdmin() {
@@ -105,7 +106,7 @@ export function SpeakersAdmin() {
         </div>
       )}
 
-      {!list && <p className="text-small text-slate">Loading…</p>}
+      {!list && <SkeletonRows count={4} thumb />}
 
       {list && list.length === 0 && !error && (
         <AdminCard>

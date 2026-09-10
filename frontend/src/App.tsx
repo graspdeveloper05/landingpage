@@ -22,6 +22,11 @@ import { useI18n } from '@/i18n'
  */
 const AdminApp = lazy(() => import('@/admin/AdminApp'))
 
+// Imported eagerly, not lazily: it is what shows WHILE the admin chunk is
+// being fetched, so putting it in that chunk would leave a blank screen
+// until the thing it was meant to cover had already arrived.
+import { AdminSplash } from '@/admin/Loading'
+
 export default function App() {
   return (
     <Routes>
@@ -30,13 +35,7 @@ export default function App() {
       <Route
         path="/admin/*"
         element={
-          <Suspense
-            fallback={
-              <div className="grid min-h-screen place-items-center bg-cream">
-                <p className="text-small text-slate">Loading the admin panel…</p>
-              </div>
-            }
-          >
+          <Suspense fallback={<AdminSplash message="Opening the admin panel…" />}>
             <AdminApp />
           </Suspense>
         }

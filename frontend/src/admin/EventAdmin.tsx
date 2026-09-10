@@ -8,6 +8,7 @@ import {
   type Localized,
 } from './client'
 import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
+import { SkeletonForm } from './Loading'
 
 interface EventForm {
   date: string
@@ -136,7 +137,7 @@ export function EventAdmin() {
     }
   }
 
-  if (!form) return <p className="text-small text-slate">Loading…</p>
+  if (!form) return <SkeletonForm />
 
   return (
     <form onSubmit={save}>

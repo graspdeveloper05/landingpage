@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { adminApi, AdminError, NotSignedIn, type AdminUser } from './client'
 import { AdminButton, AdminField, Notice } from './ui'
+import { AdminSplash } from './Loading'
 import { AnalyticsAdmin } from './AnalyticsAdmin'
 import { EventAdmin } from './EventAdmin'
 import { SpeakersAdmin } from './SpeakersAdmin'
@@ -40,13 +41,7 @@ export default function AdminApp() {
     }
   }, [])
 
-  if (checking) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-cream">
-        <p className="text-small text-slate">Checking your session…</p>
-      </div>
-    )
-  }
+  if (checking) return <AdminSplash message="Checking your session…" />
 
   if (!user) return <LoginScreen onSignedIn={setUser} />
 

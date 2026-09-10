@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { adminApi, reachable } from './client'
 import { AdminButton, AdminCard, Notice } from './ui'
+import { SkeletonForm } from './Loading'
 import { cn } from '@/lib/cn'
 
 interface Breakdown {
@@ -59,7 +60,7 @@ export function AnalyticsAdmin() {
     )
   }
 
-  if (!data) return <p className="text-[0.8rem] text-slate">Loading…</p>
+  if (!data) return <SkeletonForm cards={2} />
 
   const peak = Math.max(1, ...data.series.map((d) => d.views))
 
