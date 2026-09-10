@@ -8,6 +8,34 @@ component changes are required.
 VITE_API_BASE_URL=https://api.serinegaradialogue.org
 ```
 
+This is committed in `frontend/.env.production`, so `npm run build` — and
+therefore `deploy.sh` — always produces a bundle pointed at the live API.
+`npm run dev` has no `.env`, so local development keeps running against the
+data files without needing PHP.
+
+**Connected as of 10 September 2026.** Verified end to end against the real
+Laravel app: seats read from `/api/event`, a browser form submission stored a
+row and returned `SND26-0001`, a duplicate email came back 422 and appeared
+inline on the email field, and the CSV export returned the row.
+
+## What stays local on purpose
+
+`getSpeakers()` and `getProgramme()` do **not** call the API even when it is
+connected. Speakers and the programme are content the organising team edits in
+`src/data/editions/2026/` (see HANDOVER.md); routing them through Laravel would
+create a second source of truth to keep in step by hand, and would blank the
+grid and timeline whenever the API is down. Both endpoints exist and are
+documented below, so this is one commit to reverse if the team ever wants to
+edit speakers from the server.
+
+## Origins
+
+The SPA is on the apex domain and the API on its own subdomain, so every call
+is cross-origin. `backend/config/cors.php` allows the two production hostnames
+and nothing else — Laravel's default of `*` is wrong here, because
+`/api/admin/registrations` returns every attendee's name, email and mobile.
+Add extra origins with `CORS_ALLOWED_ORIGINS` in `backend/.env`.
+
 ## GET /api/event
 
 ```json
@@ -74,5 +102,18 @@ Server-side work still needed beyond these endpoints:
 
 Returns `text/csv` with the columns
 `reference, submittedAt, fullName, email, mobile, organisation, designation, dietary`.
-Must be behind authentication. Escape leading `= + - @` in user-entered fields
-to prevent spreadsheet formula injection — `toCsv()` in `api.ts` shows the rule.
+Escapes leading `= + - @` in user-entered fields to prevent spreadsheet formula
+injection, and opens with a UTF-8 BOM so Excel reads Malay, Chinese and Tamil
+names correctly.
+
+Authenticated with a **bearer token**, compared in constant time against
+`ADMIN_API_TOKEN`:
+
+```bash
+curl -H "Authorization: Bearer $ADMIN_API_TOKEN"      -H "Accept: text/csv"      https://api.serinegaradialogue.org/api/admin/registrations      -o registrations.csv
+```
+
+Run it from a terminal, not from the site. The token is deliberately absent
+from the frontend: every `VITE_` variable is compiled into public JavaScript,
+so shipping it would publish the attendee list to anyone who opens devtools.
+`exportRegistrations()` therefore returns 401 against the live API by design.

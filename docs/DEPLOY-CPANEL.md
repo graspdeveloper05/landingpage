@@ -161,23 +161,64 @@ php artisan config:clear
 
 ## 4 — Connecting the two
 
-Not done yet, deliberately. When you are ready:
+**Done in the code.** `frontend/.env.production` holds
+`VITE_API_BASE_URL=https://api.serinegaradialogue.org`, so every
+`npm run build` — and therefore every `deploy.sh` run — produces a bundle that
+talks to the API. `backend/config/cors.php` already allows the site's origin.
+
+Verified end to end on 10 September 2026 against the real Laravel app: a
+browser form submission stored a row and returned `SND26-0001`, a duplicate
+email came back 422 and surfaced inline on the email field, and the CSV export
+returned the row.
+
+What is left is server-side only. Until these steps are done the live form
+posts to a hostname that does not resolve, so **do not deploy the frontend
+before the API answers**:
+
+1. **Create the subdomain.** cPanel → *Domains* → Create A Domain →
+   `api.serinegaradialogue.org`, document root `~/api` — cPanel will offer
+   `public_html/api`, which is wrong; type the path yourself.
+
+2. **Point it at Laravel's front controller, not the app.** `deploy.sh` does
+   this for you once you tell it where:
 
 ```bash
-# frontend/.env.production
-VITE_API_BASE_URL=https://api.serinegaradialogue.org
+# ~/seri-negara-deploy.env  (outside git, per-server)
+SPA_DOC_ROOT="$HOME/public_html"
+API_DOC_ROOT="$HOME/api"
 ```
 
-Rebuild and re-upload the frontend. Then allow the site's origin in the
-backend's `config/cors.php`:
+   It replaces `~/api` with a symlink to `backend/public`. The Laravel app
+   itself stays in `~/landingpage/backend`, outside any document root — which
+   is the whole point. If `.env` and `.git` sit under a document root they are
+   downloadable by anyone who guesses the URL, and that `.env` holds the
+   database password, the mail password and the admin token.
 
-```php
-'allowed_origins' => ['https://serinegaradialogue.org'],
-'supports_credentials' => false,
+3. **Set PHP 8.2** for the subdomain in MultiPHP Manager.
+
+4. **Create `backend/.env`** on the server from `.env.example` — see §3 above
+   for the database, mail and token settings. `deploy.sh` backs this file up
+   and restores it around every git reset, so it survives deploys.
+
+5. **Run the backend stage.** It turns itself on as soon as `backend/.env`
+   exists; force it with `DEPLOY_BACKEND=1 bash deploy.sh`. It runs composer,
+   migrations and the config/route caches.
+
+6. **Run AutoSSL** for the subdomain. The frontend calls `https://`, so
+   without a certificate every request fails in the browser with a TLS error
+   and no useful message.
+
+7. **Prove it before trusting it:**
+
+```bash
+curl https://api.serinegaradialogue.org/api/event
+curl -H "Authorization: Bearer $ADMIN_API_TOKEN"      https://api.serinegaradialogue.org/api/admin/registrations
 ```
 
-Until then the RSVP form saves to the visitor's own browser only — fine for a
-demo, useless for collecting real registrations.
+   Then submit one real registration through the live form and confirm it
+   appears in the export and that the confirmation email arrives.
+
+Until step 7 passes, the RSVP form is not collecting anything.
 
 ## Checklist
 
@@ -185,10 +226,14 @@ demo, useless for collecting real registrations.
 - [ ] Default `index.php` deleted
 - [ ] `.htaccess` present (check hidden files) — test by refreshing `/speakers`
 - [ ] AutoSSL run; HTTPS redirect uncommented afterwards
-- [ ] `api/` outside `public_html`, subdomain docroot on `api/public`
+- [ ] `api.serinegaradialogue.org` created, docroot `~/api`
+- [ ] Laravel app outside `public_html`; `~/api` symlinked to `backend/public`
+- [ ] `API_DOC_ROOT` set in `~/seri-negara-deploy.env`
 - [ ] PHP 8.2+ selected for the API domain
 - [ ] MySQL database created, migrations run
 - [ ] SMTP configured, SPF/DKIM set, a test confirmation received
-- [ ] `ADMIN_API_TOKEN` set; export tested
+- [ ] `ADMIN_API_TOKEN` set; export tested with `Authorization: Bearer`
+- [ ] `curl https://api.serinegaradialogue.org/api/event` answers before the frontend is deployed
+- [ ] One real registration submitted through the live form and found in the export
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] Placeholder content replaced — `npm run check:placeholders` must pass

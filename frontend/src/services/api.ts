@@ -16,16 +16,38 @@ import type {
  * over — no component changes. See docs/API-CONTRACT.md for the endpoints.
  */
 
-const BASE = import.meta.env.VITE_API_BASE_URL as string | undefined
+// Trailing slashes are stripped so `https://host/` and `https://host` both
+// produce `https://host/api/event` rather than a double slash, which some
+// hosts answer with a redirect that drops the POST body.
+const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/+$/, '')
 const STORAGE_KEY = 'snd.registrations'
 
 export class RegistrationError extends Error {
   constructor(
     message: string,
     readonly kind: 'validation' | 'full' | 'network',
+    /**
+     * Per-field messages from the server, keyed by the field name the form
+     * uses. Laravel returns these on 422 and some of them cannot be derived
+     * client-side at all -- "this email is already registered" is the one that
+     * matters, since the API allows one seat per address per edition.
+     */
+    readonly fields?: Record<string, string>,
   ) {
     super(message)
     this.name = 'RegistrationError'
+  }
+}
+
+/** Laravel's 422 body: { message, errors: { field: [msg, ...] } }. */
+async function readValidationErrors(res: Response): Promise<Record<string, string>> {
+  try {
+    const body = (await res.json()) as { errors?: Record<string, string[]> }
+    return Object.fromEntries(
+      Object.entries(body.errors ?? {}).map(([field, messages]) => [field, messages[0]]),
+    )
+  } catch {
+    return {}
   }
 }
 
@@ -87,21 +109,24 @@ export async function getEvent(): Promise<EventStatus> {
   }
 }
 
+/*
+ * Speakers and the programme deliberately stay on the local data files even
+ * when the API is connected.
+ *
+ * They are content, not state: HANDOVER.md tells the organising team to edit
+ * src/data/editions/2026/, and the API would make a second source of truth
+ * that has to be kept in step by hand. Serving them locally also means the
+ * grid and the timeline still render if the API is down, and costs two fewer
+ * round-trips on the page that matters most.
+ *
+ * The endpoints exist in Laravel and are documented, so this can be reversed
+ * in one commit if the team ever wants to edit speakers from the server.
+ */
 export async function getSpeakers(): Promise<Speaker[]> {
-  if (BASE) {
-    const res = await fetch(`${BASE}/api/speakers`)
-    if (!res.ok) throw new RegistrationError('Could not load speakers', 'network')
-    return (await res.json()) as Speaker[]
-  }
   return speakers
 }
 
 export async function getProgramme(): Promise<ProgrammeItem[]> {
-  if (BASE) {
-    const res = await fetch(`${BASE}/api/programme`)
-    if (!res.ok) throw new RegistrationError('Could not load programme', 'network')
-    return (await res.json()) as ProgrammeItem[]
-  }
   return programme
 }
 
@@ -117,7 +142,13 @@ export async function createRegistration(input: Registration): Promise<Registrat
       body: JSON.stringify(input),
     })
     if (res.status === 409) throw new RegistrationError('Event is full', 'full')
-    if (res.status === 422) throw new RegistrationError('Validation failed', 'validation')
+    if (res.status === 422) {
+      throw new RegistrationError(
+        'Validation failed',
+        'validation',
+        await readValidationErrors(res),
+      )
+    }
     if (!res.ok) throw new RegistrationError('Registration failed', 'network')
     return (await res.json()) as RegistrationRecord
   }
@@ -170,6 +201,12 @@ export function toCsv(records: RegistrationRecord[]) {
 
 export async function exportRegistrations(): Promise<string> {
   if (BASE) {
+    // The admin token is deliberately NOT shipped in the bundle -- every
+    // VITE_ variable is compiled into public JavaScript, so putting it here
+    // would publish the attendee list to anyone who opens devtools. This
+    // branch therefore fails with 401 against the live API by design; the
+    // real export runs from a terminal:
+    //   curl -H "Authorization: Bearer $ADMIN_API_TOKEN"     //        https://api.serinegaradialogue.org/api/admin/registrations
     const res = await fetch(`${BASE}/api/admin/registrations`, { headers: { Accept: 'text/csv' } })
     if (!res.ok) throw new RegistrationError('Could not export registrations', 'network')
     return res.text()

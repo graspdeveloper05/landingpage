@@ -82,8 +82,31 @@ export function RsvpForm({
     try {
       onRegistered(await createRegistration(values))
     } catch (err) {
-      if (err instanceof RegistrationError && err.kind === 'full') onFull()
-      else setErrors({ form: t('rsvp.errors.generic') })
+      if (err instanceof RegistrationError && err.kind === 'full') {
+        onFull()
+      } else if (err instanceof RegistrationError && err.kind === 'validation') {
+        /*
+         * The server rejected something the client could not have caught --
+         * in practice an email already registered for this edition, since the
+         * API allows one seat per address. Show it against the field it
+         * belongs to rather than as a generic failure at the top of the form.
+         */
+        const fields = err.fields ?? {}
+        const mapped = Object.entries(fields).filter(([key]) => key in EMPTY) as [
+          keyof Registration,
+          string,
+        ][]
+
+        if (mapped.length > 0) {
+          setErrors(Object.fromEntries(mapped))
+          setTouched((s) => ({ ...s, ...Object.fromEntries(mapped.map(([k]) => [k, true])) }))
+          document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+        } else {
+          setErrors({ form: t('rsvp.errors.generic') })
+        }
+      } else {
+        setErrors({ form: t('rsvp.errors.generic') })
+      }
     } finally {
       setSubmitting(false)
     }
