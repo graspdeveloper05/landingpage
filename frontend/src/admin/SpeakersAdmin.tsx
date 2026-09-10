@@ -288,25 +288,11 @@ function SpeakerForm({
 
   return (
     <form onSubmit={save}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4">
         <h2 className="text-[0.95rem] font-semibold text-navy-950">
           {isNew ? 'Add speaker' : `Edit ${speaker.name}`}
         </h2>
-        <div className="flex gap-2">
-          <AdminButton variant="quiet" onClick={onCancel}>
-            Cancel
-          </AdminButton>
-          <AdminButton type="submit" disabled={busy}>
-            {busy ? 'Saving…' : 'Save'}
-          </AdminButton>
-        </div>
       </div>
-
-      {error && (
-        <div className="mb-4">
-          <Notice kind="error">{error}</Notice>
-        </div>
-      )}
 
       <div className="grid gap-5 lg:grid-cols-3">
         {/* self-start stops the card stretching to match the tall form beside
@@ -441,6 +427,20 @@ function SpeakerForm({
             </span>
           </label>
         </AdminCard>
+      </div>
+
+      {/* Actions at the foot of the form, stuck to the bottom of the viewport.
+          At the top they were out of sight by the time you had filled anything
+          in. Messages sit beside the button that produced them, so a validation
+          error is not announced somewhere you have to scroll back to find. */}
+      <div className="sticky bottom-0 -mx-4 mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-[#DDDCD8] bg-[#F1F1EF]/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
+        {error && <Notice kind="error">{error}</Notice>}
+        <AdminButton variant="quiet" onClick={onCancel}>
+          Cancel
+        </AdminButton>
+        <AdminButton type="submit" disabled={busy}>
+          {busy ? 'Saving…' : 'Save'}
+        </AdminButton>
       </div>
     </form>
   )

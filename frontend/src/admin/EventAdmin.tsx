@@ -106,29 +106,12 @@ export function EventAdmin() {
 
   return (
     <form onSubmit={save}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4">
         <p className="text-[0.78rem] text-slate">
           Edition {edition ?? '—'} · shown in the hero, the event information section and the
           confirmation email.
         </p>
-        <AdminButton type="submit" disabled={busy}>
-          {busy ? 'Saving…' : 'Save'}
-        </AdminButton>
       </div>
-
-      {error && (
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <Notice kind="error">{error}</Notice>
-          <AdminButton variant="quiet" onClick={load}>
-            Try again
-          </AdminButton>
-        </div>
-      )}
-      {saved && (
-        <div className="mb-4">
-          <Notice kind="success">Saved. The site shows the new details immediately.</Notice>
-        </div>
-      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <AdminCard className="space-y-4">
@@ -143,13 +126,20 @@ export function EventAdmin() {
               error={fieldErrors.date}
               hint="Used by search engines and the calendar."
             />
+            {/*
+              type="time" gives the browser's own picker, which shows AM/PM
+              when the machine is set to a 12-hour clock -- while the value it
+              submits is always 24-hour "14:30", which is exactly what the API
+              validates. Nobody has to think in 24-hour to fill it in, and
+              nothing downstream has to parse "2.30 pm".
+            */}
             <AdminField
               label="Start time"
+              type="time"
               value={form.startTime}
               onChange={(v) => set('startTime', v)}
               error={fieldErrors.startTime}
-              hint="24-hour, e.g. 14:30"
-              placeholder="14:30"
+              hint="Pick a time. Visitors see the wording you set below."
             />
           </div>
 
@@ -226,6 +216,36 @@ export function EventAdmin() {
             </p>
           </AdminCard>
         </div>
+      </div>
+
+      {/*
+        The save bar sits at the foot of the form and sticks to the bottom of
+        the viewport.
+
+        At the top it was above the fold and out of sight by the time you had
+        filled anything in -- you finish at the bottom of a two-screen form and
+        the button is a scroll away. Sticky rather than merely last, so it is
+        reachable from wherever you are in the form without hunting for it.
+
+        Messages live here too, beside the button that produced them. A
+        validation error announced at the top of a long form is an error you
+        have to go looking for.
+      */}
+      <div className="sticky bottom-0 -mx-4 mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-[#DDDCD8] bg-[#F1F1EF]/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
+        {error && (
+          <>
+            <Notice kind="error">{error}</Notice>
+            <AdminButton variant="quiet" onClick={load}>
+              Try again
+            </AdminButton>
+          </>
+        )}
+        {saved && !error && (
+          <Notice kind="success">Saved. The site shows the new details immediately.</Notice>
+        )}
+        <AdminButton type="submit" disabled={busy}>
+          {busy ? 'Saving…' : 'Save'}
+        </AdminButton>
       </div>
     </form>
   )
