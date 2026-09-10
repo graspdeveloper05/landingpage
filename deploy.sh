@@ -32,7 +32,10 @@ echo "🚀 Seri Negara Dialogue — deploy"
 
 # When this run began, so the log summary at the end can tell errors caused by
 # this deploy apart from ones that have been sitting in the file for hours.
-DEPLOY_STARTED=$(date '+%Y-%m-%d %H:%M:%S')
+# In UTC, because that is what Laravel writes into the log. The server's own
+# clock here is UTC+8, so comparing against local time put "since" eight hours
+# in the future and every real error would have been reported as old.
+DEPLOY_STARTED=$(date -u '+%Y-%m-%d %H:%M:%S')
 
 # ── Layout ────────────────────────────────────────────────────────────────
 FRONTEND_DIR="frontend"
@@ -429,6 +432,17 @@ if [ $COMPOSER_STATUS -ne 0 ]; then
     exit 1
 fi
 
+# Reads one value out of backend/.env, stripped.
+#
+# A .env saved on Windows or written through cPanel's File Manager ends its
+# lines with CR, so a pattern like `^APP_KEY=.+` matches the carriage return
+# and reports a value that is not there. That is precisely how an empty
+# APP_KEY passed this script's check and put a 500 on the live site while the
+# deploy reported success. Quotes go too: APP_KEY="" is just as empty.
+env_value() {
+    grep -E "^$1=" .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d "\r" | tr -d '"' | tr -d "'" | tr -d '[:space:]'
+}
+
 # ── APP_KEY ───────────────────────────────────────────────────────────────
 # NOTE: everything from here to the end of the backend stage runs INSIDE
 # backend/ -- the composer step cd'd there. So these say `.env` and `artisan`,
@@ -443,9 +457,11 @@ fi
 # specified", which arrives after the old site has already been replaced.
 # .env.example ships APP_KEY empty, so anyone creating .env the documented way
 # lands here exactly once.
-if ! grep -qE '^APP_KEY=.+' .env; then
+APP_KEY_VALUE=$(env_value APP_KEY)
+
+if [ -z "$APP_KEY_VALUE" ]; then
     echo "  🔑 APP_KEY is empty — generating one..."
-    if $PHP_BIN artisan key:generate --force; then
+    if $PHP_BIN artisan key:generate --force && [ -n "$(env_value APP_KEY)" ]; then
         echo "  ✅ APP_KEY set"
     else
         echo ""
@@ -514,6 +530,38 @@ $PHP_BIN artisan view:clear
 $PHP_BIN artisan config:cache
 $PHP_BIN artisan route:cache
 $PHP_BIN artisan view:cache
+
+
+# ── Can it actually boot? ─────────────────────────────────────────────────
+# Asks the application what it sees, now that the config cache is built, and
+# refuses to publish if the answer is wrong.
+#
+# Every check before this one inspects an input -- is .env there, does the key
+# line look filled in -- and each can be fooled in its own way. This asks the
+# only question that matters, and it would have caught the empty APP_KEY
+# whatever the reason for it, instead of leaving a 500 on the live site under
+# a deploy that reported success at every step.
+BOOT_CHECK=$($PHP_BIN artisan tinker --execute="echo config('app.key') ? 'ok' : 'nokey';" 2>&1 | tr -dc 'a-z')
+
+case "$BOOT_CHECK" in
+    *ok*)
+        echo "  ✅ Application boots and has its encryption key"
+        ;;
+    *nokey*)
+        echo ""
+        echo "❌ APP_KEY is still empty after caching — deploy aborted before publishing."
+        echo "   The site is untouched. Set a key and run this again:"
+        echo "     cd $(pwd) && $PHP_BIN artisan key:generate && $PHP_BIN artisan config:cache"
+        exit 1
+        ;;
+    *)
+        echo ""
+        echo "❌ The application could not boot — deploy aborted before publishing."
+        echo "   The site is untouched. See the error with:"
+        echo "     cd $(pwd) && $PHP_BIN artisan about"
+        exit 1
+        ;;
+esac
 
 cd ..
 fi
