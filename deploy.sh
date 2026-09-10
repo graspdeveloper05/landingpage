@@ -30,6 +30,10 @@ fi
 
 echo "🚀 Seri Negara Dialogue — deploy"
 
+# When this run began, so the log summary at the end can tell errors caused by
+# this deploy apart from ones that have been sitting in the file for hours.
+DEPLOY_STARTED=$(date '+%Y-%m-%d %H:%M:%S')
+
 # ── Layout ────────────────────────────────────────────────────────────────
 FRONTEND_DIR="frontend"
 BACKEND_DIR="backend"
@@ -644,5 +648,36 @@ echo ""
 echo "✅ Deployment completed!"
 echo "🌐 Branch: $BRANCH"
 echo ""
-echo "📜 Recent Laravel errors (if any):"
-tail -20 "$BACKEND_DIR/storage/logs/laravel.log" 2>/dev/null || echo "  No log file found"
+# ── Errors from THIS deploy ───────────────────────────────────────────────
+# Previously a plain `tail -20` of laravel.log, which printed whatever was in
+# the file. A stack trace from an error fixed an hour ago was the last thing
+# on screen after a clean deploy, so a successful run looked like a failed one
+# -- and the actual outcome was buried above it.
+#
+# Laravel writes "[2026-09-10 06:54:54] production.ERROR: ...", so entries can
+# be compared as text against the timestamp recorded at the start of this run.
+LOG_FILE="$BACKEND_DIR/storage/logs/laravel.log"
+
+if [ ! -f "$LOG_FILE" ]; then
+    echo "📜 No Laravel log yet — nothing has errored."
+else
+    NEW_ERRORS=$(awk -v since="$DEPLOY_STARTED" '
+        /^\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\]/ {
+            stamp = substr($0, 2, 19)
+            recent = (stamp >= since)
+        }
+        recent
+    ' "$LOG_FILE" | head -40)
+
+    if [ -n "$NEW_ERRORS" ]; then
+        echo "📜 Laravel errors logged during this deploy:"
+        printf '%s\n' "$NEW_ERRORS"
+    else
+        LAST=$(grep -oE '^\[[0-9-]{10} [0-9:]{8}\]' "$LOG_FILE" | tail -1 | tr -d '[]')
+        if [ -n "$LAST" ]; then
+            echo "📜 No new errors. The log's most recent entry is from $LAST, before this deploy."
+        else
+            echo "📜 No new errors."
+        fi
+    fi
+fi
