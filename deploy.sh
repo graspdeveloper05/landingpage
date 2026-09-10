@@ -523,6 +523,19 @@ else
     echo "🌱 Content already in the database ($SPEAKER_COUNT speakers) — not reseeding."
 fi
 
+# ── The panel login ───────────────────────────────────────────────────────
+# Seeded only when there are no accounts at all, so it can never overwrite a
+# password the team has since changed. A server that has one admin keeps it.
+USER_COUNT=$($PHP_BIN artisan tinker --execute="echo App\Models\User::count();" 2>/dev/null | tr -dc '0-9')
+
+if [ "${USER_COUNT:-0}" = "0" ]; then
+    echo "🔑 No admin account yet — creating the default..."
+    $PHP_BIN artisan db:seed --class=AdminSeeder --force \
+        || echo "  ⚠️ Could not create it. Run: php artisan db:seed --class=AdminSeeder"
+else
+    echo "🔑 Admin account already exists ($USER_COUNT) — left alone."
+fi
+
 echo "🧹 Rebuilding caches..."
 $PHP_BIN artisan config:clear
 $PHP_BIN artisan route:clear
