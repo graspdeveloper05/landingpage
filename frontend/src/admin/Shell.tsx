@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/cn'
 import { onBusyChange, type AdminUser } from './client'
 
@@ -43,14 +44,22 @@ export function Shell({
     <div className="admin-ui min-h-screen bg-[#F1F1EF] font-sans text-navy-950">
       {/* Backdrop for the mobile drawer. Absent on lg, where the sidebar is
           always in the layout rather than over it. */}
-      {navOpen && (
-        <button
-          type="button"
-          aria-label="Close menu"
-          onClick={() => setNavOpen(false)}
-          className="fixed inset-0 z-30 bg-navy-950/50 lg:hidden"
-        />
-      )}
+      {/* AnimatePresence so the backdrop fades OUT as well as in. Without it
+          the drawer slides away and the dimming vanishes in one frame. */}
+      <AnimatePresence>
+        {navOpen && (
+          <motion.button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setNavOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-30 bg-navy-950/50 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
 
       <aside
         className={cn(
@@ -73,39 +82,68 @@ export function Shell({
         </div>
 
         <nav className="flex-1 overflow-y-auto p-2">
-          {NAV.map(({ to, label, icon: Icon, hint }) => (
-            <NavLink
+          {NAV.map(({ to, label, icon: Icon, hint }, i) => (
+            <motion.div
               key={to}
-              to={to}
-              className={({ isActive }) =>
-                cn(
-                  'mb-0.5 flex items-start gap-2.5 rounded-sm px-2.5 py-2 transition-colors',
-                  isActive
-                    ? 'bg-cream/10 text-cream'
-                    : 'text-cream/65 hover:bg-cream/5 hover:text-cream',
-                )
-              }
+              // A short stagger down the list on first paint. Only on mount --
+              // re-running it on every navigation would make the sidebar
+              // twitch each time you changed page.
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.04 + i * 0.045, duration: 0.32, ease: [0.22, 0.68, 0.28, 1] }}
             >
-              {({ isActive }) => (
-                <>
-                  {/* The active marker is a gold rail, not a filled block: a
-                      solid gold row at this size fights the content for
-                      attention every time your eye returns to the sidebar. */}
-                  <span
-                    aria-hidden
-                    className={cn(
-                      '-ml-2.5 h-9 w-0.5 shrink-0 rounded-r',
-                      isActive ? 'bg-gold-500' : 'bg-transparent',
+              <NavLink
+                to={to}
+                className={({ isActive }) =>
+                  cn(
+                    'relative mb-0.5 flex items-start gap-2.5 rounded-sm px-2.5 py-2 transition-colors',
+                    isActive ? 'text-cream' : 'text-cream/65 hover:bg-cream/5 hover:text-cream',
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {/*
+                      One marker for the whole list, not one per row. layoutId
+                      means Framer Motion treats the gold rail on the old item
+                      and the rail on the new one as the same object, so it
+                      travels between them instead of blinking out and in.
+                      That is the thing CSS cannot do without measuring every
+                      row on every change, and the reason the library is here.
+                    */}
+                    {isActive && (
+                      <motion.span
+                        layoutId="admin-nav-active"
+                        aria-hidden
+                        className="absolute inset-0 -z-10 rounded-sm bg-cream/10"
+                        transition={{ type: 'spring', stiffness: 480, damping: 38 }}
+                      />
                     )}
-                  />
-                  <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', isActive && 'text-gold-400')} />
-                  <span className="min-w-0">
-                    <span className="block text-[0.82rem] font-semibold leading-tight">{label}</span>
-                    <span className="block truncate text-[0.68rem] text-cream/40">{hint}</span>
-                  </span>
-                </>
-              )}
-            </NavLink>
+                    {isActive && (
+                      <motion.span
+                        layoutId="admin-nav-rail"
+                        aria-hidden
+                        className="absolute -left-0 top-1.5 h-9 w-0.5 rounded-r bg-gold-500"
+                        transition={{ type: 'spring', stiffness: 480, damping: 38 }}
+                      />
+                    )}
+
+                    <Icon
+                      className={cn(
+                        'mt-0.5 h-4 w-4 shrink-0 transition-colors',
+                        isActive && 'text-gold-400',
+                      )}
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-[0.82rem] font-semibold leading-tight">
+                        {label}
+                      </span>
+                      <span className="block truncate text-[0.68rem] text-cream/40">{hint}</span>
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            </motion.div>
           ))}
         </nav>
 

@@ -8,6 +8,7 @@ import {
   type Localized,
 } from './client'
 import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
+import { useToast } from './Toast'
 import { SkeletonForm } from './Loading'
 
 interface EventForm {
@@ -70,8 +71,8 @@ export function EventAdmin() {
   const [edition, setEdition] = useState<number | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
   const [busy, setBusy] = useState(false)
+  const toast = useToast()
 
   const load = () => {
     setError(null)
@@ -113,11 +114,10 @@ export function EventAdmin() {
     if (!form) return
     setBusy(true)
     setError(null)
-    setSaved(false)
     setFieldErrors({})
     try {
       await adminApi.put('/admin/event', { ...form, capacity: Number(form.capacity) })
-      setSaved(true)
+      toast.success('Saved. The site shows the new details immediately.')
       // The state may have changed with the save -- reopening registration, or
       // moving the date into the past. Re-read rather than guess.
       load()
@@ -310,9 +310,6 @@ export function EventAdmin() {
               Try again
             </AdminButton>
           </>
-        )}
-        {saved && !error && (
-          <Notice kind="success">Saved. The site shows the new details immediately.</Notice>
         )}
         <AdminButton type="submit" disabled={busy}>
           {busy ? 'Saving…' : 'Save'}

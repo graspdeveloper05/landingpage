@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { adminApi, AdminError, NotSignedIn, type AdminUser } from './client'
 import { AdminButton, AdminField, Notice } from './ui'
 import { AdminSplash } from './Loading'
+import { ToastProvider } from './Toast'
 import { AnalyticsAdmin } from './AnalyticsAdmin'
 import { EventAdmin } from './EventAdmin'
 import { SpeakersAdmin } from './SpeakersAdmin'
@@ -55,7 +56,8 @@ export default function AdminApp() {
 
   return (
     <Shell user={user} onSignOut={signOut}>
-      <SessionBoundary onExpired={() => setUser(null)}>
+      <ToastProvider>
+        <SessionBoundary onExpired={() => setUser(null)}>
         <Routes>
           <Route path="analytics" element={<AnalyticsAdmin />} />
           <Route path="event" element={<EventAdmin />} />
@@ -64,7 +66,8 @@ export default function AdminApp() {
           <Route path="registrations" element={<RegistrationsAdmin />} />
           <Route path="*" element={<Navigate to="/admin/event" replace />} />
         </Routes>
-      </SessionBoundary>
+        </SessionBoundary>
+      </ToastProvider>
     </Shell>
   )
 }

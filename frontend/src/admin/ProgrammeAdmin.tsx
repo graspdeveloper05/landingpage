@@ -9,6 +9,7 @@ import {
   type Localized,
 } from './client'
 import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
+import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
 
 /** §8 — "the organising team must be able to update timings directly." */
@@ -16,7 +17,7 @@ export function ProgrammeAdmin() {
   const [list, setList] = useState<AdminProgrammeItem[] | null>(null)
   const [editing, setEditing] = useState<AdminProgrammeItem | 'new' | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [saved, setSaved] = useState<string | null>(null)
+  const toast = useToast()
 
   // A failure clears `list` to [] as well as setting the error: leaving it
   // null shows the error with "Loading..." under it forever.
@@ -39,10 +40,10 @@ export function ProgrammeAdmin() {
     if (!confirm(`Remove "${item.title.en}" from the programme?`)) return
     try {
       await adminApi.del(`/admin/programme/${item.id}`)
-      setSaved('Session removed.')
+      toast.success('Session removed.')
       load()
     } catch (e) {
-      setError(e instanceof AdminError ? e.message : 'Could not remove that session.')
+      toast.error(e instanceof AdminError ? e.message : 'Could not remove that session.')
     }
   }
 
@@ -56,7 +57,7 @@ export function ProgrammeAdmin() {
     try {
       await adminApi.post('/admin/programme/reorder', { ids: next.map((s) => s.id) })
     } catch {
-      setError('Could not save the new order.')
+      toast.error('Could not save the new order.')
       load()
     }
   }
@@ -68,7 +69,7 @@ export function ProgrammeAdmin() {
         onCancel={() => setEditing(null)}
         onSaved={() => {
           setEditing(null)
-          setSaved('Session saved.')
+          toast.success('Session saved.')
           load()
         }}
       />
@@ -105,12 +106,6 @@ export function ProgrammeAdmin() {
           </AdminButton>
         </div>
       )}
-      {saved && (
-        <div className="mb-4">
-          <Notice kind="success">{saved}</Notice>
-        </div>
-      )}
-
       {!list && <SkeletonRows count={5} />}
 
       {list && list.length === 0 && !error && (

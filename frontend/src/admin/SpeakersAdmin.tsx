@@ -8,6 +8,7 @@ import {
   type Locale,
 } from './client'
 import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
+import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
 
 /** §7 — speakers and the moderator, editable by the organising team. */
@@ -15,7 +16,7 @@ export function SpeakersAdmin() {
   const [list, setList] = useState<AdminSpeaker[] | null>(null)
   const [editing, setEditing] = useState<AdminSpeaker | 'new' | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [saved, setSaved] = useState<string | null>(null)
+  const toast = useToast()
 
   /*
    * `list` stays null only while a load is genuinely in flight. A failure
@@ -42,10 +43,10 @@ export function SpeakersAdmin() {
     if (!confirm(`Remove ${speaker.name}? This cannot be undone.`)) return
     try {
       await adminApi.del(`/admin/speakers/${speaker.id}`)
-      setSaved(`${speaker.name} removed.`)
+      toast.success(`${speaker.name} removed.`)
       load()
     } catch (e) {
-      setError(e instanceof AdminError ? e.message : 'Could not remove that speaker.')
+      toast.error(e instanceof AdminError ? e.message : 'Could not remove that speaker.')
     }
   }
 
@@ -62,7 +63,7 @@ export function SpeakersAdmin() {
     try {
       await adminApi.post('/admin/speakers/reorder', { ids: next.map((s) => s.id) })
     } catch {
-      setError('Could not save the new order.')
+      toast.error('Could not save the new order.')
       load()
     }
   }
@@ -74,7 +75,7 @@ export function SpeakersAdmin() {
         onCancel={() => setEditing(null)}
         onSaved={(name) => {
           setEditing(null)
-          setSaved(`${name} saved.`)
+          toast.success(`${name} saved.`)
           load()
         }}
       />
@@ -100,12 +101,6 @@ export function SpeakersAdmin() {
           </AdminButton>
         </div>
       )}
-      {saved && (
-        <div className="mb-4">
-          <Notice kind="success">{saved}</Notice>
-        </div>
-      )}
-
       {!list && <SkeletonRows count={4} thumb />}
 
       {list && list.length === 0 && !error && (
