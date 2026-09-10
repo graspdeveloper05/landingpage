@@ -116,7 +116,7 @@ export function ProgrammeAdmin() {
 
       <div className="space-y-2">
         {list?.map((item, i) => (
-          <AdminCard key={item.id}>
+          <AdminCard interactive key={item.id}>
             <div className="flex flex-wrap items-center gap-4">
               <p className="tnum w-14 shrink-0 text-[0.88rem] font-semibold text-gold-700">
                 {item.time}

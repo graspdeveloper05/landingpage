@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/cn'
 import { LOCALE_TABS, type Locale, type Localized } from './client'
 
@@ -229,10 +230,22 @@ export function AdminButton({
   }[variant]
 
   return (
-    <button
+    <motion.button
       type={type}
       onClick={onClick}
       disabled={disabled}
+      /*
+        Small on purpose. A button that grows 5% on hover is a landing-page
+        gesture; in a panel where every row carries Edit and Remove, the same
+        move repeated across a list reads as the page twitching. 1.5% and a
+        press that goes under 1 is enough to feel answered.
+
+        Skipped entirely while disabled — a control that reacts to the pointer
+        but does nothing when clicked is worse than one that sits still.
+      */
+      whileHover={disabled ? undefined : { scale: 1.015 }}
+      whileTap={disabled ? undefined : { scale: 0.985 }}
+      transition={{ type: 'spring', stiffness: 600, damping: 30 }}
       className={cn(
         'inline-flex min-h-[34px] items-center justify-center gap-1.5 rounded-sm px-3',
         'text-[0.78rem] font-semibold transition-colors',
@@ -242,7 +255,7 @@ export function AdminButton({
       )}
     >
       {children}
-    </button>
+    </motion.button>
   )
 }
 
@@ -262,9 +275,28 @@ export function Notice({ kind, children }: { kind: 'error' | 'success'; children
   )
 }
 
-export function AdminCard({ children, className }: { children: ReactNode; className?: string }) {
+export function AdminCard({
+  children,
+  className,
+  /** Set on rows in a list, which respond to the pointer. Static panels do not. */
+  interactive,
+}: {
+  children: ReactNode
+  className?: string
+  interactive?: boolean
+}) {
   return (
-    <div className={cn('rounded-sm border border-[#DDDCD8] bg-white p-4', className)}>
+    <div
+      className={cn(
+        'rounded-sm border border-[#DDDCD8] bg-white p-4',
+        // A CSS transition rather than motion: a list can hold thirty of
+        // these, and thirty components subscribing to pointer state to move
+        // a border colour is work the compositor already does for free.
+        interactive &&
+          'transition-[border-color,box-shadow] duration-200 hover:border-navy-600/40 hover:shadow-[0_2px_10px_-4px_rgba(11,33,64,0.25)]',
+        className,
+      )}
+    >
       {children}
     </div>
   )

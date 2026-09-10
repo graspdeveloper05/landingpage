@@ -113,7 +113,7 @@ export function SpeakersAdmin() {
 
       <div className="space-y-3">
         {list?.map((speaker, i) => (
-          <AdminCard key={speaker.id}>
+          <AdminCard interactive key={speaker.id}>
             <div className="flex flex-wrap items-center gap-4">
               <img
                 src={speaker.portrait}

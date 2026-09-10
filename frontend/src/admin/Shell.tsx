@@ -91,12 +91,20 @@ export function Shell({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.04 + i * 0.045, duration: 0.32, ease: [0.22, 0.68, 0.28, 1] }}
+              /*
+                The row leans towards the content it opens. Three pixels, on a
+                spring, so it answers the pointer without becoming a movement
+                you have to wait out — this is a sidebar someone clicks through
+                forty times in a sitting.
+              */
+              whileHover={{ x: 3, transition: { type: 'spring', stiffness: 520, damping: 30 } }}
+              whileTap={{ x: 1, scale: 0.995, transition: { duration: 0.08 } }}
             >
               <NavLink
                 to={to}
                 className={({ isActive }) =>
                   cn(
-                    'relative mb-0.5 flex items-start gap-2.5 rounded-sm px-2.5 py-2 transition-colors',
+                    'group/nav relative mb-0.5 flex items-start gap-2.5 rounded-sm px-2.5 py-2 transition-colors',
                     isActive ? 'text-cream' : 'text-cream/65 hover:bg-cream/5 hover:text-cream',
                   )
                 }
@@ -130,8 +138,8 @@ export function Shell({
 
                     <Icon
                       className={cn(
-                        'mt-0.5 h-4 w-4 shrink-0 transition-colors',
-                        isActive && 'text-gold-400',
+                        'mt-0.5 h-4 w-4 shrink-0 transition-colors duration-200',
+                        isActive ? 'text-gold-400' : 'group-hover/nav:text-gold-400/70',
                       )}
                     />
                     <span className="min-w-0">
