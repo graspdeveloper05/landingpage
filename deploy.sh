@@ -425,6 +425,29 @@ if [ $COMPOSER_STATUS -ne 0 ]; then
     exit 1
 fi
 
+# ── APP_KEY ───────────────────────────────────────────────────────────────
+# Checked before anything is published, because an empty key deploys a site
+# that returns 500 on every page while every step above reports success.
+#
+# Migrations do not need it, so the deploy sails through them and only the
+# first browser request fails -- with "No application encryption key has been
+# specified", which arrives after the old site has already been replaced.
+# .env.example ships APP_KEY empty, so anyone creating .env the documented way
+# lands here exactly once.
+if ! grep -qE '^APP_KEY=.+' "$BACKEND_DIR/.env"; then
+    echo "  🔑 APP_KEY is empty — generating one..."
+    if $PHP_BIN "$BACKEND_DIR/artisan" key:generate --force; then
+        echo "  ✅ APP_KEY set"
+    else
+        echo ""
+        echo "❌ Could not generate APP_KEY — deploy aborted before publishing."
+        echo "   Without it Laravel cannot decrypt sessions and every page 500s."
+        echo "   Set one by hand:"
+        echo "     cd $(pwd)/$BACKEND_DIR && $PHP_BIN artisan key:generate"
+        exit 1
+    fi
+fi
+
 echo "📁 Creating storage directories..."
 mkdir -p storage/app/public
 mkdir -p storage/framework/cache/data
@@ -453,6 +476,27 @@ fi
 
 echo "📊 Running database migrations..."
 $PHP_BIN artisan migrate --force
+
+# ── Seed the shipped content, once ────────────────────────────────────────
+# Speakers, the programme and the event details used to live in config files
+# and now live in the database. On a server that has just been migrated those
+# tables are empty, so the site would come up with no speakers and no
+# timeline until someone typed them all in again.
+#
+# Guarded on the table being empty, and never a plain `db:seed`. The seeder
+# uses updateOrCreate, so running it against a database the organising team
+# has since edited would quietly restore every placeholder over their work --
+# on every deploy, which is the kind of thing nobody notices for a week.
+SPEAKER_COUNT=$($PHP_BIN "$BACKEND_DIR/artisan" tinker --execute="echo App\Models\Speaker::count();" 2>/dev/null | tr -dc '0-9')
+
+if [ "${SPEAKER_COUNT:-0}" = "0" ]; then
+    echo "🌱 Seeding the shipped content (tables are empty)..."
+    $PHP_BIN "$BACKEND_DIR/artisan" db:seed --class=ContentSeeder --force \
+        && echo "  ✅ Speakers, programme and event details seeded" \
+        || echo "  ⚠️ Seeding failed — the site falls back to its bundled copy, but the admin panel will look empty."
+else
+    echo "🌱 Content already in the database ($SPEAKER_COUNT speakers) — not reseeding."
+fi
 
 echo "🧹 Rebuilding caches..."
 $PHP_BIN artisan config:clear
