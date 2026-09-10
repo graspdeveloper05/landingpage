@@ -399,6 +399,113 @@
   border-radius: 2px;
 }
 
+
+/* ── Custom pointer ───────────────────────────────────────────────────────
+   Only ever active while Cursor.tsx has added .cursor-custom to <html>, which
+   it does after checking for a fine pointer and no reduced-motion preference.
+   Nothing here applies on its own, so deleting the component restores the
+   browser's cursor without touching this file. */
+
+.cursor-custom,
+.cursor-custom a,
+.cursor-custom button,
+.cursor-custom [role='button'],
+.cursor-custom label,
+.cursor-custom summary {
+  cursor: none;
+}
+
+/* Text entry keeps the system cursor. The I-beam tells you where the caret
+   will land, which no decorative ring can do, and §9 makes the RSVP form the
+   one thing on the site that must not get harder to use. */
+.cursor-custom input,
+.cursor-custom textarea,
+.cursor-native,
+.cursor-native * {
+  cursor: auto;
+}
+.cursor-custom input[type='text'],
+.cursor-custom input[type='email'],
+.cursor-custom input[type='tel'],
+.cursor-custom textarea {
+  cursor: text;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  /* Never a click target. Without this the ring would swallow every press on
+     the page, which is the classic way a custom cursor breaks a site. */
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: theme('colors.gold.500');
+  transition: opacity 0.2s ease;
+}
+
+.cursor-ring {
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  /* Fallback for anything without mix-blend-mode; the rule further down
+     replaces both colour and blending where it is supported. */
+  border: 1px solid theme('colors.navy.900' / 45%);
+  border-radius: 50%;
+  transition:
+    width 0.22s cubic-bezier(0.22, 0.68, 0.28, 1),
+    height 0.22s cubic-bezier(0.22, 0.68, 0.28, 1),
+    margin 0.22s cubic-bezier(0.22, 0.68, 0.28, 1),
+    border-color 0.22s ease,
+    background-color 0.22s ease,
+    opacity 0.2s ease;
+}
+
+/* Over something clickable the ring opens and warms to gold. The dot stays
+   the same size, so the pair reads as one pointer rather than two. */
+.cursor-ring.is-over {
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border-color: theme('colors.gold.500');
+  background: theme('colors.gold.500' / 10%);
+}
+
+/* Pressed. Small and quick — an acknowledgement, not an effect. */
+.cursor-ring.is-down {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+}
+
+/* The ring has to stay visible over cream sections, navy sections and a
+   sunset photograph, and no single colour manages all three -- navy vanishes
+   on the RSVP panel, cream vanishes on the page ground.
+
+   `difference` inverts whatever is behind it, so the ring is always the
+   opposite of its background and never has to be told where it is. The
+   alternative was reading computed styles under the pointer on every frame,
+   which is a layout read sixty times a second to decide a border colour. */
+.cursor-ring {
+  border-color: rgba(255, 255, 255, 0.75);
+  mix-blend-mode: difference;
+}
+
+/* The gold returns on hover, where it matters most and where the ring is over
+   a link or button whose own colours we control. */
+.cursor-ring.is-over {
+  mix-blend-mode: normal;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

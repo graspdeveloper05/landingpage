@@ -6,6 +6,7 @@ import { MobileRegisterBar } from '@/components/layout/MobileRegisterBar'
 import { ScrollToTop } from '@/components/layout/ScrollToTop'
 import { ScrollProgress } from '@/components/ui/ScrollProgress'
 import { BackToTop } from '@/components/ui/BackToTop'
+import { Cursor } from '@/components/ui/Cursor'
 import { Home } from '@/routes/Home'
 import { About } from '@/routes/About'
 import { Speakers } from '@/routes/Speakers'
@@ -57,6 +58,10 @@ function PublicSite() {
 
   return (
     <>
+      {/* Public site only. The admin panel is a tool the organising team works
+          in for an hour at a time, where a decorated pointer is a nuisance
+          rather than a flourish. */}
+      <Cursor />
       <ScrollToTop />
       <ScrollProgress />
       <SiteHeader />
