@@ -3,6 +3,7 @@ import {
   adminApi,
   AdminError,
   EMPTY_LOCALIZED,
+  reachable,
   type AdminSpeaker,
   type Locale,
 } from './client'
@@ -15,11 +16,22 @@ export function SpeakersAdmin() {
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState<string | null>(null)
 
-  const load = () =>
-    adminApi
+  /*
+   * `list` stays null only while a load is genuinely in flight. A failure
+   * must clear it to [] as well as setting the error -- otherwise the page
+   * shows the error and "Loading..." underneath it forever, which reads as
+   * the request still running when it has already given up.
+   */
+  const load = () => {
+    setError(null)
+    return adminApi
       .get<AdminSpeaker[]>('/admin/speakers')
       .then(setList)
-      .catch((e) => setError(e.message))
+      .catch((e) => {
+        setList([])
+        setError(reachable(e))
+      })
+  }
 
   useEffect(() => {
     load()
@@ -81,8 +93,11 @@ export function SpeakersAdmin() {
       </div>
 
       {error && (
-        <div className="mb-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <Notice kind="error">{error}</Notice>
+          <AdminButton variant="quiet" onClick={load}>
+            Try again
+          </AdminButton>
         </div>
       )}
       {saved && (
@@ -93,7 +108,7 @@ export function SpeakersAdmin() {
 
       {!list && <p className="text-small text-slate">Loading…</p>}
 
-      {list && list.length === 0 && (
+      {list && list.length === 0 && !error && (
         <AdminCard>
           <p className="text-small text-slate">
             No speakers yet. Add the first one and it appears on the site immediately.

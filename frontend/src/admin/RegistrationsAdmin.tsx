@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { API_BASE } from '@/services/api'
-import { adminApi, type AdminError } from './client'
+import { adminApi, reachable } from './client'
 import { AdminButton, AdminCard, AdminField, Notice } from './ui'
 
 interface Row {
@@ -25,6 +25,8 @@ export function RegistrationsAdmin() {
   const [page, setPage] = useState<Page | null>(null)
   const [search, setSearch] = useState('')
   const [current, setCurrent] = useState(1)
+  // Bumped by "Try again" to re-run the effect without changing the query.
+  const [reloads, setReloads] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -33,13 +35,19 @@ export function RegistrationsAdmin() {
     const timer = setTimeout(() => {
       const params = new URLSearchParams({ page: String(current) })
       if (search.trim()) params.set('search', search.trim())
+      setError(null)
       adminApi
         .get<Page>(`/admin/registrations/list?${params}`)
         .then(setPage)
-        .catch((e: AdminError) => setError(e.message))
+        .catch((e) => {
+          // Show an empty result rather than leaving `page` null, which would
+          // sit on "Loading..." underneath the error indefinitely.
+          setPage({ data: [], meta: { total: 0, page: 1, lastPage: 1, capacity: 0 } })
+          setError(reachable(e))
+        })
     }, 250)
     return () => clearTimeout(timer)
-  }, [search, current])
+  }, [search, current, reloads])
 
   const meta = page?.meta
 
@@ -48,7 +56,13 @@ export function RegistrationsAdmin() {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-h3 font-semibold text-navy-900">Registrations</h1>
-          {meta && (
+          {/*
+            Hidden while a load has failed. The error path substitutes an empty
+            result, and rendering its zeroes announced "0 of 0 seats taken --
+            registration is closed" on a page that simply could not reach the
+            server. Saying nothing about seats is the honest answer there.
+          */}
+          {meta && !error && (
             <p className="mt-1 text-small text-slate">
               <strong className="text-navy-900">{meta.total}</strong> of {meta.capacity} seats
               taken
@@ -73,8 +87,11 @@ export function RegistrationsAdmin() {
       </div>
 
       {error && (
-        <div className="mb-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <Notice kind="error">{error}</Notice>
+          <AdminButton variant="quiet" onClick={() => setReloads((n) => n + 1)}>
+            Try again
+          </AdminButton>
         </div>
       )}
 
@@ -93,7 +110,7 @@ export function RegistrationsAdmin() {
 
       {!page && <p className="text-small text-slate">Loading…</p>}
 
-      {page && page.data.length === 0 && (
+      {page && page.data.length === 0 && !error && (
         <AdminCard>
           <p className="text-small text-slate">
             {search ? 'Nobody matches that search.' : 'No registrations yet.'}

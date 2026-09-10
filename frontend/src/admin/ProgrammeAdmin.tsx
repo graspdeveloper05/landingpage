@@ -3,6 +3,7 @@ import {
   adminApi,
   AdminError,
   EMPTY_LOCALIZED,
+  reachable,
   type AdminProgrammeItem,
   type Locale,
   type Localized,
@@ -16,11 +17,18 @@ export function ProgrammeAdmin() {
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState<string | null>(null)
 
-  const load = () =>
-    adminApi
+  // A failure clears `list` to [] as well as setting the error: leaving it
+  // null shows the error with "Loading..." under it forever.
+  const load = () => {
+    setError(null)
+    return adminApi
       .get<AdminProgrammeItem[]>('/admin/programme')
       .then(setList)
-      .catch((e) => setError(e.message))
+      .catch((e) => {
+        setList([])
+        setError(reachable(e))
+      })
+  }
 
   useEffect(() => {
     load()
@@ -92,8 +100,11 @@ export function ProgrammeAdmin() {
       </div>
 
       {error && (
-        <div className="mb-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <Notice kind="error">{error}</Notice>
+          <AdminButton variant="quiet" onClick={load}>
+            Try again
+          </AdminButton>
         </div>
       )}
       {saved && (
@@ -103,6 +114,12 @@ export function ProgrammeAdmin() {
       )}
 
       {!list && <p className="text-small text-slate">Loading…</p>}
+
+      {list && list.length === 0 && !error && (
+        <AdminCard>
+          <p className="text-small text-slate">No sessions yet. Add the first one.</p>
+        </AdminCard>
+      )}
 
       <div className="space-y-2">
         {list?.map((item, i) => (

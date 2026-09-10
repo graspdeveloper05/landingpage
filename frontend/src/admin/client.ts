@@ -107,6 +107,19 @@ async function request<T>(method: string, path: string, body?: Body): Promise<T>
   return payload as T
 }
 
+/**
+ * A message worth showing for a failed request.
+ *
+ * A dead server rejects fetch with the browser's own "Failed to fetch", which
+ * tells an organiser nothing and looks like the panel is broken rather than
+ * unreachable. Anything the API itself said is already written for a person,
+ * so that is passed through untouched.
+ */
+export function reachable(error: unknown): string {
+  if (error instanceof AdminError && error.status > 0) return error.message
+  return 'Could not reach the server. Check your connection, then try again.'
+}
+
 export const adminApi = {
   get: <T,>(path: string) => request<T>('GET', path),
   post: <T,>(path: string, body?: Body) => request<T>('POST', path, body),
