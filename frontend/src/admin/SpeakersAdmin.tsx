@@ -82,13 +82,12 @@ export function SpeakersAdmin() {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-h3 font-semibold text-navy-900">Speakers</h1>
-          <p className="mt-1 text-small text-slate">
-            Photograph, name, designation, organisation, biography and official link.
-          </p>
-        </div>
+      {/* No page title here: the shell's top bar already names the page,
+          and repeating it costs a whole row of a working screen. */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[0.78rem] text-slate">
+          {list ? `${list.length} in the line-up` : ' '}
+        </p>
         <AdminButton onClick={() => setEditing('new')}>Add speaker</AdminButton>
       </div>
 
@@ -127,7 +126,7 @@ export function SpeakersAdmin() {
               />
 
               <div className="min-w-[12rem] flex-1">
-                <p className="font-display text-body font-semibold text-navy-900">
+                <p className="text-[0.88rem] font-semibold text-navy-950">
                   {speaker.name}
                   {speaker.role === 'moderator' && (
                     <span className="ml-2 rounded-sm bg-gold-500 px-1.5 py-0.5 text-micro font-semibold uppercase tracking-[0.1em] text-navy-950">
@@ -290,9 +289,9 @@ function SpeakerForm({
   return (
     <form onSubmit={save}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-h3 font-semibold text-navy-900">
+        <h2 className="text-[0.95rem] font-semibold text-navy-950">
           {isNew ? 'Add speaker' : `Edit ${speaker.name}`}
-        </h1>
+        </h2>
         <div className="flex gap-2">
           <AdminButton variant="quiet" onClick={onCancel}>
             Cancel

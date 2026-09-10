@@ -55,7 +55,6 @@ export function RegistrationsAdmin() {
     <>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-h3 font-semibold text-navy-900">Registrations</h1>
           {/*
             Hidden while a load has failed. The error path substitutes an empty
             result, and rendering its zeroes announced "0 of 0 seats taken --

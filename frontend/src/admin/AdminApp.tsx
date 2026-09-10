@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { adminApi, AdminError, NotSignedIn, type AdminUser } from './client'
 import { AdminButton, AdminField, Notice } from './ui'
 import { EventAdmin } from './EventAdmin'
 import { SpeakersAdmin } from './SpeakersAdmin'
 import { ProgrammeAdmin } from './ProgrammeAdmin'
 import { RegistrationsAdmin } from './RegistrationsAdmin'
-import { cn } from '@/lib/cn'
+import { Shell } from './Shell'
 
 /**
  * §15 — "Routine website updates should not require developer involvement."
@@ -49,68 +49,26 @@ export default function AdminApp() {
 
   if (!user) return <LoginScreen onSignedIn={setUser} />
 
+  // Cleared locally whatever the server says: if the session has already gone
+  // the request 401s, and leaving the panel open would be worse than signing
+  // out optimistically.
+  const signOut = () => {
+    adminApi.post('/admin/logout').catch(() => {})
+    setUser(null)
+  }
+
   return (
-    <div className="min-h-screen bg-cream">
-      <header className="border-b border-hair bg-navy-950">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3">
-          <p className="font-display text-small font-semibold uppercase tracking-[0.16em] text-cream">
-            Seri Negara Dialogue
-            <span className="ml-2 text-gold-400">Admin</span>
-          </p>
-
-          <nav className="flex gap-1">
-            {[
-              { to: '/admin/event', label: 'Event' },
-              { to: '/admin/speakers', label: 'Speakers' },
-              { to: '/admin/programme', label: 'Programme' },
-              { to: '/admin/registrations', label: 'Registrations' },
-            ].map(({ to, label }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  cn(
-                    'rounded-sm px-3 py-1.5 text-small font-semibold transition-colors',
-                    isActive ? 'bg-gold-500 text-navy-950' : 'text-cream/80 hover:text-cream',
-                  )
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-3">
-            <span className="text-micro text-cream/70">{user.email}</span>
-            <button
-              type="button"
-              onClick={() => {
-                // Clear locally whatever the server says: if the session has
-                // already gone, the request 401s and leaving the panel open
-                // would be worse than signing out optimistically.
-                adminApi.post('/admin/logout').catch(() => {})
-                setUser(null)
-              }}
-              className="text-micro font-semibold uppercase tracking-[0.1em] text-gold-400 hover:text-cream"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <SessionBoundary onExpired={() => setUser(null)}>
-          <Routes>
-            <Route path="event" element={<EventAdmin />} />
-            <Route path="speakers" element={<SpeakersAdmin />} />
-            <Route path="programme" element={<ProgrammeAdmin />} />
-            <Route path="registrations" element={<RegistrationsAdmin />} />
-            <Route path="*" element={<Navigate to="/admin/event" replace />} />
-          </Routes>
-        </SessionBoundary>
-      </main>
-    </div>
+    <Shell user={user} onSignOut={signOut}>
+      <SessionBoundary onExpired={() => setUser(null)}>
+        <Routes>
+          <Route path="event" element={<EventAdmin />} />
+          <Route path="speakers" element={<SpeakersAdmin />} />
+          <Route path="programme" element={<ProgrammeAdmin />} />
+          <Route path="registrations" element={<RegistrationsAdmin />} />
+          <Route path="*" element={<Navigate to="/admin/event" replace />} />
+        </Routes>
+      </SessionBoundary>
+    </Shell>
   )
 }
 

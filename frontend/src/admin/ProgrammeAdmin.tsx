@@ -89,13 +89,10 @@ export function ProgrammeAdmin() {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-h3 font-semibold text-navy-900">Programme</h1>
-          <p className="mt-1 text-small text-slate">
-            Times are 24-hour. Visitors see them formatted for their own language.
-          </p>
-        </div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[0.78rem] text-slate">
+          Times are 24-hour. Visitors see them in their own language.
+        </p>
         <AdminButton onClick={() => setEditing('new')}>Add session</AdminButton>
       </div>
 
@@ -125,12 +122,12 @@ export function ProgrammeAdmin() {
         {list?.map((item, i) => (
           <AdminCard key={item.id}>
             <div className="flex flex-wrap items-center gap-4">
-              <p className="tnum w-16 shrink-0 font-display text-body font-semibold text-gold-700">
+              <p className="tnum w-14 shrink-0 text-[0.88rem] font-semibold text-gold-700">
                 {item.time}
               </p>
 
               <div className="min-w-[12rem] flex-1">
-                <p className="text-body font-semibold text-navy-900">{item.title.en}</p>
+                <p className="text-[0.88rem] font-semibold text-navy-950">{item.title.en}</p>
                 {item.detail?.en && (
                   <p className="text-small italic text-slate">{item.detail.en}</p>
                 )}
@@ -236,9 +233,9 @@ function ProgrammeForm({
   return (
     <form onSubmit={save}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-h3 font-semibold text-navy-900">
+        <h2 className="text-[0.95rem] font-semibold text-navy-950">
           {isNew ? 'Add session' : 'Edit session'}
-        </h1>
+        </h2>
         <div className="flex gap-2">
           <AdminButton variant="quiet" onClick={onCancel}>
             Cancel

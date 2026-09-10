@@ -37,6 +37,16 @@
     text-wrap: balance;
   }
 
+  /* The admin panel is a tool, not the publication. Playfair is the right
+     voice for a national dialogue and the wrong one for a row of form labels
+     an organiser reads forty times an hour, so headings inside the panel stay
+     in the UI face. Scoped to .admin-ui rather than done per heading, which
+     would be a font-sans class on every <h2> anyone ever adds. */
+  .admin-ui :is(h1, h2, h3) {
+    font-family: theme('fontFamily.sans');
+    text-wrap: initial;
+  }
+
   :focus-visible {
     outline: 2px solid theme('colors.gold.600');
     outline-offset: 3px;

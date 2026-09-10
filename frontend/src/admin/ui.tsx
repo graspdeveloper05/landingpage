@@ -31,8 +31,8 @@ export function AdminField({
 
   return (
     <label className="block">
-      <span className="block text-small font-semibold text-navy-900">{label}</span>
-      {hint && <span className="mt-0.5 block text-micro text-slate">{hint}</span>}
+      <span className="block text-[0.78rem] font-semibold text-navy-900">{label}</span>
+      {hint && <span className="mt-0.5 block text-[0.7rem] leading-snug text-slate">{hint}</span>}
       <Tag
         // A textarea has no type attribute; passing one is ignored but noisy.
         {...(multiline ? { rows: 4 } : { type })}
@@ -42,13 +42,13 @@ export function AdminField({
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={error ? true : undefined}
         className={cn(
-          'mt-1.5 block w-full rounded-sm border bg-white px-3 py-2 text-body text-navy-950',
-          'focus:outline-none focus:ring-2 focus:ring-gold-500/40',
-          'disabled:cursor-not-allowed disabled:bg-cream-deep disabled:text-slate',
-          error ? 'border-red-500' : 'border-hair focus:border-gold-500',
+          'mt-1 block w-full rounded-sm border bg-white px-2.5 py-1.5 text-[0.85rem] text-navy-950',
+          'focus:outline-none focus:ring-2 focus:ring-gold-500/35',
+          'disabled:cursor-not-allowed disabled:bg-[#F1F1EF] disabled:text-slate',
+          error ? 'border-red-400' : 'border-[#DDDCD8] focus:border-gold-500',
         )}
       />
-      {error && <span className="mt-1 block text-micro text-red-600">{error}</span>}
+      {error && <span className="mt-1 block text-[0.7rem] text-red-600">{error}</span>}
     </label>
   )
 }
@@ -86,9 +86,9 @@ export function LocalizedFieldset({
   const [active, setActive] = useState<Locale>('en')
 
   return (
-    <fieldset className="rounded-sm border border-hair bg-cream-deep/40 p-3">
-      <legend className="px-1 text-small font-semibold text-navy-900">{label}</legend>
-      {hint && <p className="mb-2 text-micro text-slate">{hint}</p>}
+    <fieldset className="rounded-sm border border-[#DDDCD8] bg-[#FAFAF8] p-3">
+      <legend className="px-1 text-[0.78rem] font-semibold text-navy-900">{label}</legend>
+      {hint && <p className="mb-2 text-[0.7rem] text-slate">{hint}</p>}
 
       <div role="tablist" className="mb-3 flex flex-wrap gap-1">
         {LOCALE_TABS.map(({ code, label: name }) => {
@@ -102,10 +102,10 @@ export function LocalizedFieldset({
               aria-selected={active === code}
               onClick={() => setActive(code)}
               className={cn(
-                'rounded-sm px-2.5 py-1 text-micro font-semibold transition-colors',
+                'rounded-sm border px-2 py-1 text-[0.7rem] font-semibold transition-colors',
                 active === code
-                  ? 'bg-navy-900 text-cream'
-                  : 'bg-white text-navy-800 hover:bg-cream',
+                  ? 'border-navy-900 bg-navy-900 text-cream'
+                  : 'border-[#DDDCD8] bg-white text-navy-800 hover:border-gold-500',
               )}
             >
               {name}
@@ -154,9 +154,9 @@ export function AdminButton({
   className?: string
 }) {
   const styles = {
-    primary: 'bg-gold-500 text-navy-950 hover:bg-gold-400',
-    quiet: 'border border-hair bg-white text-navy-900 hover:border-gold-500',
-    danger: 'border border-red-300 bg-white text-red-700 hover:bg-red-50',
+    primary: 'bg-navy-900 text-cream hover:bg-navy-800',
+    quiet: 'border border-[#DDDCD8] bg-white text-navy-900 hover:border-navy-600',
+    danger: 'border border-red-200 bg-white text-red-700 hover:border-red-400 hover:bg-red-50',
   }[variant]
 
   return (
@@ -165,9 +165,9 @@ export function AdminButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'inline-flex min-h-[40px] items-center justify-center gap-2 rounded-sm px-4',
-        'text-small font-semibold uppercase tracking-[0.08em] transition-colors',
-        'disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex min-h-[34px] items-center justify-center gap-1.5 rounded-sm px-3',
+        'text-[0.78rem] font-semibold transition-colors',
+        'disabled:cursor-not-allowed disabled:opacity-45',
         styles,
         className,
       )}
@@ -182,10 +182,10 @@ export function Notice({ kind, children }: { kind: 'error' | 'success'; children
     <p
       role={kind === 'error' ? 'alert' : 'status'}
       className={cn(
-        'rounded-sm border-l-2 px-3 py-2 text-small',
+        'rounded-sm border-l-2 px-3 py-1.5 text-[0.78rem]',
         kind === 'error'
           ? 'border-red-500 bg-red-50 text-red-800'
-          : 'border-gold-500 bg-cream-deep text-navy-900',
+          : 'border-green-600 bg-green-50 text-green-900',
       )}
     >
       {children}
@@ -195,7 +195,7 @@ export function Notice({ kind, children }: { kind: 'error' | 'success'; children
 
 export function AdminCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-sm border border-hair bg-white p-4 shadow-card', className)}>
+    <div className={cn('rounded-sm border border-[#DDDCD8] bg-white p-4', className)}>
       {children}
     </div>
   )

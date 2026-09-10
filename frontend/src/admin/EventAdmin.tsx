@@ -107,14 +107,10 @@ export function EventAdmin() {
   return (
     <form onSubmit={save}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-h3 font-semibold text-navy-900">
-            Event details{edition ? ` — ${edition}` : ''}
-          </h1>
-          <p className="mt-1 text-small text-slate">
-            Shown in the hero, the event information section and the confirmation email.
-          </p>
-        </div>
+        <p className="text-[0.78rem] text-slate">
+          Edition {edition ?? '—'} · shown in the hero, the event information section and the
+          confirmation email.
+        </p>
         <AdminButton type="submit" disabled={busy}>
           {busy ? 'Saving…' : 'Save'}
         </AdminButton>
@@ -136,7 +132,7 @@ export function EventAdmin() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <AdminCard className="space-y-4">
-          <p className="text-small font-semibold uppercase tracking-[0.1em] text-slate">When</p>
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">When</p>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <AdminField
@@ -182,7 +178,7 @@ export function EventAdmin() {
 
         <div className="space-y-5">
           <AdminCard className="space-y-4">
-            <p className="text-small font-semibold uppercase tracking-[0.1em] text-slate">Where</p>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">Where</p>
 
             <AdminField
               label="Venue"
@@ -213,7 +209,7 @@ export function EventAdmin() {
           </AdminCard>
 
           <AdminCard className="space-y-3">
-            <p className="text-small font-semibold uppercase tracking-[0.1em] text-slate">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
               Capacity
             </p>
             <AdminField
