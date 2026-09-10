@@ -1,5 +1,4 @@
 import { useI18n } from '@/i18n'
-import { moderators, panelSpeakers } from '@/data'
 import { Hero } from '@/components/home/Hero'
 import { Pillars } from '@/components/home/Pillars'
 import { AboutSection } from '@/components/home/AboutSection'
@@ -13,6 +12,7 @@ import { DevicesSection } from '@/components/home/DevicesSection'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { ButtonLink } from '@/components/ui/Button'
 import type { EventStatus } from '@/services/api'
+import { usePanelAndModerators } from '@/lib/useContent'
 
 /**
  * §6 — the homepage carries the whole story in the order the brief sets out,
@@ -20,6 +20,7 @@ import type { EventStatus } from '@/services/api'
  */
 export function Home({ status, refresh }: { status: EventStatus | null; refresh: () => void }) {
   const { t } = useI18n()
+  const { panelSpeakers, moderators } = usePanelAndModerators()
 
   return (
     <>

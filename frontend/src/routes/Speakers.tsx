@@ -1,12 +1,13 @@
 import { useI18n } from '@/i18n'
-import { moderators, panelSpeakers } from '@/data'
 import { PageHero } from '@/components/layout/PageHero'
 import { SpeakerGrid } from '@/components/home/SpeakerGrid'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { ButtonLink } from '@/components/ui/Button'
+import { usePanelAndModerators } from '@/lib/useContent'
 
 export function Speakers() {
   const { t } = useI18n()
+  const { panelSpeakers, moderators } = usePanelAndModerators()
 
   return (
     <>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\PortraitController;
 use App\Http\Controllers\Api\Admin\ProgrammeAdminController;
+use App\Http\Controllers\Api\Admin\RegistrationAdminController;
 use App\Http\Controllers\Api\Admin\RegistrationExportController;
 use App\Http\Controllers\Api\Admin\SessionController;
 use App\Http\Controllers\Api\Admin\SpeakerAdminController;
@@ -69,6 +70,10 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::delete('/programme/{programme_item}', [ProgrammeAdminController::class, 'destroy']);
 
     Route::post('/portraits', [PortraitController::class, 'store']);
+
+    // §9's "participant list", paginated for the panel. The CSV download
+    // below is the same data in the form the organising team files it in.
+    Route::get('/registrations/list', [RegistrationAdminController::class, 'index']);
 });
 
 /*

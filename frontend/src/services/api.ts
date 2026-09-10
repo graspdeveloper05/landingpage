@@ -36,6 +36,15 @@ const USE_API = RAW !== undefined && RAW !== ''
 // hosts answer with a redirect that drops the POST body. "/" strips to "",
 // which is exactly the relative-path base same origin needs.
 const BASE = USE_API ? RAW!.replace(/\/+$/, '') : ''
+
+/**
+ * Re-exported for the admin panel, which talks to the same host. Sharing the
+ * constants rather than re-reading the env var keeps one answer to "where is
+ * the API" -- two copies drift the moment one of them gains a trailing-slash
+ * fix the other does not.
+ */
+export const API_BASE = BASE
+export const API_CONFIGURED = USE_API
 const STORAGE_KEY = 'snd.registrations'
 
 export class RegistrationError extends Error {
@@ -126,24 +135,36 @@ export async function getEvent(): Promise<EventStatus> {
 }
 
 /*
- * Speakers and the programme deliberately stay on the local data files even
- * when the API is connected.
+ * Speakers and the programme come from the API once it is configured, because
+ * the organising team edits them there (§7, §8) and a bundled copy would show
+ * yesterday's line-up until the next deploy.
  *
- * They are content, not state: HANDOVER.md tells the organising team to edit
- * src/data/editions/2026/, and the API would make a second source of truth
- * that has to be kept in step by hand. Serving them locally also means the
- * grid and the timeline still render if the API is down, and costs two fewer
- * round-trips on the page that matters most.
- *
- * The endpoints exist in Laravel and are documented, so this can be reversed
- * in one commit if the team ever wants to edit speakers from the server.
+ * Both fall back to the data files if the request fails. A speaker grid is not
+ * worth a blank page: the bundled copy is stale but recognisable, where an
+ * error state tells a visitor the site is broken. The RSVP form deliberately
+ * does NOT do this -- a registration that silently goes nowhere is worse than
+ * an error, so createRegistration lets its failure through.
  */
+async function fetchOrFallback<T>(path: string, fallback: T): Promise<T> {
+  if (!USE_API) return fallback
+  try {
+    const res = await fetch(`${BASE}${path}`)
+    if (!res.ok) return fallback
+    const data = (await res.json()) as T
+    // An empty list usually means a half-seeded database rather than an event
+    // with no speakers, and the bundled copy is the better answer either way.
+    return Array.isArray(data) && data.length === 0 ? fallback : data
+  } catch {
+    return fallback
+  }
+}
+
 export async function getSpeakers(): Promise<Speaker[]> {
-  return speakers
+  return fetchOrFallback('/api/speakers', speakers)
 }
 
 export async function getProgramme(): Promise<ProgrammeItem[]> {
-  return programme
+  return fetchOrFallback('/api/programme', programme)
 }
 
 /* -------------------------------------------------------------------------- */

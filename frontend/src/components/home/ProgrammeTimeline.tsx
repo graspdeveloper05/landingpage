@@ -1,7 +1,7 @@
-import { programme } from '@/data'
 import { useI18n, useLocalized } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { useDrawLine, usePassedNodes } from '@/lib/animation'
+import { useProgramme } from '@/lib/useContent'
 import { formatTime } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
@@ -9,6 +9,7 @@ import { cn } from '@/lib/cn'
 export function ProgrammeTimeline() {
   const { locale, t } = useI18n()
   const L = useLocalized()
+  const programme = useProgramme()
   const { containerRef, lineRef } = useDrawLine<HTMLDivElement>()
   const { setNode, passed } = usePassedNodes(programme.length)
 
