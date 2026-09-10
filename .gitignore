@@ -14,6 +14,25 @@ backend/.env.production
 backend/public/build
 backend/public/hot
 backend/public/storage
+
+# The React build is published INTO backend/public on the server, where
+# Laravel serves it. These are build output, never source.
+#
+# They must be IGNORED, not merely untracked: deploy.sh runs
+# `git stash --include-untracked` before it builds, which would sweep the
+# currently-published site into a stash and drop it -- taking the live site
+# down for the length of the build, and permanently if the build then failed.
+# Ignored files are left alone by that stash.
+backend/public/index.html
+backend/public/assets/
+backend/public/hero/
+backend/public/scenes/
+backend/public/brand/
+backend/public/portraits/
+backend/public/favicon.svg
+backend/public/og-image.jpg
+backend/public/sitemap.xml
+backend/public/robots.txt
 backend/storage/*.key
 backend/storage/logs/*.log
 backend/storage/framework/cache/*

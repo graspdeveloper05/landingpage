@@ -13,21 +13,28 @@ cPanel only creates a named folder for **addon** and **subdomains**. The
 
 ## Target layout
 
+One domain serves everything. `public_html` is a **symlink** into the Laravel
+application, which itself stays outside any document root.
+
 ```
 /home/serinegaradialog/
-├── public_html/              ← serinegaradialogue.org  (FRONTEND)
-│   ├── index.html
-│   ├── .htaccess
-│   ├── assets/
-│   ├── hero/  portraits/  scenes/
-│   ├── crest-gold.svg  crest-navy.svg  favicon.svg  og-image.svg
-│   └── robots.txt  sitemap.xml
+├── public_html  ──▶ landingpage/backend/public      (a symlink, not a folder)
 │
-└── api/                      ← BACKEND, deliberately OUTSIDE public_html
-    ├── app/  config/  routes/  vendor/  storage/  database/
-    ├── .env                  ← never web-reachable from here
-    └── public/               ← docroot for api.serinegaradialogue.org
+└── landingpage/                    ← the git checkout, NOT web-reachable
+    ├── frontend/                   React source; dist/ is built here
+    ├── deploy.sh
+    └── backend/                    ← Laravel
+        ├── app/  config/  routes/  vendor/  storage/  database/
+        ├── .env                    ← DB password, mail password, admin token
+        └── public/                 ← THE ONLY web-reachable directory
+            ├── index.php           Laravel front controller
+            ├── index.html          the React build   ┐ copied here
+            ├── assets/             hashed chunks     │ by deploy.sh
+            └── hero/ scenes/ brand/ portraits/       ┘
 ```
+
+Nothing above `backend/public` can be requested over the web. That is what
+keeps `.env` and `.git` from being downloadable.
 
 ## 1 — Frontend
 
@@ -92,9 +99,14 @@ that the domain is at risk. Every visitor gets a full-page browser warning, and
 cPanel → **SSL/TLS Status** → tick the domain → **Run AutoSSL**. It issues a
 free Let's Encrypt certificate, usually within a few minutes.
 
-Once it is valid and `https://serinegaradialogue.org` loads clean, uncomment
-the two `RewriteCond`/`RewriteRule` HTTPS lines at the top of `.htaccess`.
+Once it is valid and `https://serinegaradialogue.org` loads clean, force HTTPS.
 Doing it before the certificate is valid sends everyone into the warning.
+
+In the default `SPA_MODE=laravel` the served `.htaccess` is Laravel's own
+(`backend/public/.htaccess`), which is tracked in git — so use cPanel's
+**Domains → Force HTTPS Redirect** toggle rather than editing it, and the
+setting survives every deploy. `deploy/spa.htaccess`, with its commented-out
+HTTPS block, is only used in `SPA_MODE=static`.
 
 ## 3 — Backend
 
@@ -102,24 +114,26 @@ The Laravel app must **not** sit in `public_html`. Everything above `public/` �
 `.env`, the database credentials, the whole application — would be
 downloadable over the web.
 
-1. cPanel → **Domains** → *Create A New Domain* → `api.serinegaradialogue.org`,
-   and untick "share document root". Set the document root to
-   `/home/serinegaradialog/api/public`.
-2. Upload the backend to `/home/serinegaradialog/api/` (everything except
-   `vendor/`, `node_modules/`, `.env`, `database/*.sqlite`).
+No subdomain is needed: one domain serves the site and the API, and
+`deploy.sh` points `public_html` at `backend/public` for you. See §4.
+
+1. Nothing to create in cPanel — `deploy.sh` handles the document root.
+2. The backend arrives with the git checkout; there is nothing to upload.
 3. cPanel → **MultiPHP Manager** → set that domain to **PHP 8.2 or newer**.
    Laravel 12 will not boot on anything older.
-4. Terminal (or SSH):
+4. **Create `.env`.** `deploy.sh` runs composer, migrations, the caches and
+   the permissions itself, so the only thing it cannot do for you is write
+   the file that holds your credentials:
 
 ```bash
-cd ~/api
-composer install --no-dev --optimize-autoloader
+cd ~/landingpage/backend
 cp .env.example .env
-php artisan key:generate
-php artisan migrate --force
-php artisan config:cache && php artisan route:cache
-chmod -R 775 storage bootstrap/cache
+/opt/cpanel/ea-php82/root/usr/bin/php artisan key:generate
 ```
+
+   Fill in the database and mail settings below, then run `bash deploy.sh`
+   from the repo root. It backs this file up and restores it around every git
+   reset, so it survives deploys.
 
 5. **Database.** cPanel → *MySQL Databases* → create a database and user, grant
    all privileges, then in `.env`:
@@ -157,83 +171,109 @@ php artisan dialogue:token     # paste the result into .env
 php artisan config:clear
 ```
 
-8. Run AutoSSL for the API subdomain too.
+8. No separate certificate is needed — the API is on the same domain, so
+   the site's own AutoSSL certificate covers it (§2).
 
-## 4 — Connecting the two
+## 4 — One domain, front and back
 
-**Done in the code.** `frontend/.env.production` holds
-`VITE_API_BASE_URL=https://api.serinegaradialogue.org`, so every
-`npm run build` — and therefore every `deploy.sh` run — produces a bundle that
-talks to the API. `backend/config/cors.php` already allows the site's origin.
+The site and the API share a single domain. There is **no API subdomain**.
 
-Verified end to end on 10 September 2026 against the real Laravel app: a
-browser form submission stored a row and returned `SND26-0001`, a duplicate
-email came back 422 and surfaced inline on the email field, and the CSV export
-returned the row.
-
-What is left is server-side only. Until these steps are done the live form
-posts to a hostname that does not resolve, so **do not deploy the frontend
-before the API answers**:
-
-1. **Create the subdomain.** cPanel → *Domains* → Create A Domain →
-   `api.serinegaradialogue.org`, document root `~/api` — cPanel will offer
-   `public_html/api`, which is wrong; type the path yourself.
-
-2. **Point it at Laravel's front controller, not the app.** `deploy.sh` does
-   this for you once you tell it where:
-
-```bash
-# ~/seri-negara-deploy.env  (outside git, per-server)
-SPA_DOC_ROOT="$HOME/public_html"
-API_DOC_ROOT="$HOME/api"
+```
+public_html  ──symlink──▶  landingpage/backend/public
+                              ├── index.php      Laravel front controller
+                              ├── index.html     the React build
+                              └── assets/…       hashed chunks
 ```
 
-   It replaces `~/api` with a symlink to `backend/public`. The Laravel app
-   itself stays in `~/landingpage/backend`, outside any document root — which
-   is the whole point. If `.env` and `.git` sit under a document root they are
-   downloadable by anyone who guesses the URL, and that `.env` holds the
-   database password, the mail password and the admin token.
+| Request | Served by |
+|---|---|
+| `/` and `/assets/*` | Apache, straight off disk |
+| `/speakers`, `/rsvp`, any client route | Laravel → `SpaController` → `index.html` |
+| `/api/*` | Laravel |
 
-3. **Set PHP 8.2** for the subdomain in MultiPHP Manager.
+Because it is one origin, the frontend calls `/api/event` as a **relative
+path**. `frontend/.env.production` holds `VITE_API_BASE_URL=/`. So there is no
+CORS to configure, no second certificate, and no subdomain to create.
 
-4. **Create `backend/.env`** on the server from `.env.example` — see §3 above
-   for the database, mail and token settings. `deploy.sh` backs this file up
-   and restores it around every git reset, so it survives deploys.
+Verified end to end on 10 September 2026 against the real Laravel app: `/` and
+`/speakers` both returned the SPA, `/api/event` returned JSON, `/api/nope`
+returned a JSON 404 rather than the website, and a registration submitted in
+the browser stored a row and returned `SND26-0001`.
 
-5. **Run the backend stage.** It turns itself on as soon as `backend/.env`
-   exists; force it with `DEPLOY_BACKEND=1 bash deploy.sh`. It runs composer,
-   migrations and the config/route caches.
+### What `deploy.sh` does
 
-6. **Run AutoSSL** for the subdomain. The frontend calls `https://`, so
-   without a certificate every request fails in the browser with a TLS error
-   and no useful message.
+`SPA_MODE=laravel` is the default. In one run:
 
-7. **Prove it before trusting it:**
+1. Builds the frontend into `frontend/dist`
+2. Runs composer, migrations and the Laravel caches
+3. Copies `dist/` **into `backend/public/`**
+4. Replaces `public_html` with a **symlink** to `backend/public`
+
+Step 4 moves an existing `public_html` directory aside to
+`public_html.replaced-<timestamp>` rather than deleting it.
+
+Laravel's own `public/.htaccess` is left in place. It already forwards
+anything that is not a real file to `index.php`, which is exactly the SPA
+fallback — `deploy/spa.htaccess` is **not** copied over it in this mode, since
+that would delete the front controller rule and take the API down.
+
+### Server setup, once
+
+1. **`backend/.env`** — create it from `.env.example` (see §3 for database,
+   mail and token settings). In this mode Laravel serves the website, so
+   without it the whole site is down, not just the API. `deploy.sh` refuses to
+   deploy rather than publishing a build behind an application that cannot
+   boot.
+
+2. **`~/seri-negara-deploy.env`**:
 
 ```bash
-curl https://api.serinegaradialogue.org/api/event
-curl -H "Authorization: Bearer $ADMIN_API_TOKEN"      https://api.serinegaradialogue.org/api/admin/registrations
+SPA_DOC_ROOT="$HOME/public_html"
+```
+
+3. **PHP 8.2** for the domain in MultiPHP Manager.
+
+4. **`bash deploy.sh`** — both halves, one command.
+
+5. **Check it:**
+
+```bash
+curl -I https://serinegaradialogue.org/speakers      # 200, text/html
+curl https://serinegaradialogue.org/api/event        # JSON
 ```
 
    Then submit one real registration through the live form and confirm it
    appears in the export and that the confirmation email arrives.
 
-Until step 7 passes, the RSVP form is not collecting anything.
+### Why the app sits outside the document root
+
+Only `backend/public` is reachable from the web. The application itself —
+`backend/.env` with the database password, mail password and admin token, and
+`.git` with the whole history — stays above it. Put the app inside
+`public_html` and both are downloadable by anyone who guesses the URL.
+
+### If you ever want the frontend without PHP
+
+```bash
+SPA_MODE=static bash deploy.sh
+```
+
+Copies the build into `public_html` with `deploy/spa.htaccess` and skips
+Laravel entirely. The RSVP form then has no API to post to.
 
 ## Checklist
 
-- [ ] `dist/` **contents** in `public_html`, not the folder
-- [ ] Default `index.php` deleted
-- [ ] `.htaccess` present (check hidden files) — test by refreshing `/speakers`
+- [ ] `SPA_DOC_ROOT` set in `~/seri-negara-deploy.env`
+- [ ] `public_html` is a **symlink** to `backend/public` (`ls -l ~/public_html`)
+- [ ] Laravel app itself outside the document root
+- [ ] `/speakers` survives a refresh — proves the SPA fallback works
+- [ ] `/api/nope` returns JSON 404, not the website
 - [ ] AutoSSL run; HTTPS redirect uncommented afterwards
-- [ ] `api.serinegaradialogue.org` created, docroot `~/api`
-- [ ] Laravel app outside `public_html`; `~/api` symlinked to `backend/public`
-- [ ] `API_DOC_ROOT` set in `~/seri-negara-deploy.env`
-- [ ] PHP 8.2+ selected for the API domain
+- [ ] PHP 8.2+ selected for the domain
 - [ ] MySQL database created, migrations run
 - [ ] SMTP configured, SPF/DKIM set, a test confirmation received
 - [ ] `ADMIN_API_TOKEN` set; export tested with `Authorization: Bearer`
-- [ ] `curl https://api.serinegaradialogue.org/api/event` answers before the frontend is deployed
+- [ ] `curl https://serinegaradialogue.org/api/event` returns JSON
 - [ ] One real registration submitted through the live form and found in the export
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] Placeholder content replaced — `npm run check:placeholders` must pass

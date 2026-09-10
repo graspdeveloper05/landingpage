@@ -33,3 +33,10 @@ Route::post('/registrations', [RegistrationController::class, 'store'])
 Route::middleware(EnsureAdminToken::class)->prefix('admin')->group(function () {
     Route::get('/registrations', RegistrationExportController::class);
 });
+
+/*
+| An unknown /api/* path must answer as an API, not as the website. Without
+| this the web catch-all would return index.html with a 200, and a mistyped
+| endpoint would look to the caller like a successful request returning HTML.
+*/
+Route::fallback(fn () => response()->json(['message' => 'Not found.'], 404));

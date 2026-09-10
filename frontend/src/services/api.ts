@@ -16,10 +16,26 @@ import type {
  * over — no component changes. See docs/API-CONTRACT.md for the endpoints.
  */
 
+/*
+ * Where the API lives.
+ *
+ * "/" means same origin -- Laravel serves both the built SPA and /api/* from
+ * one domain, so the requests are plain relative paths and there is no CORS.
+ * An absolute origin is also accepted, for the case where the API is ever
+ * split onto its own host.
+ *
+ * The two constants exist separately because same origin resolves to an empty
+ * base, and an empty string is falsy: a single `if (BASE)` check would read
+ * "same origin" as "not configured" and quietly fall back to localStorage --
+ * the form would look like it worked while nothing was ever sent.
+ */
+const RAW = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim()
+const USE_API = RAW !== undefined && RAW !== ''
 // Trailing slashes are stripped so `https://host/` and `https://host` both
 // produce `https://host/api/event` rather than a double slash, which some
-// hosts answer with a redirect that drops the POST body.
-const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/+$/, '')
+// hosts answer with a redirect that drops the POST body. "/" strips to "",
+// which is exactly the relative-path base same origin needs.
+const BASE = USE_API ? RAW!.replace(/\/+$/, '') : ''
 const STORAGE_KEY = 'snd.registrations'
 
 export class RegistrationError extends Error {
@@ -89,7 +105,7 @@ export interface EventStatus extends EventDetails {
 }
 
 export async function getEvent(): Promise<EventStatus> {
-  if (BASE) {
+  if (USE_API) {
     const res = await fetch(`${BASE}/api/event`)
     if (!res.ok) throw new RegistrationError('Could not load event details', 'network')
     const data = (await res.json()) as EventDetails & { registered: number }
@@ -135,7 +151,7 @@ export async function getProgramme(): Promise<ProgrammeItem[]> {
 /* -------------------------------------------------------------------------- */
 
 export async function createRegistration(input: Registration): Promise<RegistrationRecord> {
-  if (BASE) {
+  if (USE_API) {
     const res = await fetch(`${BASE}/api/registrations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -200,13 +216,13 @@ export function toCsv(records: RegistrationRecord[]) {
 }
 
 export async function exportRegistrations(): Promise<string> {
-  if (BASE) {
+  if (USE_API) {
     // The admin token is deliberately NOT shipped in the bundle -- every
     // VITE_ variable is compiled into public JavaScript, so putting it here
     // would publish the attendee list to anyone who opens devtools. This
     // branch therefore fails with 401 against the live API by design; the
     // real export runs from a terminal:
-    //   curl -H "Authorization: Bearer $ADMIN_API_TOKEN"     //        https://api.serinegaradialogue.org/api/admin/registrations
+    //   curl -H "Authorization: Bearer $ADMIN_API_TOKEN"     //        https://serinegaradialogue.org/api/admin/registrations
     const res = await fetch(`${BASE}/api/admin/registrations`, { headers: { Accept: 'text/csv' } })
     if (!res.ok) throw new RegistrationError('Could not export registrations', 'network')
     return res.text()

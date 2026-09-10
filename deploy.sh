@@ -38,19 +38,32 @@ BACKEND_DIR="backend"
 # and production without edits. Create ~/seri-negara-deploy.env on the server:
 #
 #     SPA_DOC_ROOT="$HOME/public_html"
-#     API_DOC_ROOT="$HOME/api.example.com"     # blank = do not publish the API
 #
 DEPLOY_ENV_FILE="${DEPLOY_ENV_FILE:-$HOME/seri-negara-deploy.env}"
 # shellcheck source=/dev/null
 [ -f "$DEPLOY_ENV_FILE" ] && . "$DEPLOY_ENV_FILE"
 
-# Where the built SPA is published. On cPanel the primary domain serves
-# ~/public_html; an addon domain or subdomain has its own directory.
+# The document root of the live domain. On cPanel the primary domain serves
+# ~/public_html; an addon domain has its own directory.
 SPA_DOC_ROOT="${SPA_DOC_ROOT:-$HOME/public_html}"
 
-# Document root for the API subdomain, pointed at backend/public. Leave empty
-# to skip publishing it — useful while only the SPA is going live.
-API_DOC_ROOT="${API_DOC_ROOT:-}"
+# ── One domain, one document root ─────────────────────────────────────────
+# The built SPA is published INTO backend/public, and the document root is a
+# symlink to that directory. So one domain serves both:
+#
+#     https://site/            index.html      (Apache, straight off disk)
+#     https://site/assets/*    hashed chunks   (Apache, straight off disk)
+#     https://site/speakers    index.html      (Laravel SpaController)
+#     https://site/api/*       JSON            (Laravel)
+#
+# That means no API subdomain, no second certificate, and no CORS at all --
+# the frontend calls /api/event as a relative path.
+#
+# SPA_MODE=laravel is that arrangement. SPA_MODE=static is the old one: copy
+# the build into the document root and serve it with deploy/spa.htaccess, no
+# PHP involved. Static still works and is the right choice if the backend is
+# ever retired, but the API cannot be reached from the same domain in it.
+SPA_MODE="${SPA_MODE:-laravel}"
 
 # Phase 1 puts only the SPA in front of visitors — the frontend does not call
 # the API yet. So the backend stage (composer, migrations, caches) is opt-in:
@@ -288,6 +301,31 @@ if [ "$DEPLOY_BACKEND" = "auto" ]; then
     fi
 fi
 
+if [ "$DEPLOY_BACKEND" != "1" ] && [ "$SPA_MODE" = "laravel" ]; then
+    # In laravel mode the backend is not optional: it serves the website, not
+    # just the API. Publishing the build without it leaves the domain pointing
+    # at an application that cannot boot -- a 500 on every page, including the
+    # ones that worked before. Refuse instead, and leave the site untouched.
+    echo ""
+    echo "❌ SPA_MODE=laravel needs the backend, and it is not being deployed."
+    if [ ! -f "$BACKEND_DIR/.env" ]; then
+        echo "   There is no $BACKEND_DIR/.env on this server. Laravel cannot boot"
+        echo "   without one, and in this mode that means the whole site is down."
+        echo ""
+        echo "   Create it from $BACKEND_DIR/.env.example — APP_KEY, database and"
+        echo "   mail settings — then run this again."
+    else
+        echo "   DEPLOY_BACKEND=$DEPLOY_BACKEND was set explicitly."
+    fi
+    echo ""
+    echo "   To publish the frontend alone, without PHP:"
+    echo "     SPA_MODE=static bash deploy.sh"
+    echo "   The RSVP form then has no API to post to."
+    echo ""
+    echo "   Deploy aborted — nothing was changed, the site is untouched."
+    exit 1
+fi
+
 if [ "$DEPLOY_BACKEND" != "1" ]; then
     if [ -f "$BACKEND_DIR/.env" ]; then
         echo "⏭️ Skipping the backend — DEPLOY_BACKEND=$DEPLOY_BACKEND."
@@ -361,40 +399,57 @@ $PHP_BIN artisan view:cache
 cd ..
 fi
 
-# ── Publish the SPA into its cPanel document root ─────────────────────────
+# ── Publish ───────────────────────────────────────────────────────────────
 # Copy-then-prune, never wipe-then-copy: if this step dies halfway, the old
 # index.html and its assets are still on disk and the site keeps serving.
-echo "📤 Publishing SPA to $SPA_DOC_ROOT..."
-if [ ! -d "$SPA_DOC_ROOT" ]; then
-    echo "❌ $SPA_DOC_ROOT does not exist. Create the domain in cPanel first,"
-    echo "   or set SPA_DOC_ROOT in $DEPLOY_ENV_FILE."
-    exit 1
+if [ "$SPA_MODE" = "laravel" ]; then
+    PUBLISH_DIR="$BACKEND_DIR/public"
+    echo "📤 Publishing SPA into $PUBLISH_DIR (Laravel serves it)..."
+else
+    PUBLISH_DIR="$SPA_DOC_ROOT"
+    echo "📤 Publishing SPA to $SPA_DOC_ROOT (static)..."
+    if [ ! -d "$SPA_DOC_ROOT" ]; then
+        echo "❌ $SPA_DOC_ROOT does not exist. Create the domain in cPanel first,"
+        echo "   or set SPA_DOC_ROOT in $DEPLOY_ENV_FILE."
+        exit 1
+    fi
 fi
 
-mkdir -p "$SPA_DOC_ROOT/assets"
-cp -r "$FRONTEND_DIR/dist/." "$SPA_DOC_ROOT/" || {
-    echo "❌ Could not copy the build into $SPA_DOC_ROOT — deploy aborted."
+mkdir -p "$PUBLISH_DIR/assets"
+cp -r "$FRONTEND_DIR/dist/." "$PUBLISH_DIR/" || {
+    echo "❌ Could not copy the build into $PUBLISH_DIR — deploy aborted."
     exit 1
 }
-cp deploy/spa.htaccess "$SPA_DOC_ROOT/.htaccess"
+
+if [ "$SPA_MODE" = "laravel" ]; then
+    # Laravel's own public/.htaccess stays. It already forwards anything that
+    # is not a real file to index.php, which is exactly the SPA fallback --
+    # copying deploy/spa.htaccess over it would delete the front controller
+    # rule and take the API down with it.
+    echo "  ✅ Build published; Laravel's public/.htaccess left in place"
+else
+    cp deploy/spa.htaccess "$PUBLISH_DIR/.htaccess"
+    echo "  ✅ SPA published with deploy/spa.htaccess"
+fi
 
 # cPanel drops a placeholder index.php into a new document root, and Apache's
 # DirectoryIndex prefers .php over .html -- so the site serves "welcome
 # <domain>" while index.html sits right beside it, published and unreachable.
 # Renamed rather than deleted, and only when it is small enough to be the stub;
 # anything larger is somebody's real file and is left alone with a warning.
-if [ -f "$SPA_DOC_ROOT/index.php" ]; then
-    PHP_SIZE=$(wc -c < "$SPA_DOC_ROOT/index.php" 2>/dev/null || echo 0)
+#
+# Skipped in laravel mode: public/index.php there IS Laravel's front
+# controller, and moving it aside would break every route on the site.
+if [ "$SPA_MODE" != "laravel" ] && [ -f "$PUBLISH_DIR/index.php" ]; then
+    PHP_SIZE=$(wc -c < "$PUBLISH_DIR/index.php" 2>/dev/null || echo 0)
     if [ "$PHP_SIZE" -lt 512 ]; then
-        mv "$SPA_DOC_ROOT/index.php" "$SPA_DOC_ROOT/index.php.disabled-$(date +%Y%m%d%H%M%S)"
+        mv "$PUBLISH_DIR/index.php" "$PUBLISH_DIR/index.php.disabled-$(date +%Y%m%d%H%M%S)"
         echo "  ↪️ Moved cPanel's placeholder index.php aside — it was shadowing index.html."
     else
-        echo "  ⚠️ $SPA_DOC_ROOT/index.php is ${PHP_SIZE} bytes and was left in place,"
+        echo "  ⚠️ $PUBLISH_DIR/index.php is ${PHP_SIZE} bytes and was left in place,"
         echo "     but Apache serves it before index.html. Move it if the site looks wrong."
     fi
 fi
-
-echo "  ✅ SPA published"
 
 # Prune superseded hashed assets.
 #
@@ -405,14 +460,14 @@ echo "  ✅ SPA published"
 # and delete the rest, and every lazy route would 404 into the SPA catch-all,
 # come back as text/html, and be refused as a module script — a blank page.
 echo "🗑️ Pruning superseded assets (keeping the last ${PRUNE_KEEP_DAYS} days)..."
-if [ -d "$SPA_DOC_ROOT/assets" ] && [ -d "$FRONTEND_DIR/dist/assets" ]; then
+if [ -d "$PUBLISH_DIR/assets" ] && [ -d "$FRONTEND_DIR/dist/assets" ]; then
     KEEP=" $(cd "$FRONTEND_DIR/dist/assets" && ls -1 2>/dev/null | tr '
 ' ' ')"
     if [ -z "${KEEP// }" ]; then
         echo "  ⚠️ This build produced no assets — skipping prune rather than emptying the directory."
     else
         KEPT=0; REMOVED=0
-        for f in "$SPA_DOC_ROOT"/assets/*; do
+        for f in "$PUBLISH_DIR"/assets/*; do
             [ -f "$f" ] || continue
             base=$(basename "$f")
             case "$KEEP " in
@@ -432,28 +487,40 @@ else
     echo "  ⚠️ No assets directory — skipping prune."
 fi
 
-# ── Point the API document root at Laravel's public/ ──────────────────────
+# ── Point the document root at Laravel's public/ ──────────────────────────
 # A symlink, so Laravel's own public/.htaccess and index.php stay canonical in
-# git rather than being copied and drifting.
-if [ -n "$API_DOC_ROOT" ]; then
-    echo "🔗 Publishing API at $API_DOC_ROOT..."
-    API_TARGET="$(pwd)/$BACKEND_DIR/public"
-    if [ -L "$API_DOC_ROOT" ]; then
-        rm -f "$API_DOC_ROOT"
-    elif [ -d "$API_DOC_ROOT" ]; then
-        # A real directory here is cPanel's auto-created docroot. Move it aside
-        # once rather than deleting anything the account may still want.
-        mv "$API_DOC_ROOT" "$API_DOC_ROOT.replaced-$(date +%Y%m%d%H%M%S)"
-    fi
-    if ln -s "$API_TARGET" "$API_DOC_ROOT"; then
-        echo "  ✅ $API_DOC_ROOT → $API_TARGET"
+# git rather than being copied and drifting -- and so the application itself
+# stays OUTSIDE the document root. That is not tidiness: with the app inside
+# it, backend/.env (database password, mail password, admin token) and .git
+# are both downloadable by anyone who guesses the URL.
+if [ "$SPA_MODE" = "laravel" ]; then
+    echo "🔗 Pointing $SPA_DOC_ROOT at $BACKEND_DIR/public..."
+    DOCROOT_TARGET="$(pwd)/$BACKEND_DIR/public"
+
+    if [ -L "$SPA_DOC_ROOT" ]; then
+        CURRENT=$(readlink "$SPA_DOC_ROOT")
+        if [ "$CURRENT" = "$DOCROOT_TARGET" ]; then
+            echo "  ✅ Already linked"
+        else
+            rm -f "$SPA_DOC_ROOT"
+            ln -s "$DOCROOT_TARGET" "$SPA_DOC_ROOT" && echo "  ✅ Re-linked from $CURRENT"
+        fi
+    elif [ -d "$SPA_DOC_ROOT" ]; then
+        # A real directory: either cPanel's freshly created docroot, or the
+        # previous static deploy. Moved aside, never deleted -- if anything in
+        # there was hand-placed, the account owner still has it.
+        BACKUP="$SPA_DOC_ROOT.replaced-$(date +%Y%m%d%H%M%S)"
+        if mv "$SPA_DOC_ROOT" "$BACKUP" && ln -s "$DOCROOT_TARGET" "$SPA_DOC_ROOT"; then
+            echo "  ✅ $SPA_DOC_ROOT → $DOCROOT_TARGET"
+            echo "     Previous contents kept at $BACKUP"
+        else
+            echo "❌ Could not replace $SPA_DOC_ROOT with a symlink."
+            echo "   Set the domain's document root to $DOCROOT_TARGET in cPanel instead."
+            exit 1
+        fi
     else
-        echo "  ⚠️ Could not symlink. Set the subdomain's document root to:"
-        echo "     $API_TARGET"
+        ln -s "$DOCROOT_TARGET" "$SPA_DOC_ROOT" && echo "  ✅ $SPA_DOC_ROOT → $DOCROOT_TARGET"
     fi
-else
-    echo "ℹ️ API_DOC_ROOT is unset — the API was built but not published."
-    echo "   Set it in $DEPLOY_ENV_FILE once the subdomain exists."
 fi
 
 rm -f /tmp/.sn-backend-env.backup

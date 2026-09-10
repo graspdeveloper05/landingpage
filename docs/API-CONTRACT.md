@@ -5,18 +5,41 @@ The React app talks to exactly one module: `src/services/api.ts`. Set
 component changes are required.
 
 ```
-VITE_API_BASE_URL=https://api.serinegaradialogue.org
+VITE_API_BASE_URL=/
 ```
 
+`/` means **same origin**. The React build is published into
+`backend/public`, the document root points there, and Laravel serves both the
+site and `/api/*` from one domain — so the requests go out as relative paths
+and there is no CORS, no subdomain and no second certificate. An absolute
+origin also works if the API is ever split onto its own host.
+
 This is committed in `frontend/.env.production`, so `npm run build` — and
-therefore `deploy.sh` — always produces a bundle pointed at the live API.
+therefore `deploy.sh` — always produces a bundle pointed at the API.
 `npm run dev` has no `.env`, so local development keeps running against the
 data files without needing PHP.
 
 **Connected as of 10 September 2026.** Verified end to end against the real
-Laravel app: seats read from `/api/event`, a browser form submission stored a
-row and returned `SND26-0001`, a duplicate email came back 422 and appeared
-inline on the email field, and the CSV export returned the row.
+Laravel app, serving the site and the API from one origin: `/` and `/speakers`
+returned the SPA, `/api/event` returned JSON, `/api/nope` returned a JSON 404
+rather than the website, a browser form submission stored a row and returned
+`SND26-0001`, a duplicate email came back 422 and appeared inline on the email
+field, and the CSV export returned the row.
+
+## Routing
+
+Laravel owns every URL that is not a file on disk:
+
+| Path | Handler |
+|---|---|
+| `/api/*` | `routes/api.php` |
+| unknown `/api/*` | JSON `404` — never the website |
+| everything else | `SpaController` returns `public/index.html` |
+
+The web catch-all excludes `api` explicitly. Fallback routes register last
+whatever file they live in, so a catch-all matching `.*` would otherwise claim
+`/api/anything` before the API's own fallback saw it, and a mistyped endpoint
+would answer `200` with HTML.
 
 ## What stays local on purpose
 
@@ -30,11 +53,13 @@ edit speakers from the server.
 
 ## Origins
 
-The SPA is on the apex domain and the API on its own subdomain, so every call
-is cross-origin. `backend/config/cors.php` allows the two production hostnames
-and nothing else — Laravel's default of `*` is wrong here, because
-`/api/admin/registrations` returns every attendee's name, email and mobile.
-Add extra origins with `CORS_ALLOWED_ORIGINS` in `backend/.env`.
+Same origin, so CORS does not apply to the live site at all.
+`backend/config/cors.php` is kept for the case where a build is pointed at
+this API from somewhere else — a staging host, or a local `npm run dev`. It
+allows the two production hostnames and nothing else; Laravel's default of
+`*` is wrong here, because `/api/admin/registrations` returns every attendee's
+name, email and mobile. Add origins with `CORS_ALLOWED_ORIGINS` in
+`backend/.env`.
 
 ## GET /api/event
 
@@ -110,7 +135,7 @@ Authenticated with a **bearer token**, compared in constant time against
 `ADMIN_API_TOKEN`:
 
 ```bash
-curl -H "Authorization: Bearer $ADMIN_API_TOKEN"      -H "Accept: text/csv"      https://api.serinegaradialogue.org/api/admin/registrations      -o registrations.csv
+curl -H "Authorization: Bearer $ADMIN_API_TOKEN"      -H "Accept: text/csv"      https://serinegaradialogue.org/api/admin/registrations      -o registrations.csv
 ```
 
 Run it from a terminal, not from the site. The token is deliberately absent
