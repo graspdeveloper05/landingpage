@@ -272,6 +272,12 @@ Laravel entirely. The RSVP form then has no API to post to.
 - [ ] PHP 8.2+ selected for the domain
 - [ ] MySQL database created, migrations run
 - [ ] SMTP configured, SPF/DKIM set, a test confirmation received
+- [ ] **Default admin password changed.** The panel ships with
+      `admin@serineg.com` / `admin@123` so a fresh deploy can be signed into,
+      and that pair is in the repository. It opens 200 attendees' names,
+      emails and mobile numbers. Replace it before the site is announced:
+      `php artisan dialogue:admin <real address>` — or set `ADMIN_PASSWORD`
+      in `backend/.env` before the first deploy, and the default is never used
 - [ ] `ADMIN_API_TOKEN` set; export tested with `Authorization: Bearer`
 - [ ] `curl https://serinegaradialogue.org/api/event` returns JSON
 - [ ] One real registration submitted through the live form and found in the export

@@ -126,3 +126,26 @@ before the tag loads. Raise that before agreeing, rather than after.
 `page_views` grows by one row per page opened. At this event's scale that is
 trivial, but it is attendee-adjacent data with no reason to be kept forever —
 clear rows older than a year once the 2026 edition is closed out.
+
+## The admin panel
+
+`/admin` on the live site. The email is the username.
+
+A default login is seeded so a fresh deploy can be opened without running
+anything: **admin@serineg.com / admin@123**. Both are in the repository, and
+signing in returns every registration — names, emails and mobile numbers,
+personal data under the PDPA.
+
+**Change it before the site is announced.** Either set `ADMIN_PASSWORD` in
+`backend/.env` before the first deploy, so the default is never used at all,
+or replace the account afterwards:
+
+```bash
+cd ~/landingpage/backend
+php artisan dialogue:admin real@address.com --name="Their Name"
+php artisan tinker --execute="App\Models\User::where('email','admin@serineg.com')->delete();"
+```
+
+The same `dialogue:admin` command issues a login for anyone else on the
+organising team, and resets a forgotten password — there is no reset email.
+Every account in the table has full access; there are no roles.
