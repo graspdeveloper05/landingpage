@@ -85,6 +85,10 @@ PRUNE_KEEP_DAYS="${PRUNE_KEEP_DAYS:-3}"
 
 # The cPanel PHP. Override for other hosts: PHP_BIN=/usr/bin/php bash deploy.sh
 PHP_BIN="${PHP_BIN:-/opt/cpanel/ea-php82/root/usr/bin/php}"
+
+# Point at a specific Composer when the search below picks the wrong one, or
+# finds none:  COMPOSER_BIN=/path/to/composer bash deploy.sh
+COMPOSER_BIN="${COMPOSER_BIN:-}"
 if [ ! -x "$PHP_BIN" ]; then
     PHP_BIN="$(command -v php)" || true
 fi
@@ -342,21 +346,83 @@ fi
 cd "$BACKEND_DIR" || exit 1
 
 echo "🎼 Installing Laravel dependencies..."
-if command -v composer >/dev/null 2>&1; then
-    composer install --no-dev --optimize-autoloader
-elif [ -f ~/composer.phar ]; then
-    $PHP_BIN ~/composer.phar install --no-dev --optimize-autoloader
-elif [ -f /usr/local/bin/composer ]; then
-    $PHP_BIN /usr/local/bin/composer install --no-dev --optimize-autoloader
-else
-    echo "❌ Composer not found. Downloading..."
-    curl -sS https://getcomposer.org/installer | $PHP_BIN -- --install-dir="$HOME" --filename=composer.phar
-    if [ -f ~/composer.phar ]; then
-        $PHP_BIN ~/composer.phar install --no-dev --optimize-autoloader
-    else
-        echo "❌ Could not install Composer — deploy aborted."
-        exit 1
+
+# ── Find Composer ─────────────────────────────────────────────────────────
+# cPanel ships one at /opt/cpanel/composer/bin/composer and does NOT put it on
+# PATH, so `command -v composer` misses it and this script would go and
+# download a second copy for no reason.
+#
+# The result is a full command rather than a path, because these are not the
+# same kind of thing: a .phar has to be handed to PHP, while the cPanel binary
+# is a wrapper that already knows which PHP to use.
+COMPOSER_CMD=""
+for candidate in "$COMPOSER_BIN" "$(command -v composer 2>/dev/null)" \
+    /opt/cpanel/composer/bin/composer /usr/local/bin/composer /usr/bin/composer
+do
+    [ -n "$candidate" ] && [ -x "$candidate" ] || continue
+    COMPOSER_CMD="$candidate"
+    break
+done
+
+if [ -z "$COMPOSER_CMD" ] && [ -f "$HOME/composer.phar" ]; then
+    COMPOSER_CMD="$PHP_BIN $HOME/composer.phar"
+fi
+
+# ── Install one if the account has none ───────────────────────────────────
+if [ -z "$COMPOSER_CMD" ]; then
+    echo "  No Composer on this account. Installing one to ~/composer.phar..."
+
+    # allow_url_fopen is off in cPanel's CLI php.ini on many hosts and the
+    # installer refuses to run without it -- which is exactly what aborted the
+    # deploy that led to this. Passed for this one command rather than added
+    # to php.ini: the setting is off for a reason, and turning it on
+    # account-wide to fetch a single file is a poor trade.
+    INSTALLER=$(mktemp)
+    if curl -fsS https://getcomposer.org/installer -o "$INSTALLER" \
+        && $PHP_BIN -d allow_url_fopen=1 -d detect_unicode=0 "$INSTALLER" \
+            --install-dir="$HOME" --filename=composer.phar
+    then
+        COMPOSER_CMD="$PHP_BIN $HOME/composer.phar"
     fi
+    # Downloaded to a file first rather than piped into PHP: a pipe hands
+    # whatever arrived to the interpreter, including a proxy's HTML error
+    # page, and the failure then reads as a PHP syntax error.
+    rm -f "$INSTALLER"
+fi
+
+if [ -z "$COMPOSER_CMD" ]; then
+    echo ""
+    echo "❌ Composer is not available and could not be installed — deploy aborted."
+    echo "   The frontend built fine and the site is untouched; only the API is affected."
+    echo ""
+    echo "   Look for one already on the server:"
+    echo "     ls -l /opt/cpanel/composer/bin/composer"
+    echo "   Then point this script at it:"
+    echo "     COMPOSER_BIN=/opt/cpanel/composer/bin/composer bash deploy.sh"
+    echo ""
+    echo "   Or install one by hand, allowing the setting for that command only:"
+    echo "     curl -fsS https://getcomposer.org/installer -o /tmp/ci.php"
+    echo "     $PHP_BIN -d allow_url_fopen=1 /tmp/ci.php --install-dir=\$HOME --filename=composer.phar"
+    exit 1
+fi
+
+echo "  Using $COMPOSER_CMD"
+
+# COMPOSER_HOME set explicitly: without it Composer writes its cache under
+# whatever HOME happens to be, and under a cPanel cron or hook that can be a
+# directory the account cannot write to -- which fails as a permissions error
+# that says nothing about a cache.
+COMPOSER_HOME="${COMPOSER_HOME:-$HOME/.composer}" \
+    $COMPOSER_CMD install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+COMPOSER_STATUS=$?
+
+if [ $COMPOSER_STATUS -ne 0 ]; then
+    echo ""
+    echo "❌ composer install failed (exit $COMPOSER_STATUS) — deploy aborted."
+    echo "   The site is still serving the previous build; nothing was changed."
+    echo "   Reproduce it on its own with:"
+    echo "     cd $(pwd) && $COMPOSER_CMD install --no-dev --optimize-autoloader"
+    exit 1
 fi
 
 echo "📁 Creating storage directories..."
