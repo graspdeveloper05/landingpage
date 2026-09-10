@@ -309,20 +309,25 @@ function SpeakerForm({
       )}
 
       <div className="grid gap-5 lg:grid-cols-3">
-        <AdminCard className="lg:col-span-1">
-          <p className="text-small font-semibold text-navy-900">Photograph</p>
-          <p className="mt-0.5 text-micro text-slate">
+        {/* self-start stops the card stretching to match the tall form beside
+            it, which left a column of empty white under a thumbnail. */}
+        <AdminCard className="self-start lg:col-span-1">
+          <p className="text-[0.78rem] font-semibold text-navy-900">Photograph</p>
+          <p className="mt-0.5 text-[0.7rem] leading-snug text-slate">
             Portrait shape, around 700 × 840. Head in the upper third.
           </p>
 
+          {/* A thumbnail, not a proof. It is here to confirm the right person
+              and a sensible crop; at full column width it was 340px tall and
+              pushed the fields it belongs with off the screen. */}
           {form.portrait ? (
             <img
               src={form.portrait}
               alt=""
-              className="mt-3 aspect-[5/6] w-full rounded-sm border border-hair object-cover"
+              className="mt-2.5 aspect-[5/6] w-32 rounded-sm border border-[#DDDCD8] object-cover"
             />
           ) : (
-            <div className="mt-3 grid aspect-[5/6] w-full place-items-center rounded-sm border border-dashed border-hair text-micro text-slate">
+            <div className="mt-2.5 grid aspect-[5/6] w-32 place-items-center rounded-sm border border-dashed border-[#DDDCD8] text-center text-[0.7rem] text-slate">
               No photograph
             </div>
           )}
@@ -335,11 +340,11 @@ function SpeakerForm({
               const file = e.target.files?.[0]
               if (file) upload(file)
             }}
-            className="mt-3 block w-full text-micro file:mr-3 file:rounded-sm file:border-0 file:bg-navy-900 file:px-3 file:py-2 file:text-micro file:font-semibold file:uppercase file:tracking-[0.1em] file:text-cream"
+            className="mt-3 block w-full text-[0.7rem] file:mr-2 file:rounded-sm file:border-0 file:bg-navy-900 file:px-2.5 file:py-1.5 file:text-[0.7rem] file:font-semibold file:text-cream"
           />
-          {uploading && <p className="mt-2 text-micro text-slate">Uploading…</p>}
+          {uploading && <p className="mt-2 text-[0.7rem] text-slate">Uploading…</p>}
           {fieldErrors.portrait && (
-            <p className="mt-2 text-micro text-red-600">{fieldErrors.portrait}</p>
+            <p className="mt-2 text-[0.7rem] text-red-600">{fieldErrors.portrait}</p>
           )}
         </AdminCard>
 

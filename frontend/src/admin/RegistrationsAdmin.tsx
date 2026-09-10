@@ -79,7 +79,9 @@ export function RegistrationsAdmin() {
         */}
         <a
           href={`${API_BASE}/api/admin/registrations`}
-          className="inline-flex min-h-[40px] items-center rounded-sm bg-gold-500 px-4 text-small font-semibold uppercase tracking-[0.08em] text-navy-950 transition-colors hover:bg-gold-400"
+          // Styled to match AdminButton rather than reusing it: this has to
+          // stay an <a> so the browser performs the download itself.
+          className="inline-flex min-h-[34px] items-center rounded-sm bg-navy-900 px-3 text-[0.78rem] font-semibold text-cream transition-colors hover:bg-navy-800"
         >
           Download CSV
         </a>

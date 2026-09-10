@@ -131,7 +131,7 @@ export function Shell({
       </aside>
 
       <div className="lg:pl-60">
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-[#DDDCD8] bg-white px-4">
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-[#DDDCD8] bg-white px-4 sm:px-6">
           <button
             type="button"
             onClick={() => setNavOpen(true)}
@@ -149,7 +149,15 @@ export function Shell({
           <span className="hidden text-[0.75rem] text-slate sm:inline">{current?.hint}</span>
         </header>
 
-        <main className="mx-auto max-w-6xl p-4 sm:p-6">{children}</main>
+        {/*
+          Full width, left-aligned against the sidebar -- not a centred column.
+          `mx-auto max-w-6xl` centred the content in whatever space was left
+          beside the sidebar, which on a wide screen parked a dead band down
+          the right-hand side and pushed everything away from the navigation
+          it belongs to. A capped width still stops forms stretching to
+          absurdity on an ultrawide display.
+        */}
+        <main className="w-full max-w-[1600px] p-4 sm:p-6">{children}</main>
       </div>
     </div>
   )
