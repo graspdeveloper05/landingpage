@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\PortraitController;
+use App\Http\Controllers\Api\Admin\ProgrammeAdminController;
 use App\Http\Controllers\Api\Admin\RegistrationExportController;
+use App\Http\Controllers\Api\Admin\SessionController;
+use App\Http\Controllers\Api\Admin\SpeakerAdminController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\ProgrammeController;
 use App\Http\Controllers\Api\RegistrationController;
@@ -30,6 +34,48 @@ Route::get('/programme', [ProgrammeController::class, 'index']);
 Route::post('/registrations', [RegistrationController::class, 'store'])
     ->middleware('throttle:6,1');
 
+/*
+|--------------------------------------------------------------------------
+| Admin — §7, §8 and §15
+|--------------------------------------------------------------------------
+|
+| §15: "Routine website updates should not require developer involvement."
+| These endpoints are what the React admin panel at /admin talks to, so the
+| organising team can edit speakers, timings and the line-up themselves.
+|
+| Authenticated by session cookie, not a token -- see bootstrap/app.php.
+|
+*/
+
+// Six attempts a minute per IP. Enough for someone mistyping a password,
+// useless for working through a password list.
+Route::post('/admin/login', [SessionController::class, 'store'])
+    ->middleware('throttle:6,1');
+
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    Route::get('/me', [SessionController::class, 'me']);
+    Route::post('/logout', [SessionController::class, 'destroy']);
+
+    Route::get('/speakers', [SpeakerAdminController::class, 'index']);
+    Route::post('/speakers', [SpeakerAdminController::class, 'store']);
+    Route::post('/speakers/reorder', [SpeakerAdminController::class, 'reorder']);
+    Route::put('/speakers/{speaker}', [SpeakerAdminController::class, 'update']);
+    Route::delete('/speakers/{speaker}', [SpeakerAdminController::class, 'destroy']);
+
+    Route::get('/programme', [ProgrammeAdminController::class, 'index']);
+    Route::post('/programme', [ProgrammeAdminController::class, 'store']);
+    Route::post('/programme/reorder', [ProgrammeAdminController::class, 'reorder']);
+    Route::put('/programme/{programme_item}', [ProgrammeAdminController::class, 'update']);
+    Route::delete('/programme/{programme_item}', [ProgrammeAdminController::class, 'destroy']);
+
+    Route::post('/portraits', [PortraitController::class, 'store']);
+});
+
+/*
+| The participant export accepts either a signed-in session or the static
+| ADMIN_API_TOKEN, so the panel can offer a download button while a scheduled
+| curl on the server keeps working unchanged.
+*/
 Route::middleware(EnsureAdminToken::class)->prefix('admin')->group(function () {
     Route::get('/registrations', RegistrationExportController::class);
 });

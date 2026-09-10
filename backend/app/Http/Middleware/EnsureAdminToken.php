@@ -18,6 +18,15 @@ class EnsureAdminToken
 {
     public function handle(Request $request, Closure $next): Response
     {
+        /*
+         * A signed-in organiser is already authenticated, so the panel's
+         * download button does not need to know the static token -- which it
+         * could only get by having it embedded in public JavaScript.
+         */
+        if ($request->user()) {
+            return $next($request);
+        }
+
         $expected = config('event.admin_token');
 
         if (blank($expected)) {
