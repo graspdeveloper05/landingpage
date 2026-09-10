@@ -19,6 +19,33 @@ interface EventForm {
   mapsUrl: string
   mapEmbedUrl: string
   capacity: number
+  registrationOpen: boolean
+}
+
+type ClosedReason = 'full' | 'closed' | 'past'
+
+/** What the site is currently telling visitors, in the team's words. */
+const STATE: Record<string, { label: string; detail: string; tone: string }> = {
+  open: {
+    label: 'Open',
+    detail: 'The form is accepting registrations.',
+    tone: 'border-green-600 bg-green-50 text-green-900',
+  },
+  full: {
+    label: 'Full',
+    detail: 'Every seat is taken, so the form has closed itself.',
+    tone: 'border-gold-600 bg-[#FAF6E8] text-navy-900',
+  },
+  closed: {
+    label: 'Closed',
+    detail: 'You have closed registration. Visitors are told so.',
+    tone: 'border-navy-600 bg-[#EEF1F5] text-navy-900',
+  },
+  past: {
+    label: 'Past',
+    detail: 'The date has gone by. The form is closed and cannot be reopened without changing the date.',
+    tone: 'border-[#DDDCD8] bg-[#F1F1EF] text-slate',
+  },
 }
 
 const BLANK: EventForm = {
@@ -31,12 +58,14 @@ const BLANK: EventForm = {
   mapsUrl: '',
   mapEmbedUrl: '',
   capacity: 200,
+  registrationOpen: true,
 }
 
 /** §6 and §9 — the date, time, venue and capacity the whole site shows. */
 export function EventAdmin() {
   const [form, setForm] = useState<EventForm | null>(null)
   const [registered, setRegistered] = useState(0)
+  const [closedReason, setClosedReason] = useState<ClosedReason | null>(null)
   const [edition, setEdition] = useState<number | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
@@ -50,11 +79,13 @@ export function EventAdmin() {
         event: EventForm | null
         registered: number
         edition: number
+        closedReason: ClosedReason | null
       }>('/admin/event')
       .then((r) => {
         setForm(r.event ?? BLANK)
         setRegistered(r.registered)
         setEdition(r.edition)
+        setClosedReason(r.closedReason ?? null)
       })
       .catch((e) => {
         setForm(BLANK)
@@ -86,6 +117,9 @@ export function EventAdmin() {
     try {
       await adminApi.put('/admin/event', { ...form, capacity: Number(form.capacity) })
       setSaved(true)
+      // The state may have changed with the save -- reopening registration, or
+      // moving the date into the past. Re-read rather than guess.
+      load()
     } catch (err) {
       if (err instanceof AdminError) {
         setFieldErrors(err.fields)
@@ -199,6 +233,42 @@ export function EventAdmin() {
           </AdminCard>
 
           <AdminCard className="space-y-3">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
+              Registration
+            </p>
+
+            {/* What the site is telling visitors right now, said plainly. The
+                team should not have to work it out from a capacity number and
+                a date. */}
+            {(() => {
+              const state = STATE[closedReason ?? 'open']
+              return (
+                <div className={`rounded-sm border-l-2 px-3 py-2 ${state.tone}`}>
+                  <p className="text-[0.8rem] font-semibold">{state.label}</p>
+                  <p className="mt-0.5 text-[0.7rem] leading-snug">{state.detail}</p>
+                </div>
+              )
+            })()}
+
+            <label className="flex items-start gap-2.5">
+              <input
+                type="checkbox"
+                checked={form.registrationOpen}
+                onChange={(e) => set('registrationOpen', e.target.checked)}
+                // A past event cannot be reopened by ticking a box; the date
+                // is what makes it past, so the date is where you change it.
+                disabled={closedReason === 'past'}
+                className="mt-0.5 h-4 w-4 accent-[#C9A227] disabled:opacity-40"
+              />
+              <span className="text-[0.8rem] text-navy-800">
+                Accept registrations
+                <span className="block text-[0.7rem] leading-snug text-slate">
+                  Untick to close the form early — before a catering or security
+                  deadline, say. Visitors see a closed notice instead.
+                </span>
+              </span>
+            </label>
+
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
               Capacity
             </p>

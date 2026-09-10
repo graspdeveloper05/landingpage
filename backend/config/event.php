@@ -37,6 +37,15 @@ return [
     'capacity' => (int) env('EVENT_CAPACITY', 200),
 
     /*
+    | The venue's timezone, used to decide when the event is over.
+    |
+    | Not the server's. A cPanel account may well run in UTC, where 8 October
+    | in Kuala Lumpur ends eight hours before UTC agrees -- registration would
+    | close at 4pm on the day of the Dialogue, while people are still arriving.
+    */
+    'timezone' => env('EVENT_TIMEZONE', 'Asia/Kuala_Lumpur'),
+
+    /*
     | Prefix for the reference shown to attendees and asked for at the door.
     | Kept short enough to read aloud: SND26-0001.
     */

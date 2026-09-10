@@ -107,21 +107,35 @@ function makeReference(index: number) {
 /* Reads                                                                      */
 /* -------------------------------------------------------------------------- */
 
+/** Why registration is not accepting people. Null when it is open. */
+export type ClosedReason = 'full' | 'closed' | 'past'
+
 export interface EventStatus extends EventDetails {
   registered: number
   remaining: number
   isFull: boolean
+  /**
+   * Set by the server, which owns the decision: it knows the date in the
+   * venue's timezone and whether the team has closed registration by hand.
+   * A client-side date comparison would use the visitor's own clock, so a
+   * phone set a day fast would close the form early for that one person.
+   */
+  closedReason: ClosedReason | null
 }
 
 export async function getEvent(): Promise<EventStatus> {
   if (USE_API) {
     const res = await fetch(`${BASE}/api/event`)
     if (!res.ok) throw new RegistrationError('Could not load event details', 'network')
-    const data = (await res.json()) as EventDetails & { registered: number }
+    const data = (await res.json()) as EventDetails & {
+      registered: number
+      closedReason: ClosedReason | null
+    }
     return {
       ...data,
       remaining: Math.max(0, data.capacity - data.registered),
       isFull: data.registered >= data.capacity,
+      closedReason: data.closedReason ?? null,
     }
   }
 
@@ -131,6 +145,8 @@ export async function getEvent(): Promise<EventStatus> {
     registered,
     remaining: Math.max(0, event.capacity - registered),
     isFull: registered >= event.capacity,
+    // The local fallback has no server to ask, so it knows only about seats.
+    closedReason: registered >= event.capacity ? 'full' : null,
   }
 }
 

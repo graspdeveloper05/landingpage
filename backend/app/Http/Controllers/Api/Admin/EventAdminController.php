@@ -19,6 +19,9 @@ class EventAdminController extends Controller
 
         return response()->json([
             'event' => $setting?->toPublicArray(),
+            'closedReason' => $setting?->closedReason(
+                Registration::forEdition($edition)->count(),
+            ),
             // Shown beside the capacity field so nobody sets it below the
             // number of people already holding a seat without realising.
             'registered' => Registration::forEdition($edition)->count(),
@@ -48,6 +51,7 @@ class EventAdminController extends Controller
              * cancelling on real attendees.
              */
             'capacity' => ['required', 'integer', 'min:'.max(1, $registered), 'max:10000'],
+            'registrationOpen' => ['required', 'boolean'],
 
             'dateLabel' => ['required', 'array'],
             'dateLabel.en' => ['required', 'string', 'max:80'],
@@ -84,6 +88,7 @@ class EventAdminController extends Controller
                 'maps_url' => $data['mapsUrl'],
                 'map_embed_url' => $data['mapEmbedUrl'],
                 'capacity' => $data['capacity'],
+                'registration_open' => $data['registrationOpen'],
             ],
         );
 

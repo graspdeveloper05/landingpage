@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRegistrationRequest;
 use App\Mail\RegistrationConfirmed;
+use App\Models\EventSetting;
 use App\Models\Registration;
 use App\Support\Reference;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +25,29 @@ class RegistrationController extends Controller
     public function store(StoreRegistrationRequest $request): JsonResponse
     {
         $edition = (int) config('event.edition');
-        $capacity = (int) config('event.capacity');
+        $setting = EventSetting::current();
+        $capacity = $setting?->capacity ?? (int) config('event.capacity');
+
+        /*
+         * Checked before the transaction, because these are not race
+         * conditions -- an event does not become un-past between two
+         * requests, and the team's decision to stop taking registrations does
+         * not need a row lock to be true. Capacity is the only one that has to
+         * be settled atomically, and it is, below.
+         */
+        if ($setting?->hasPassed()) {
+            return response()->json([
+                'message' => 'This Dialogue has already taken place.',
+                'reason' => 'past',
+            ], 409);
+        }
+
+        if ($setting && ! $setting->registration_open) {
+            return response()->json([
+                'message' => 'Registration is closed.',
+                'reason' => 'closed',
+            ], 409);
+        }
 
         try {
             $registration = DB::transaction(function () use ($request, $edition, $capacity) {
@@ -66,6 +89,7 @@ class RegistrationController extends Controller
         if ($registration === null) {
             return response()->json([
                 'message' => 'All seats for this edition are taken.',
+                'reason' => 'full',
             ], 409);
         }
 

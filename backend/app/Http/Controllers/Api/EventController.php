@@ -33,9 +33,17 @@ class EventController extends Controller
             'capacity' => (int) config('event.capacity'),
         ];
 
+        $registered = Registration::forEdition($edition)->count();
+
         return response()->json([
             ...$details,
-            'registered' => Registration::forEdition($edition)->count(),
+            'registered' => $registered,
+            /*
+             * Why the form is not accepting people, or null when it is. The
+             * client shows a different panel for each -- "sold out" and "this
+             * already happened" are not the same news.
+             */
+            'closedReason' => EventSetting::current()?->closedReason($registered),
         ]);
     }
 }

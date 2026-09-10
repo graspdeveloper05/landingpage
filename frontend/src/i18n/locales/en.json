@@ -129,6 +129,14 @@
     "full": {
       "title": "Registration is closed.",
       "body": "All 200 seats for the 2026 Dialogue are taken. Write to the organising team if you would like to be told about the next edition."
+    },
+    "closed": {
+      "title": "Registration has closed.",
+      "body": "The organising team has closed registration for this Dialogue. Write to them if you were hoping to attend."
+    },
+    "past": {
+      "title": "This Dialogue has taken place.",
+      "body": "Thank you to everyone who joined us. Details of the next Seri Negara Dialogue will be published here."
     }
   },
   "devices": {

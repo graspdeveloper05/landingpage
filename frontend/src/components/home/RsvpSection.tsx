@@ -30,7 +30,13 @@ export function RsvpSection({
   const [full, setFull] = useState(false)
   const washRef = useParallax<HTMLImageElement>(0.07, 50)
 
-  const isFull = full || status?.isFull === true
+  /*
+   * `full` is set when a submission comes back 409 mid-session -- the last
+   * seat went while this visitor was filling the form in. The server's reason
+   * covers everything else, including the two cases the seat count cannot
+   * express: the team closing registration, and the event being over.
+   */
+  const closedReason = full ? 'full' : (status?.closedReason ?? null)
 
   return (
     <section id="rsvp" className="relative scroll-mt-24 overflow-hidden bg-navy-900 py-section">
@@ -64,10 +70,12 @@ export function RsvpSection({
                 refresh()
               }}
             />
-          ) : isFull ? (
+          ) : closedReason ? (
             <div className="mx-auto max-w-xl border-l-2 border-gold-500 pl-6 text-cream">
-              <h3 className="font-display text-h3 font-semibold">{t('rsvp.full.title')}</h3>
-              <p className="mt-3 text-body text-cream/70">{t('rsvp.full.body')}</p>
+              <h3 className="font-display text-h3 font-semibold">
+                {t(`rsvp.${closedReason}.title`)}
+              </h3>
+              <p className="mt-3 text-body text-cream/70">{t(`rsvp.${closedReason}.body`)}</p>
             </div>
           ) : (
             <div className="grid gap-12 lg:grid-cols-12">

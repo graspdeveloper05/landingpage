@@ -288,6 +288,41 @@ const src = {
         '2026 உரையாடலுக்கான 200 இருக்கைகளும் நிரம்பிவிட்டன. அடுத்த பதிப்பு குறித்து அறிய ஏற்பாட்டுக் குழுவைத் தொடர்புகொள்ளுங்கள்.',
       ),
     },
+
+    /*
+     * "Sold out" and "this already happened" are different news, and a
+     * visitor who arrives the week after the Dialogue should not be told to
+     * write in about seats that no longer matter.
+     */
+    closed: {
+      title: L(
+        'Registration has closed.',
+        'Pendaftaran telah ditutup.',
+        '报名已截止。',
+        'பதிவு முடிவடைந்தது.',
+      ),
+      body: L(
+        'The organising team has closed registration for this Dialogue. Write to them if you were hoping to attend.',
+        'Pihak penganjur telah menutup pendaftaran bagi Dialog ini. Hubungi mereka jika anda berharap untuk hadir.',
+        '筹委会已截止本届对话的报名。如您原本希望出席，请与他们联络。',
+        'இந்த உரையாடலுக்கான பதிவை ஏற்பாட்டுக் குழு நிறைவு செய்துவிட்டது. கலந்துகொள்ள விரும்பியிருந்தால் அவர்களைத் தொடர்புகொள்ளுங்கள்.',
+      ),
+    },
+
+    past: {
+      title: L(
+        'This Dialogue has taken place.',
+        'Dialog ini telah berlangsung.',
+        '本届对话已举行。',
+        'இந்த உரையாடல் நடைபெற்று முடிந்தது.',
+      ),
+      body: L(
+        'Thank you to everyone who joined us. Details of the next Seri Negara Dialogue will be published here.',
+        'Terima kasih kepada semua yang menyertai kami. Butiran Dialog Seri Negara akan datang akan diterbitkan di sini.',
+        '感谢所有出席的朋友。下一届斯里尼加拉对话的详情将在此公布。',
+        'எங்களுடன் இணைந்த அனைவருக்கும் நன்றி. அடுத்த ஸ்ரீ நெகாரா உரையாடலின் விவரங்கள் இங்கே வெளியிடப்படும்.',
+      ),
+    },
   },
 
   devices: {

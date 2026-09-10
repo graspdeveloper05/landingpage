@@ -129,6 +129,14 @@
     "full": {
       "title": "Pendaftaran telah ditutup.",
       "body": "Kesemua 200 tempat untuk Dialog 2026 telah penuh. Hubungi pihak penganjur jika anda ingin dimaklumkan mengenai edisi akan datang."
+    },
+    "closed": {
+      "title": "Pendaftaran telah ditutup.",
+      "body": "Pihak penganjur telah menutup pendaftaran bagi Dialog ini. Hubungi mereka jika anda berharap untuk hadir."
+    },
+    "past": {
+      "title": "Dialog ini telah berlangsung.",
+      "body": "Terima kasih kepada semua yang menyertai kami. Butiran Dialog Seri Negara akan datang akan diterbitkan di sini."
     }
   },
   "devices": {
