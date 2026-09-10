@@ -433,7 +433,7 @@ function SpeakerForm({
           At the top they were out of sight by the time you had filled anything
           in. Messages sit beside the button that produced them, so a validation
           error is not announced somewhere you have to scroll back to find. */}
-      <div className="sticky bottom-0 -mx-4 mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-[#DDDCD8] bg-[#F1F1EF]/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
+      <div className="sticky bottom-0 -mx-4 -mb-4 mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-[#DDDCD8] bg-white px-4 py-3 shadow-[0_-6px_16px_-8px_rgba(11,33,64,0.25)] sm:-mx-6 sm:-mb-6 sm:px-6">
         {error && <Notice kind="error">{error}</Notice>}
         <AdminButton variant="quiet" onClick={onCancel}>
           Cancel
