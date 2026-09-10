@@ -1,7 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#0B2140"/>
-  <g fill="none" stroke="#C9A227" stroke-width="3" stroke-linejoin="round">
-    <path d="M32 11l19 10v17c0 13-9 21-19 25-10-4-19-12-19-25V21z"/>
-    <path d="M23 41V30l9-7 9 7v11"/>
-  </g>
+<!--
+  Seri Negara Dialogue — site mark.
+
+  An open archway. The building the Dialogue is named for is read through its
+  arches and its colonnade, and a doorway you can see through is the closest a
+  16-pixel mark gets to the idea of an invitation to talk.
+
+  Two things learned drawing it:
+
+  - The opening has to reach the plinth. A first attempt stopped the inner
+    arch short of the base, leaving a band of gold across the bottom, and the
+    whole thing read as a bell — or worse, a padlock. An arch is defined by
+    what you can see through it.
+  - No strokes anywhere. A 3-unit stroke on a 64 viewBox is three quarters of
+    a pixel at 16x16, which is why so many favicons turn to mush. Every edge
+    here is a filled form at least 8 units thick.
+
+  Replaces a shield-and-house drawing that read as a home security app.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Seri Negara Dialogue">
+  <rect width="64" height="64" rx="10" fill="#0B2140"/>
+
+  <!--
+    Wall and opening in one path with evenodd, so the navy shows through
+    rather than being painted back over. Two stacked shapes would leave a
+    hairline seam where they meet once the browser scales them down.
+  -->
+  <path
+    fill="#C9A227"
+    fill-rule="evenodd"
+    d="M14 50V30a18 18 0 0 1 36 0v20H14Zm10 0V30a8 8 0 0 1 16 0v20H24Z"
+  />
+
+  <!-- The plinth, set wider than the arch so it reads as ground rather than
+       as part of the wall. -->
+  <rect x="9" y="50" width="46" height="7" rx="2.5" fill="#C9A227"/>
 </svg>

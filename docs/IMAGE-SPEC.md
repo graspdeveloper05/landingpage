@@ -172,8 +172,8 @@ Just the emblem, no wordmark — it renders at 16 × 16 in a browser tab.
 | Speaker portraits ×8 | 700 × 840 | 5:6 | ❌ |
 | Chairman portrait | 700 × 840 | 5:6 | ❌ |
 | Logo (transparent) | 1200 × 1100 | — | ⚠️ no alpha |
-| Share card | 1200 × 630 | 1.9:1 | ⚠️ from hero |
-| Favicon | 512 × 512 | 1:1 | ⚠️ generated |
+| Share card | 1200 × 630 | 1.9:1 | ✅ built |
+| Favicon | 512 × 512 | 1:1 | ✅ built |
 
 ## Regenerating
 
