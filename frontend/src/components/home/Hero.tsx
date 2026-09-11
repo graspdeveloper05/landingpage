@@ -14,7 +14,7 @@ import { useEventLabels } from '@/lib/useContent'
  */
 export function Hero() {
   const { t } = useI18n()
-  const { event, date, time } = useEventLabels()
+  const { event, date, time, eventName, subtitle } = useEventLabels()
   // No parallax on the scene itself: translating it would slide the image out
   // of its box and clip an edge, and the point of this hero is that the whole
   // picture is visible. The copy still drifts, which reads as depth anyway.
@@ -36,9 +36,15 @@ export function Hero() {
         copy legibly, so the two stack: text first, then the full picture.
       */}
       <div className="relative order-1 lg:order-none">
+        {/*
+          An uploaded hero replaces the shipped one wholesale. The upload
+          writes the same four files the build ships -- .webp and .jpg at two
+          widths -- so Picture cannot tell the difference and neither can the
+          browser's source selection.
+        */}
         <Picture
-          base="/hero/hero-scene"
-          narrow="/hero/hero-scene-960"
+          base={event.heroImage || '/hero/hero-scene'}
+          narrow={event.heroImage ? `${event.heroImage}-960` : '/hero/hero-scene-960'}
           alt={t('hero.imageAlt')}
           width={1600}
           height={900}
@@ -84,7 +90,7 @@ export function Hero() {
             className="anim-rise mt-6 font-display text-h3 font-semibold uppercase tracking-[0.11em] text-navy-800"
             style={{ animationDelay: '0.26s' }}
           >
-            {t('hero.eventName')}
+            {eventName}
           </p>
 
           <Ornament className="anim-rise mt-4 !justify-start" />
@@ -94,7 +100,7 @@ export function Hero() {
             className="anim-rise mt-4 text-small font-medium uppercase tracking-[0.2em] text-navy-800"
             style={{ animationDelay: '0.36s' }}
           >
-            {t('hero.subtitle')}
+            {subtitle}
           </p>
 
           <dl className="anim-rise mt-9 space-y-3.5" style={{ animationDelay: '0.46s' }}>

@@ -64,6 +64,30 @@ class EventAdminController extends Controller
             'timeLabel.ms' => ['required', 'string', 'max:80'],
             'timeLabel.zh' => ['required', 'string', 'max:80'],
             'timeLabel.ta' => ['required', 'string', 'max:80'],
+
+            // The two lines under the headline. Required in all four
+            // languages for the same reason the date is: a hero that falls
+            // back to English for a Tamil reader is worse than one nobody
+            // has edited.
+            'eventName' => ['required', 'array'],
+            'eventName.en' => ['required', 'string', 'max:120'],
+            'eventName.ms' => ['required', 'string', 'max:120'],
+            'eventName.zh' => ['required', 'string', 'max:120'],
+            'eventName.ta' => ['required', 'string', 'max:120'],
+
+            'subtitle' => ['required', 'array'],
+            'subtitle.en' => ['required', 'string', 'max:200'],
+            'subtitle.ms' => ['required', 'string', 'max:200'],
+            'subtitle.zh' => ['required', 'string', 'max:200'],
+            'subtitle.ta' => ['required', 'string', 'max:200'],
+
+            /*
+             * Only a path this application produced. Accepting any string
+             * here would let an admin account point the hero at an arbitrary
+             * URL, which is a stored injection into every visitor's page --
+             * and null is how the hero is reset to the shipped photograph.
+             */
+            'heroImage' => ['nullable', 'string', 'regex:#^/storage/hero/[0-9a-f-]{36}$#'],
         ], [
             'capacity.min' => $registered > 0
                 ? "There are already {$registered} registrations. Capacity cannot be lower than that."
@@ -74,6 +98,9 @@ class EventAdminController extends Controller
             'timeLabel.*.required' => 'The time is needed in all four languages.',
             'mapsUrl.url' => 'Enter a full https:// address.',
             'mapEmbedUrl.url' => 'Enter a full https:// address.',
+            'eventName.*.required' => 'The event name is needed in all four languages.',
+            'subtitle.*.required' => 'The subtitle is needed in all four languages.',
+            'heroImage.regex' => 'Upload the image again -- that path is not one of ours.',
         ]);
 
         $setting = EventSetting::updateOrCreate(
@@ -89,6 +116,10 @@ class EventAdminController extends Controller
                 'map_embed_url' => $data['mapEmbedUrl'],
                 'capacity' => $data['capacity'],
                 'registration_open' => $data['registrationOpen'],
+                'event_name' => $data['eventName'],
+                'subtitle' => $data['subtitle'],
+                // Absent means "not sent by this form"; null means "cleared".
+                'hero_image' => $data['heroImage'] ?? null,
             ],
         );
 

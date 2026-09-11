@@ -113,5 +113,10 @@ export function useEventLabels() {
     event,
     date: event.dateLabel?.[locale]?.trim() || t('hero.date'),
     time: event.timeLabel?.[locale]?.trim() || t('hero.time'),
+    // Same fallback rule as the date and time: whatever the team has saved,
+    // otherwise the wording shipped in the locale files. So an unreachable
+    // API degrades to the previous copy rather than to blank headings.
+    eventName: event.eventName?.[locale]?.trim() || t('hero.eventName'),
+    subtitle: event.subtitle?.[locale]?.trim() || t('hero.subtitle'),
   }
 }

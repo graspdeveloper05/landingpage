@@ -56,6 +56,19 @@ export interface EventDetails {
   startTime: string
   /** The start time as a visitor reads it, per language. */
   timeLabel?: Localized
+  /**
+   * The hero's own two lines, per language: the event name and the sentence
+   * under it. Optional for the same reason as the labels above -- the
+   * bundled fallback carries none, and the locale files answer instead.
+   */
+  eventName?: Localized
+  subtitle?: Localized
+  /**
+   * Base path of an uploaded hero photograph, without extension, e.g.
+   * "/storage/hero/<uuid>". Null or absent means the picture shipped with
+   * the build is used.
+   */
+  heroImage?: string | null
   venue: string
   venueAddress: string
   mapsUrl: string

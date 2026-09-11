@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\AnalyticsController;
 use App\Http\Controllers\Api\Admin\EventAdminController;
+use App\Http\Controllers\Api\Admin\HeroImageController;
 use App\Http\Controllers\Api\Admin\PortraitController;
 use App\Http\Controllers\Api\Admin\ProgrammeAdminController;
 use App\Http\Controllers\Api\Admin\RegistrationAdminController;
@@ -87,6 +88,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/event', [EventAdminController::class, 'update']);
 
     Route::post('/portraits', [PortraitController::class, 'store']);
+    Route::post('/hero-image', [HeroImageController::class, 'store']);
 
     // §9's "participant list", paginated for the panel. The CSV download
     // below is the same data in the form the organising team files it in.

@@ -16,6 +16,10 @@ interface EventForm {
   dateLabel: Localized
   startTime: string
   timeLabel: Localized
+  eventName: Localized
+  subtitle: Localized
+  /** Base path of an uploaded hero, or null for the shipped photograph. */
+  heroImage: string | null
   venue: string
   venueAddress: string
   mapsUrl: string
@@ -55,6 +59,9 @@ const BLANK: EventForm = {
   dateLabel: { ...EMPTY_LOCALIZED },
   startTime: '',
   timeLabel: { ...EMPTY_LOCALIZED },
+  eventName: { ...EMPTY_LOCALIZED },
+  subtitle: { ...EMPTY_LOCALIZED },
+  heroImage: null,
   venue: '',
   venueAddress: '',
   mapsUrl: '',
@@ -78,13 +85,32 @@ export function EventAdmin() {
     setError(null)
     return adminApi
       .get<{
-        event: EventForm | null
+        event:
+          | (Omit<EventForm, 'eventName' | 'subtitle' | 'heroImage'> & {
+              eventName: Localized | null
+              subtitle: Localized | null
+              heroImage: string | null
+            })
+          | null
         registered: number
         edition: number
         closedReason: ClosedReason | null
       }>('/admin/event')
       .then((r) => {
-        setForm(r.event ?? BLANK)
+        // Normalised on the way in. These three are null on an edition saved
+        // before the hero became editable, and a LocalizedFieldset handed
+        // null renders four uncontrolled inputs that React then complains
+        // about the moment somebody types.
+        setForm(
+          r.event
+            ? {
+                ...r.event,
+                eventName: r.event.eventName ?? { ...EMPTY_LOCALIZED },
+                subtitle: r.event.subtitle ?? { ...EMPTY_LOCALIZED },
+                heroImage: r.event.heroImage ?? null,
+              }
+            : BLANK,
+        )
         setRegistered(r.registered)
         setEdition(r.edition)
         setClosedReason(r.closedReason ?? null)
@@ -198,6 +224,34 @@ export function EventAdmin() {
             onChange={(v) => set('timeLabel', v)}
             errors={localeErrors('timeLabel')}
             hint="For example: 2.30 PM onwards"
+          />
+        </AdminCard>
+
+        <AdminCard className="space-y-4">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
+            The hero
+          </p>
+
+          <LocalizedFieldset
+            label="Event name"
+            value={form.eventName}
+            onChange={(v) => set('eventName', v)}
+            errors={localeErrors('eventName')}
+            hint="The line under the headline. For example: Seri Negara Dialogue 2026"
+          />
+
+          <LocalizedFieldset
+            label="Subtitle"
+            value={form.subtitle}
+            onChange={(v) => set('subtitle', v)}
+            errors={localeErrors('subtitle')}
+            hint="For example: A National Conversation on Malaysia's Future"
+          />
+
+          <HeroImageField
+            value={form.heroImage}
+            onChange={(v) => set('heroImage', v)}
+            error={fieldErrors.heroImage}
           />
         </AdminCard>
 
@@ -316,5 +370,111 @@ export function EventAdmin() {
         </AdminButton>
       </div>
     </form>
+  )
+}
+
+/**
+ * The photograph behind the hero.
+ *
+ * Uploading happens immediately, before Save — the server has to resize the
+ * file and hand back a path, and there is nothing useful to show in the
+ * meantime otherwise. Save then stores that path. So an upload followed by
+ * navigating away leaves four unused files on disk and the hero unchanged,
+ * which is the harmless direction for that mistake to fall.
+ */
+function HeroImageField({
+  value,
+  onChange,
+  error,
+}: {
+  value: string | null
+  onChange: (v: string | null) => void
+  error?: string
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [failed, setFailed] = useState<string | null>(null)
+  const toast = useToast()
+
+  async function upload(file: File) {
+    setUploading(true)
+    setFailed(null)
+    try {
+      const body = new FormData()
+      body.append('hero', file)
+      const r = await adminApi.post<{ path: string }>('/admin/hero-image', body)
+      onChange(r.path)
+      toast.success('Image uploaded. Save to put it on the site.')
+    } catch (e) {
+      // The field error is the useful one here: it names the actual
+      // dimension or format problem rather than saying the upload failed.
+      setFailed(
+        e instanceof AdminError ? (e.fields.hero ?? e.message) : 'Could not upload that image.',
+      )
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div>
+      <span className="block text-[0.78rem] font-semibold text-navy-900">Background image</span>
+      <span className="mt-0.5 block text-[0.7rem] leading-snug text-slate">
+        At least 1600 × 600; around 2400 × 1000 is ideal. Keep the building and people in the
+        right two-thirds — the headline covers the left third.
+      </span>
+
+      <div className="mt-2 flex flex-wrap items-start gap-3">
+        {/*
+          The preview is the uploaded file itself, at the shape it will be
+          used in. A thumbnail in some other ratio would hide exactly the
+          mistake this is here to catch -- a subject that falls under the
+          headline.
+        */}
+        <div className="relative h-[76px] w-[180px] shrink-0 overflow-hidden rounded-sm border border-hair bg-cream-deep">
+          <img
+            src={value ? `${value}.jpg` : '/hero/hero-scene-960.jpg'}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          {/* Marks the left third the copy sits over, so it is obvious
+              before saving whether a face has landed behind the text. */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 border-r border-dashed border-navy-900/40 bg-cream/55" />
+        </div>
+
+        <div className="min-w-[12rem] grow">
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={uploading}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              // Cleared so choosing the same file twice after a failed
+              // upload fires a change event rather than looking inert.
+              e.target.value = ''
+              if (file) upload(file)
+            }}
+            className="block w-full text-[0.78rem] text-navy-800 file:mr-3 file:cursor-pointer file:rounded-sm file:border-0 file:bg-navy-900 file:px-3 file:py-1.5 file:text-[0.75rem] file:font-semibold file:text-cream hover:file:bg-navy-800 disabled:cursor-not-allowed"
+          />
+
+          <p className="mt-1.5 text-[0.7rem] text-slate">
+            {uploading
+              ? 'Uploading and resizing…'
+              : value
+                ? 'Using an uploaded image.'
+                : 'Using the image that came with the site.'}
+          </p>
+
+          {value && !uploading && (
+            <AdminButton variant="quiet" onClick={() => onChange(null)}>
+              Use the original again
+            </AdminButton>
+          )}
+
+          {(failed || error) && (
+            <p className="mt-1.5 text-[0.7rem] text-red-600">{failed ?? error}</p>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }

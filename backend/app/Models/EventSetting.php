@@ -16,6 +16,7 @@ class EventSetting extends Model
 
     protected $fillable = [
         'edition', 'date', 'date_label', 'start_time', 'time_label',
+        'event_name', 'subtitle', 'hero_image',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
         'registration_open',
     ];
@@ -23,6 +24,8 @@ class EventSetting extends Model
     protected $casts = [
         'date_label' => 'array',
         'time_label' => 'array',
+        'event_name' => 'array',
+        'subtitle' => 'array',
         'capacity' => 'integer',
         'edition' => 'integer',
         'registration_open' => 'boolean',
@@ -40,6 +43,12 @@ class EventSetting extends Model
             'dateLabel' => $this->date_label,
             'startTime' => $this->start_time,
             'timeLabel' => $this->time_label,
+            // Null until the team edits them, and the frontend then falls
+            // back to the wording in the locale files -- the behaviour the
+            // site had before any of this was editable.
+            'eventName' => $this->event_name,
+            'subtitle' => $this->subtitle,
+            'heroImage' => $this->hero_image,
             'venue' => $this->venue,
             'venueAddress' => $this->venue_address,
             'mapsUrl' => $this->maps_url,
