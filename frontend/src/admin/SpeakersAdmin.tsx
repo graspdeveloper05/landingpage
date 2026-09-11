@@ -10,6 +10,7 @@ import {
 import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
 import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
+import { DEFAULT_PORTRAIT, isPlaceholderPortrait, portraitSrc } from '@/lib/portrait'
 
 /** §7 — speakers and the moderator, editable by the organising team. */
 export function SpeakersAdmin() {
@@ -116,7 +117,7 @@ export function SpeakersAdmin() {
           <AdminCard interactive key={speaker.id}>
             <div className="flex flex-wrap items-center gap-4">
               <img
-                src={speaker.portrait}
+                src={portraitSrc(speaker.portrait)}
                 alt=""
                 className="h-16 w-[3.4rem] shrink-0 rounded-sm border border-hair object-cover"
               />
@@ -303,15 +304,44 @@ function SpeakerForm({
               and a sensible crop; at full column width it was 340px tall and
               pushed the fields it belongs with off the screen. */}
           {form.portrait ? (
-            <img
-              src={form.portrait}
-              alt=""
-              className="mt-2.5 aspect-[5/6] w-32 rounded-sm border border-[#DDDCD8] object-cover"
-            />
+            <>
+              <img
+                src={form.portrait}
+                alt=""
+                className="mt-2.5 aspect-[5/6] w-32 rounded-sm border border-[#DDDCD8] object-cover"
+              />
+              {/* Only for a real photograph. The generated stand-ins are not
+                  anybody's likeness, so removing one would just swap it for
+                  another placeholder.
+
+                  Clearing the field is all this does -- the uploaded file is
+                  left on the server, because the speaker is not saved yet and
+                  cancelling out of the form has to leave the portrait intact. */}
+              {!isPlaceholderPortrait(form.portrait) && (
+                <AdminButton
+                  variant="danger"
+                  className="mt-2"
+                  onClick={() => set('portrait', '')}
+                  disabled={uploading}
+                >
+                  Remove photograph
+                </AdminButton>
+              )}
+            </>
           ) : (
-            <div className="mt-2.5 grid aspect-[5/6] w-32 place-items-center rounded-sm border border-dashed border-[#DDDCD8] text-center text-[0.7rem] text-slate">
-              No photograph
-            </div>
+            <>
+              {/* The stand-in itself, not a description of one: this is exactly
+                  what the website will show until a photograph is uploaded. */}
+              <img
+                src={DEFAULT_PORTRAIT}
+                alt=""
+                className="mt-2.5 aspect-[5/6] w-32 rounded-sm border border-dashed border-[#DDDCD8] object-cover"
+              />
+              <p className="mt-2 text-[0.7rem] leading-snug text-slate">
+                No photograph. The website shows this placeholder until one is
+                uploaded.
+              </p>
+            </>
           )}
 
           <input

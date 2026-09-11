@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="720" viewBox="0 0 600 720" role="img" aria-label="No photograph yet">
+  <!--
+    The stand-in shown wherever a speaker has no photograph.
+
+    Deliberately greyscale, unlike placeholder-01..08 which carry the site's
+    colours: those stand in for a specific person whose photograph is coming,
+    whereas this one has to read at a glance as "nothing here yet" so nobody
+    publishes it by mistake.
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4F3F0"/><stop offset="100%" stop-color="#E6E4DF"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="720" fill="url(#bg)"/>
+
+  <!-- shoulders -->
+  <path d="M118 720c0-104 58-176 138-196h88c80 20 138 92 138 196z" fill="#C3C1BB"/>
+  <!-- neck -->
+  <path d="M270 470h60v66c0 12-14 20-30 20s-30-8-30-20z" fill="#CFCDC7"/>
+  <!-- head -->
+  <ellipse cx="300" cy="382" rx="86" ry="102" fill="#CFCDC7"/>
+
+  <rect x="0" y="714" width="600" height="6" fill="#C9A227" opacity="0.35"/>
+</svg>

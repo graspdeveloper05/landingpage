@@ -6,6 +6,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import { ExternalIcon } from '@/components/ui/Icons'
 import { cn } from '@/lib/cn'
+import { portraitSrc } from '@/lib/portrait'
 
 /**
  * §7 — photograph, name, designation, organisation, biography and official
@@ -53,7 +54,7 @@ export function SpeakerGrid({
             >
               <span className="relative block overflow-hidden">
                 <img
-                  src={speaker.portrait}
+                  src={portraitSrc(speaker.portrait)}
                   alt=""
                   width={600}
                   height={720}
@@ -95,7 +96,7 @@ export function SpeakerGrid({
         {active && (
           <div className="grid gap-7 sm:grid-cols-12">
             <img
-              src={active.portrait}
+              src={portraitSrc(active.portrait)}
               alt=""
               width={600}
               height={720}

@@ -4,6 +4,7 @@ import { useI18n, useLocalized } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import { ExternalIcon, QuoteMark } from '@/components/ui/Icons'
+import { portraitSrc } from '@/lib/portrait'
 
 /**
  * §6 item 03 — photograph, name, designation and welcome message.
@@ -28,7 +29,7 @@ export function ChairmanWelcome() {
           <figure className="anim-drift relative mx-auto max-w-[220px] lg:mx-0">
             <span aria-hidden className="absolute -inset-1.5 rounded-sm border border-gold-500/35" />
             <img
-              src={chairman.portrait}
+              src={portraitSrc(chairman.portrait)}
               alt=""
               width={600}
               height={720}

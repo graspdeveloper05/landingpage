@@ -31,7 +31,10 @@ class StoreSpeakerRequest extends FormRequest
             ],
             'name' => ['required', 'string', 'max:150'],
             'organisation' => ['required', 'string', 'max:150'],
-            'portrait' => ['required', 'string', 'max:255'],
+            // Optional: a speaker can be entered before their photograph has
+            // been supplied, and the panel can clear one. The site falls back
+            // to a placeholder -- see frontend/src/lib/portrait.ts.
+            'portrait' => ['present', 'nullable', 'string', 'max:255'],
             'role' => ['required', Rule::in(['speaker', 'moderator'])],
             'placeholder' => ['boolean'],
             'sort_order' => ['integer', 'min:0', 'max:999'],
@@ -73,6 +76,13 @@ class StoreSpeakerRequest extends FormRequest
         $link = $this->input('link');
         if (is_array($link) && blank($link['url'] ?? null) && blank($link['label'] ?? null)) {
             $this->merge(['link' => null]);
+        }
+
+        // A removed photograph reaches us as "" from the panel, but null from
+        // anything hand-rolled. The column is NOT NULL, so null would pass
+        // validation and then fail at the database -- a 500, not a message.
+        if ($this->exists('portrait') && blank($this->input('portrait'))) {
+            $this->merge(['portrait' => '']);
         }
     }
 }
