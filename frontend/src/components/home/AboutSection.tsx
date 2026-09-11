@@ -56,7 +56,9 @@ export function AboutSection({
                mix-blend-multiply drops that into the cream section, so the
                drawing sits on the page rather than inside a white box --
                no card, no shadow, no border. */
-            className="mx-auto w-full mix-blend-multiply"
+            /* anim-drift starts once the reveal beside it has settled --
+               see the note in index.css. */
+            className="anim-drift mx-auto w-full mix-blend-multiply"
           />
         </Reveal>
       </div>
