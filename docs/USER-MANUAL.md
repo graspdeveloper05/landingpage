@@ -1,7 +1,5 @@
 # Seri Negara Dialogue 2026 — User Manual
 
-**For the organising team.** No technical knowledge assumed.
-
 This manual explains what the website is, what every part of it does, and how
 to run it yourself — editing content, managing registrations and reading your
 visitor numbers — without calling a developer.
@@ -57,6 +55,8 @@ submits them, and each person is sent a confirmation email automatically.
 | **Programme** | `/programme` | The running order, in time order. |
 | **Register** | `/rsvp` | The registration form, the seats-remaining meter and the PDPA notice. |
 
+![The home page. The language switcher sits in the top navigation; the seats-remaining counter and the Register button appear throughout.](manual-images/public-home.jpg)
+
 Shared by every page: the top navigation, the language switcher, the footer with
 your contact and social links, and — on phones — a permanent **Register** bar at
 the bottom of the screen.
@@ -76,6 +76,8 @@ in the admin panel.
 1. Go to **https://serinegaradialogue.org/admin**
 2. Enter your email address and password.
 3. Press **Sign in**.
+
+![The sign-in screen. The eye icon reveals what you have typed.](manual-images/admin-signin.png)
 
 The eye icon beside the password box shows what you have typed, if you want to
 check it before pressing enter.
@@ -107,8 +109,7 @@ to people who should be able to see the full attendee list.
 > number, which is personal data under the PDPA.
 >
 > Ask your developer contact to create a real login for each person who needs
-> one, and to delete this account. It is one command each. See the checklist
-> at the end of section 12.
+> one, and to delete this account. It is one command each.
 
 ---
 
@@ -116,6 +117,8 @@ to people who should be able to see the full attendee list.
 
 **What this section controls:** the date, time, venue and capacity shown
 everywhere on the site — and whether the registration form is open.
+
+![The Event screen. When and The hero across the top; Where and Registration beneath.](manual-images/admin-event.png)
 
 ### The fields
 
@@ -196,11 +199,15 @@ screen.
 **What this section controls:** the Speakers page, and the speaker preview on
 the home page.
 
+![The line-up. Each row carries Move up, Move down, Edit and Remove.](manual-images/admin-speakers.png)
+
 ### Adding a speaker
 
 1. Press **Add speaker**.
 2. Fill in the fields below.
 3. Press **Save**.
+
+![The speaker form. The photograph sits on the left; the four language tabs run across Designation and Short biography.](manual-images/admin-speaker-form.png)
 
 | Field | Notes |
 |---|---|
@@ -257,6 +264,8 @@ public site immediately and **cannot be undone** — so if a speaker is only
 
 **What this section controls:** the Programme page.
 
+![The running order. Sessions are shown in the order visitors will see them.](manual-images/admin-programme.png)
+
 ### Adding a session
 
 1. Press **Add session**.
@@ -285,6 +294,8 @@ Press **Remove** on its row and confirm.
 ## 7. Registrations
 
 **What this section shows:** everyone who has registered.
+
+![The registration list. The red ! on the last row marks a confirmation email that did not send. The names shown here are examples, not real attendees.](manual-images/admin-registrations.png)
 
 The table lists, for each person: **reference, name and designation, email and
 mobile, organisation, dietary requirements, and when they registered.**
@@ -332,6 +343,8 @@ you get only those registrations, not the whole list.
 
 **What this section shows:** how many people are visiting the site, and from
 where.
+
+![The analytics screen: the four figures, the per-day chart, and the breakdowns beneath.](manual-images/admin-analytics.png)
 
 Choose a period at the top — **7, 30 or 90 days**. The panel then shows:
 
@@ -470,15 +483,14 @@ and nothing else.
 
 ### Before the site is announced
 
-A short list, all of it for your developer contact rather than for you, but
-worth checking has been done:
+For your developer contact, not for you — but worth checking it has been done:
 
 - [ ] **Replace the default admin login.** A real account for each person who
-      needs one, and `admin@serineg.com` deleted. Nothing else on this list
-      matters as much.
+      needs one, and `admin@serineg.com` deleted. Nothing else here matters
+      as much: that password is published in the source code, and signing in
+      shows every attendee's name, email address and mobile number.
 - [ ] Real speaker photographs and names in place of the stand-ins.
-- [ ] The PDPA wording on the registration form approved by whoever is
-      accountable for attendee data.
+- [ ] The PDPA wording approved by whoever is accountable for attendee data.
 - [ ] The Chinese and Tamil translations read by a native speaker.
 - [ ] Search engines allowed in — the site blocks them until launch, on
       purpose, so half-finished pages are never indexed.

@@ -102,6 +102,24 @@ function render(markdown) {
       continue
     }
 
+    // A screenshot on its own line becomes a captioned figure. Only this
+    // block form is supported -- an image inside a paragraph would have to
+    // fight the text for the column, and this document never wants that.
+    const figure = line.match(/^!\[([^\]]*)\]\(([^)]+)\)\s*$/)
+    if (figure) {
+      flushParagraph(para)
+      // Resolved to an absolute file:// URL because the page being printed
+      // lives in a temp directory, not next to docs/.
+      const src = pathToFileURL(resolve(ROOT, 'docs', figure[2])).href
+      out.push(
+        `<figure><img src="${src}" alt="${escapeHtml(figure[1])}">` +
+          (figure[1] ? `<figcaption>${inline(figure[1])}</figcaption>` : '') +
+          '</figure>',
+      )
+      i++
+      continue
+    }
+
     const heading = line.match(/^(#{1,4})\s+(.*)$/)
     if (heading) {
       flushParagraph(para)
@@ -307,6 +325,30 @@ li.task .box {
   color: var(--gold);
 }
 
+/* Screenshots. Kept whole on one page: half a screenshot across a page break
+   shows the reader a cropped interface and invites them to look for the rest
+   of a window that is not there. */
+figure {
+  margin: 0.9rem 0 1.1rem;
+  break-inside: avoid;
+}
+figure img {
+  display: block;
+  width: 100%;
+  max-height: 132mm;
+  object-fit: contain;
+  object-position: top left;
+  border: 0.5pt solid var(--hair);
+  border-radius: 2px;
+  background: var(--cream);
+}
+figcaption {
+  margin-top: 0.4rem;
+  font-size: 8.5pt;
+  color: var(--slate);
+  line-height: 1.45;
+}
+
 blockquote {
   margin: 0.8rem 0;
   padding: 0.6rem 0.85rem;
@@ -459,8 +501,7 @@ async function main() {
   <div class="rule"></div>
   <h1>${BRAND.title}</h1>
   <p class="sub">${BRAND.subtitle}</p>
-  <p class="lede">For the organising team. No technical knowledge assumed.<br><br>
-     This manual explains what the website is, what every part of it does, and
+  <p class="lede">This manual explains what the website is, what every part of it does, and
      how to run it yourself — editing content, managing registrations and
      reading your visitor numbers — without calling a developer.</p>
   <div class="where">
