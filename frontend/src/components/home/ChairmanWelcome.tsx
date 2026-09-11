@@ -20,7 +20,12 @@ export function ChairmanWelcome() {
     <section id="chairman" className="scroll-mt-24 border-t border-hair bg-cream py-section">
       <div className="shell grid items-start gap-x-10 gap-y-8 lg:grid-cols-12">
         <Reveal variant="left" className="lg:col-span-3 lg:self-center">
-          <figure className="relative mx-auto max-w-[220px] lg:mx-0">
+          {/*
+            The drift goes on the figure, not the image: the gold frame is an
+            absolutely positioned sibling of the portrait, so floating the
+            image alone would slide it out of its own frame.
+          */}
+          <figure className="anim-drift relative mx-auto max-w-[220px] lg:mx-0">
             <span aria-hidden className="absolute -inset-1.5 rounded-sm border border-gold-500/35" />
             <img
               src={chairman.portrait}

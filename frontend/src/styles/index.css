@@ -179,17 +179,19 @@
   animation: floatY 2.6s ease-in-out infinite;
 }
 
-/* A slow drift for a large illustration, as opposed to the 2.6s bob above
-   that suits a small scroll cue. Seven seconds and ten pixels on something
-   the size of the heritage drawing reads as the page breathing; the faster
-   curve makes an architectural rendering look like it is bouncing. */
+/* A slow drift for a large image, as opposed to the 2.6s bob above that
+   suits a small scroll cue. Six seconds and eighteen pixels: ten was true to
+   the restraint the brief asks for and turned out to be invisible in use --
+   on something the size of the heritage drawing it read as nothing moving at
+   all. Eighteen is seen without becoming the thing you look at, and the slow
+   curve is what keeps it from bouncing. */
 @keyframes driftY {
   0%,
   100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-18px);
   }
 }
 
@@ -208,7 +210,7 @@
  * sliding into place.
  */
 .js .reveal.is-visible .anim-drift {
-  animation: driftY 7s ease-in-out 0.75s infinite;
+  animation: driftY 6s ease-in-out 0.75s infinite;
 }
 
 /* Scroll-triggered reveal, driven by IntersectionObserver in useReveal().
