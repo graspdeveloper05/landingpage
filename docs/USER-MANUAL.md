@@ -15,14 +15,15 @@ visitor numbers — without calling a developer.
 2. [The public website, page by page](#2-the-public-website-page-by-page)
 3. [Signing in to the admin panel](#3-signing-in-to-the-admin-panel)
 4. [Event — date, venue, capacity, opening and closing registration](#4-event)
-5. [Speakers — adding, editing, reordering, portraits](#5-speakers)
-6. [Programme — the running order](#6-programme)
-7. [Registrations — the attendee list and CSV export](#7-registrations)
-8. [Analytics — who is visiting](#8-analytics)
-9. [The four languages](#9-the-four-languages)
-10. [Privacy and attendee data (PDPA)](#10-privacy-and-attendee-data-pdpa)
-11. [Everyday questions and problems](#11-everyday-questions-and-problems)
-12. [What belongs to you](#12-what-belongs-to-you)
+5. [Chairman — photograph and welcome](#5-chairman)
+6. [Speakers — adding, editing, reordering, portraits](#6-speakers)
+7. [Programme — the running order](#7-programme)
+8. [Registrations — the attendee list and CSV export](#8-registrations)
+9. [Analytics — who is visiting](#9-analytics)
+10. [The four languages](#10-the-four-languages)
+11. [Privacy and attendee data (PDPA)](#11-privacy-and-attendee-data-pdpa)
+12. [Everyday questions and problems](#12-everyday-questions-and-problems)
+13. [What belongs to you](#13-what-belongs-to-you)
 
 ---
 
@@ -82,8 +83,8 @@ in the admin panel.
 The eye icon beside the password box shows what you have typed, if you want to
 check it before pressing enter.
 
-Once in, you will see five sections down the left: **Event, Speakers,
-Programme, Registrations, Analytics**. On a phone or tablet, tap the menu
+Once in, you will see six sections down the left: **Event, Chairman,
+Speakers, Programme, Registrations, Analytics**. On a phone or tablet, tap the menu
 button at the top left to open the same list.
 
 **Signing out:** press **Sign out**, at the foot of the left-hand menu. You are also signed out
@@ -194,7 +195,40 @@ screen.
 
 ---
 
-## 5. Speakers
+## 5. Chairman
+
+**What this section controls:** the chairman's photograph and welcome, shown on
+the home page between the theme and the speakers.
+
+![The Chairman screen. The photograph on the left; who he is and what he says on the right.](manual-images/admin-chairman.png)
+
+### Who he is
+
+| Field | Notes |
+|---|---|
+| **Name** | As it should be printed. Names are never translated. |
+| **Organisation** | For example *Chevening Alumni Malaysia*. |
+| **Designation** | For example *Organising Chairman, Seri Negara Dialogue 2026*. **Needed in all four languages.** |
+
+### What he says
+
+| Field | Notes |
+|---|---|
+| **Welcome message** | The short letter beside the photograph. Two or three sentences. **Needed in all four languages.** |
+| **Pull quote** | Set large to the right of the letter. One sentence. **Needed in all four languages.** |
+
+### Photograph
+
+The same shape as a speaker's: portrait, 5:6 — **700 × 840 pixels** is the
+target, with the head in the upper third. Press **Choose File** to upload one.
+
+Beneath it the panel says whether it is *using an uploaded photograph* or the
+stand-in that came with the site. **Remove photograph** clears an uploaded one
+and returns to the stand-in; it appears only once a real photograph is there.
+
+---
+
+## 6. Speakers
 
 **What this section controls:** the Speakers page, and the speaker preview on
 the home page.
@@ -260,7 +294,7 @@ public site immediately and **cannot be undone** — so if a speaker is only
 
 ---
 
-## 6. Programme
+## 7. Programme
 
 **What this section controls:** the Programme page.
 
@@ -291,7 +325,7 @@ Press **Remove** on its row and confirm.
 
 ---
 
-## 7. Registrations
+## 8. Registrations
 
 **What this section shows:** everyone who has registered.
 
@@ -335,11 +369,11 @@ you get only those registrations, not the whole list.
 
 > 🔒 That file contains names, emails and mobile numbers — personal data under
 > the PDPA. Do not email it around or leave it in a shared folder. See
-> section 10.
+> section 11.
 
 ---
 
-## 8. Analytics
+## 9. Analytics
 
 **What this section shows:** how many people are visiting the site, and from
 where.
@@ -383,7 +417,7 @@ four languages.
 
 ---
 
-## 9. The four languages
+## 10. The four languages
 
 The site is published in **English, Bahasa Malaysia, 中文 and தமிழ்**. Visitors
 switch with the control in the header, and their choice is remembered.
@@ -406,7 +440,7 @@ developer contact.
 
 ---
 
-## 10. Privacy and attendee data (PDPA)
+## 11. Privacy and attendee data (PDPA)
 
 The registration list is personal data. Please treat it accordingly.
 
@@ -433,7 +467,7 @@ The registration list is personal data. Please treat it accordingly.
 
 ---
 
-## 11. Everyday questions and problems
+## 12. Everyday questions and problems
 
 **"I saved, but the website has not changed."**
 Refresh the page in your browser (Ctrl+R, or Cmd+R on a Mac). If it still looks
@@ -467,7 +501,7 @@ There is no reset email. Contact your developer, who can issue a new one.
 
 ---
 
-## 12. What belongs to you
+## 13. What belongs to you
 
 On handover, the following transfer to Chevening Alumni Malaysia:
 
