@@ -16,6 +16,7 @@ import { onBusyChange, type AdminUser } from './client'
 
 const NAV = [
   { to: '/admin/event', label: 'Event', icon: CalendarIcon, hint: 'Date, venue, capacity' },
+  { to: '/admin/chairman', label: 'Chairman', icon: PersonIcon, hint: 'Photograph and welcome' },
   { to: '/admin/speakers', label: 'Speakers', icon: PeopleIcon, hint: 'Line-up and portraits' },
   { to: '/admin/programme', label: 'Programme', icon: ListIcon, hint: 'Running order' },
   { to: '/admin/registrations', label: 'Registrations', icon: TicketIcon, hint: 'Attendees and export' },
@@ -260,6 +261,17 @@ function CalendarIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden>
       <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
       <path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  )
+}
+
+/** One figure, deliberately distinct from the two in PeopleIcon: side by side
+ *  in the menu, a second group icon would read as another speakers list. */
+function PersonIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden>
+      <circle cx="8" cy="5" r="2.6" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M3 13.5c0-2.6 2.2-4.2 5-4.2s5 1.6 5 4.2" stroke="currentColor" strokeWidth="1.4" />
     </svg>
   )
 }

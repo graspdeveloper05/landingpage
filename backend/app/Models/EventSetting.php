@@ -60,14 +60,7 @@ class EventSetting extends Model
              * hero lines follow. Sent as one object because that is the shape
              * the component already consumes.
              */
-            'chairman' => $this->chairman_name === null ? null : [
-                'name' => $this->chairman_name,
-                'organisation' => $this->chairman_organisation,
-                'designation' => $this->chairman_designation,
-                'message' => $this->chairman_message,
-                'quote' => $this->chairman_quote,
-                'portrait' => $this->chairman_portrait,
-            ],
+            'chairman' => $this->chairmanArray(),
             'venue' => $this->venue,
             'venueAddress' => $this->venue_address,
             'mapsUrl' => $this->maps_url,
@@ -75,6 +68,30 @@ class EventSetting extends Model
             'capacity' => $this->capacity,
             'registrationOpen' => (bool) $this->registration_open,
             'isPast' => $this->hasPassed(),
+        ];
+    }
+
+    /**
+     * The chairman as both the site and the panel consume him.
+     *
+     * Null until the team has edited him, and the site then falls back to the
+     * record shipped in the data file -- the same rule the hero's two lines
+     * follow. Portrait is normalised to a string here because the site puts
+     * it straight into an <img src>, where null would render "null".
+     */
+    public function chairmanArray(): ?array
+    {
+        if ($this->chairman_name === null) {
+            return null;
+        }
+
+        return [
+            'name' => $this->chairman_name,
+            'organisation' => $this->chairman_organisation,
+            'designation' => $this->chairman_designation,
+            'message' => $this->chairman_message,
+            'quote' => $this->chairman_quote,
+            'portrait' => (string) $this->chairman_portrait,
         ];
     }
 

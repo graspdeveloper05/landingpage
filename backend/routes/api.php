@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AnalyticsController;
+use App\Http\Controllers\Api\Admin\ChairmanAdminController;
 use App\Http\Controllers\Api\Admin\EventAdminController;
 use App\Http\Controllers\Api\Admin\HeroImageController;
 use App\Http\Controllers\Api\Admin\PortraitController;
@@ -86,6 +87,11 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::get('/event', [EventAdminController::class, 'show']);
     Route::put('/event', [EventAdminController::class, 'update']);
+
+    // §6 item 03. Separate from the event so neither form has to send the
+    // other's fields to save its own.
+    Route::get('/chairman', [ChairmanAdminController::class, 'show']);
+    Route::put('/chairman', [ChairmanAdminController::class, 'update']);
 
     Route::post('/portraits', [PortraitController::class, 'store']);
     Route::post('/hero-image', [HeroImageController::class, 'store']);

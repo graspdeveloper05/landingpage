@@ -5,6 +5,7 @@ import { AdminButton, AdminField, Notice } from './ui'
 import { AdminSplash } from './Loading'
 import { ToastProvider } from './Toast'
 import { AnalyticsAdmin } from './AnalyticsAdmin'
+import { ChairmanAdmin } from './ChairmanAdmin'
 import { EventAdmin } from './EventAdmin'
 import { SpeakersAdmin } from './SpeakersAdmin'
 import { ProgrammeAdmin } from './ProgrammeAdmin'
@@ -61,6 +62,7 @@ export default function AdminApp() {
         <Routes>
           <Route path="analytics" element={<AnalyticsAdmin />} />
           <Route path="event" element={<EventAdmin />} />
+          <Route path="chairman" element={<ChairmanAdmin />} />
           <Route path="speakers" element={<SpeakersAdmin />} />
           <Route path="programme" element={<ProgrammeAdmin />} />
           <Route path="registrations" element={<RegistrationsAdmin />} />
