@@ -103,6 +103,22 @@ class EventAdminController extends Controller
             'heroImage.regex' => 'Upload the image again -- that path is not one of ours.',
         ]);
 
+        /*
+         * Absent and null mean different things here, and `?? null` treated
+         * them alike: a save that simply did not mention the hero erased it.
+         *
+         * That is not hypothetical. An admin tab left open on an older build
+         * has no hero field, so its next save sends no heroImage key at all
+         * and silently clears a photograph somebody chose. Confirmed by
+         * replaying exactly that request against a set hero.
+         *
+         * Only an explicit null clears it now; a payload without the key
+         * leaves what is stored alone.
+         */
+        $heroImage = array_key_exists('heroImage', $data)
+            ? ['hero_image' => $data['heroImage']]
+            : [];
+
         $setting = EventSetting::updateOrCreate(
             ['edition' => $edition],
             [
@@ -118,8 +134,7 @@ class EventAdminController extends Controller
                 'registration_open' => $data['registrationOpen'],
                 'event_name' => $data['eventName'],
                 'subtitle' => $data['subtitle'],
-                // Absent means "not sent by this form"; null means "cleared".
-                'hero_image' => $data['heroImage'] ?? null,
+                ...$heroImage,
             ],
         );
 

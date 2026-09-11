@@ -67,6 +67,10 @@ class HeroImageController extends Controller
             'hero.max' => 'The image must be under 12 MB.',
             'hero.mimes' => 'Use a JPEG, PNG or WebP image.',
             'hero.required' => 'Choose an image to upload.',
+            // Otherwise Laravel says "The hero field must be an image",
+            // naming an internal field to somebody who only sees a file
+            // picker. This is what a renamed .php or .pdf lands on.
+            'hero.image' => 'That file is not an image. Use a JPEG, PNG or WebP.',
         ]);
 
         $source = @imagecreatefromstring(
