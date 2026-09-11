@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { API_BASE } from '@/services/api'
 import { adminApi, reachable } from './client'
 import { AdminButton, AdminCard, AdminField, Notice } from './ui'
@@ -33,6 +33,8 @@ interface Page {
     capacity: number
     edition: number
     editions: Edition[]
+    editionTotal: number
+    timezone: string
   }
 }
 
@@ -44,6 +46,38 @@ interface Page {
  * than left to be worked out from it. The count is there because the most
  * common reason to open this filter is to find where the attendees are.
  */
+/** One end of the date range. Narrow, because a date input needs no more. */
+function DateBound({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  label: string
+  value: string
+  min?: string
+  max?: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <label className="block">
+      <span className="block text-[0.78rem] font-semibold text-navy-900">{label}</span>
+      <input
+        type="date"
+        value={value}
+        // The browser enforces the ordering in its own picker, so an
+        // impossible range is hard to enter rather than merely rejected
+        // afterwards by the API.
+        min={min || undefined}
+        max={max || undefined}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 block rounded-sm border border-[#DDDCD8] bg-white px-2.5 py-1.5 text-[0.85rem] text-navy-950 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/35"
+      />
+    </label>
+  )
+}
+
 function editionLabel(e: Edition): string {
   const when = e.date
     ? new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -61,21 +95,33 @@ export function RegistrationsAdmin() {
   // separately from meta.edition so the dropdown does not snap back to the
   // old value for the moment a slower response is still in flight.
   const [edition, setEdition] = useState<number | null>(null)
+  // Registered-between, as Y-m-d. Empty string means "no bound", which is
+  // also what an emptied <input type="date"> reports.
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   // Bumped by "Try again" to re-run the effect without changing the query.
   const [reloads, setReloads] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  // Sequence number for in-flight requests; see the note in the effect.
+  const latest = useRef(0)
 
   useEffect(() => {
-    // Debounced: typing a name would otherwise fire a query per keystroke,
-    // and the answers can arrive out of order and show the wrong list.
+    // Debounced: typing a name would otherwise fire a query per keystroke.
+    // Debouncing thins them out but does not order them -- two requests that
+    // do go out can still answer in either order -- so each one takes a
+    // number below and only the newest may write to state.
     const timer = setTimeout(() => {
+      const ticket = ++latest.current
       const params = new URLSearchParams({ page: String(current) })
       if (search.trim()) params.set('search', search.trim())
       if (edition !== null) params.set('edition', String(edition))
+      if (from) params.set('from', from)
+      if (to) params.set('to', to)
       setError(null)
       adminApi
         .get<Page>(`/admin/registrations/list?${params}`)
         .then((result) => {
+          if (ticket !== latest.current) return
           setPage(result)
           // Adopt whatever the server settled on, so the dropdown shows the
           // edition actually being listed rather than one that was asked for
@@ -83,6 +129,7 @@ export function RegistrationsAdmin() {
           setEdition(result.meta.edition)
         })
         .catch((e) => {
+          if (ticket !== latest.current) return
           // Show an empty result rather than leaving `page` null, which would
           // sit on "Loading..." underneath the error indefinitely. The
           // editions already loaded are kept, so the filter does not vanish
@@ -96,15 +143,26 @@ export function RegistrationsAdmin() {
               capacity: 0,
               edition: edition ?? 0,
               editions: prev?.meta.editions ?? [],
+              editionTotal: 0,
+              timezone: prev?.meta.timezone ?? 'UTC',
             },
           }))
           setError(reachable(e))
         })
     }, 250)
     return () => clearTimeout(timer)
-  }, [search, current, reloads, edition])
+  }, [search, current, reloads, edition, from, to])
 
   const meta = page?.meta
+  // Search is deliberately not counted: it is a lookup, not a filter, and
+  // "2 shown" while typing a name is noise rather than information.
+  const filtered = Boolean(from || to)
+
+  const exportQuery = new URLSearchParams({
+    ...(edition !== null ? { edition: String(edition) } : {}),
+    ...(from ? { from } : {}),
+    ...(to ? { to } : {}),
+  }).toString()
 
   return (
     <>
@@ -118,10 +176,25 @@ export function RegistrationsAdmin() {
           */}
           {meta && !error && (
             <p className="mt-1 text-small text-slate">
-              <strong className="text-navy-900">{meta.total}</strong> of {meta.capacity} seats
-              taken
-              {meta.total >= meta.capacity && (
-                <span className="ml-2 font-semibold text-red-700">— registration is closed</span>
+              {filtered ? (
+                /* While a range is applied, "3 of 200 seats taken" would be
+                   read as the seat count for the whole event, which it is
+                   not. Say how many the filter matched instead, and keep the
+                   edition's real total beside it. */
+                <>
+                  <strong className="text-navy-900">{meta.total}</strong> shown
+                  <span className="text-slate"> · {meta.editionTotal} in {meta.edition}</span>
+                </>
+              ) : (
+                <>
+                  <strong className="text-navy-900">{meta.total}</strong> of {meta.capacity} seats
+                  taken
+                  {meta.total >= meta.capacity && (
+                    <span className="ml-2 font-semibold text-red-700">
+                      — registration is closed
+                    </span>
+                  )}
+                </>
               )}
             </p>
           )}
@@ -136,12 +209,13 @@ export function RegistrationsAdmin() {
             screen but not the file that downloads from beside it is how the
             wrong year's attendee list gets emailed to a caterer. */}
         <a
-          href={`${API_BASE}/api/admin/registrations${edition !== null ? `?edition=${edition}` : ''}`}
+          href={`${API_BASE}/api/admin/registrations?${exportQuery}`}
           // Styled to match AdminButton rather than reusing it: this has to
           // stay an <a> so the browser performs the download itself.
           className="inline-flex min-h-[34px] items-center rounded-sm bg-navy-900 px-3 text-[0.78rem] font-semibold text-cream transition-colors hover:bg-navy-800"
         >
           Download CSV{edition !== null && ` (${edition})`}
+          {filtered && <span className="ml-1 font-normal opacity-80">· filtered</span>}
         </a>
       </div>
 
@@ -181,6 +255,40 @@ export function RegistrationsAdmin() {
           </label>
         )}
 
+        <DateBound
+          label="Registered from"
+          value={from}
+          // Bounded by each other, so the picker cannot offer a range that
+          // ends before it begins.
+          max={to}
+          onChange={(v) => {
+            setFrom(v)
+            setCurrent(1)
+          }}
+        />
+        <DateBound
+          label="to"
+          value={to}
+          min={from}
+          onChange={(v) => {
+            setTo(v)
+            setCurrent(1)
+          }}
+        />
+
+        {filtered && (
+          <AdminButton
+            variant="quiet"
+            onClick={() => {
+              setFrom('')
+              setTo('')
+              setCurrent(1)
+            }}
+          >
+            Clear dates
+          </AdminButton>
+        )}
+
         <div className="min-w-[16rem] max-w-sm grow">
           <AdminField
             label="Search"
@@ -202,10 +310,15 @@ export function RegistrationsAdmin() {
           <p className="text-small text-slate">
             {search
               ? 'Nobody matches that search.'
-              : /* Names the year, so an empty list reads as "nobody has
-                   registered for 2027 yet" rather than as a list that has
-                   failed to load. */
-                `No registrations for ${meta?.edition ?? ''} yet.`}
+              : filtered
+                ? /* An edition with people in it but none in the chosen
+                     range is a different answer from an edition nobody has
+                     signed up for, and the fix is different too. */
+                  `No registrations between those dates. ${meta?.editionTotal ?? 0} in ${meta?.edition ?? ''} altogether.`
+                : /* Names the year, so an empty list reads as "nobody has
+                     registered for 2027 yet" rather than as a list that has
+                     failed to load. */
+                  `No registrations for ${meta?.edition ?? ''} yet.`}
           </p>
         </AdminCard>
       )}
@@ -255,6 +368,11 @@ export function RegistrationsAdmin() {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric',
+                          // The venue's zone, not the viewer's. Without this a
+                          // registration made at 00:30 in Kuala Lumpur shows
+                          // as the previous day to anyone abroad, while the
+                          // date filter beside it says otherwise.
+                          timeZone: meta?.timezone,
                         })
                       : '—'}
                   </td>

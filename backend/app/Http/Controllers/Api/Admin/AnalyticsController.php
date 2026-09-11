@@ -14,14 +14,52 @@ class AnalyticsController extends Controller
 {
     public function __invoke(Request $request): JsonResponse
     {
-        $days = (int) ($request->validate([
+        $input = $request->validate([
             'days' => ['nullable', 'integer', 'in:7,30,90'],
-        ])['days'] ?? 30);
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
+        ]);
 
         $tz = config('event.timezone');
-        $from = now($tz)->subDays($days - 1)->toDateString();
+        $today = now($tz)->startOfDay();
 
-        $window = PageView::query()->where('viewed_on', '>=', $from);
+        /*
+         * Two ways to ask for a window, and an explicit range wins.
+         *
+         * The presets answer "how are we doing lately", which is the daily
+         * question, so they stay. A range answers "what happened around the
+         * launch email", which the presets cannot express at all.
+         */
+        $hasRange = isset($input['from']) || isset($input['to']);
+
+        if ($hasRange) {
+            $start = Carbon::parse($input['from'] ?? '2020-01-01', $tz)->startOfDay();
+            $end = Carbon::parse($input['to'] ?? $today->toDateString(), $tz)->startOfDay();
+
+            // A range reaching into next week is not an error worth refusing,
+            // but charting empty future days makes today look like a cliff.
+            if ($end->greaterThan($today)) {
+                $end = $today->copy();
+            }
+
+            // The series is one row per day, so an unbounded start would draw
+            // several thousand columns and send them all to the browser. A
+            // year is more than the whole life of this event.
+            if ($start->diffInDays($end) > 366) {
+                $start = $end->copy()->subDays(366);
+            }
+        } else {
+            $days = (int) ($input['days'] ?? 30);
+            $end = $today->copy();
+            $start = $today->copy()->subDays($days - 1);
+        }
+
+        // Inclusive of both ends: a range of 5 Sept to 5 Sept means that day,
+        // not nothing.
+        $days = (int) $start->diffInDays($end) + 1;
+
+        $window = PageView::query()
+            ->whereBetween('viewed_on', [$start->toDateString(), $end->toDateString()]);
 
         /*
          * Every figure below is read from its own clone of the query. Reusing
@@ -44,7 +82,7 @@ class AnalyticsController extends Controller
         // two busy days, which reads as steady interest.
         $series = [];
         for ($i = $days - 1; $i >= 0; $i--) {
-            $date = now($tz)->subDays($i)->toDateString();
+            $date = $end->copy()->subDays($i)->toDateString();
             $row = $byDay->get($date);
             $series[] = [
                 'date' => $date,
@@ -55,11 +93,20 @@ class AnalyticsController extends Controller
 
         $registrations = Registration::query()
             ->where('edition', (int) config('event.edition'))
-            ->where('created_at', '>=', Carbon::parse($from, $tz)->startOfDay())
+            // The same window as the views above, so the conversion figure
+            // divides two numbers covering the same days. endOfDay because
+            // created_at is a timestamp and the bare date would cut the last
+            // day of the range off at midnight.
+            ->whereBetween('created_at', [$start->copy()->utc(), $end->copy()->endOfDay()->utc()])
             ->count();
 
         return response()->json([
             'days' => $days,
+            // Echoed back so the panel can label the window it is showing
+            // rather than assume it got the one it asked for.
+            'from' => $start->toDateString(),
+            'to' => $end->toDateString(),
+            'custom' => $hasRange,
             'views' => $views,
             'visitors' => $visitors,
             'registrations' => $registrations,

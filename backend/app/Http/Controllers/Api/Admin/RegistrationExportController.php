@@ -25,9 +25,24 @@ class RegistrationExportController extends Controller
             'options' => ['min_range' => 2000, 'max_range' => 2100],
         ]) ?: (int) config('event.edition');
 
-        $filename = sprintf('seri-negara-dialogue-%d-registrations.csv', $edition);
+        // The export carries the same date range as the list it downloads
+        // from. Anything that fails to parse is dropped rather than refused:
+        // this endpoint also serves a scheduled curl on the server, and a
+        // backup that starts 400-ing because of a stray parameter is a backup
+        // that stops running.
+        $from = $this->date($request->query('from'));
+        $to = $this->date($request->query('to'));
 
-        return response()->streamDownload(function () use ($edition) {
+        $filename = sprintf(
+            'seri-negara-dialogue-%d-registrations%s.csv',
+            $edition,
+            // The range goes in the filename. Two exports of the same edition
+            // otherwise land in the downloads folder as (1) and (2), with
+            // nothing to say which one covers which weeks.
+            $from || $to ? '-'.($from ?: 'start').'-to-'.($to ?: 'end') : '',
+        );
+
+        return response()->streamDownload(function () use ($edition, $from, $to) {
             $handle = fopen('php://output', 'wb');
 
             // Excel opens UTF-8 CSV as the local codepage unless it sees a BOM,
@@ -37,6 +52,7 @@ class RegistrationExportController extends Controller
             fputcsv($handle, array_values(Registration::EXPORT_COLUMNS));
 
             Registration::forEdition($edition)
+                ->registeredBetween($from, $to)
                 ->orderBy('id')
                 ->chunk(200, function ($rows) use ($handle) {
                     foreach ($rows as $row) {
@@ -52,6 +68,20 @@ class RegistrationExportController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Cache-Control' => 'no-store',
         ]);
+    }
+
+    /** A Y-m-d date, or null for anything that is not one. */
+    private function date(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+
+        // createFromFormat accepts 2026-13-45 and rolls it forward into the
+        // next year, so the round-trip check is what actually rejects it.
+        return $date && $date->format('Y-m-d') === $value ? $value : null;
     }
 
     /**

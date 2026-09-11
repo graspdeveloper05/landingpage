@@ -25,6 +25,30 @@ export function SiteHeader() {
 
   useEffect(() => setOpen(false), [pathname])
 
+  /*
+   * A nav link to the page you are already on.
+   *
+   * React Router treats that as no navigation at all, so ScrollToTop -- which
+   * watches the pathname -- never fires, and clicking "Home" while standing
+   * in the footer of the homepage did nothing whatsoever. The link looked
+   * broken. Returning to the top is the only sensible reading of that click,
+   * so it is done here.
+   */
+  const returnToTop = (to: string) => (event: { preventDefault: () => void }) => {
+    if (to !== pathname) return
+    event.preventDefault()
+    setOpen(false)
+    window.scrollTo({
+      top: 0,
+      // Animated, because this is a move within a page the reader is already
+      // on and a silent jump reads as a reload. Instant for anyone who has
+      // asked for less motion.
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+    })
+  }
+
   // On the homepage every route target is also a section, so the nav follows
   // the reader down the page instead of sitting permanently on "Home".
   const spyIds = useMemo(() => (pathname === '/' ? HOME_SECTIONS : []), [pathname])
@@ -49,7 +73,7 @@ export function SiteHeader() {
       </a>
 
       <div className={cn('shell flex items-center justify-between gap-4 transition-all duration-300', scrolled ? 'h-16' : 'h-20')}>
-        <NavLink to="/" className="flex min-h-[44px] items-center">
+        <NavLink to="/" onClick={returnToTop('/')} className="flex min-h-[44px] items-center">
           <Wordmark tone="light" />
         </NavLink>
 
@@ -65,6 +89,7 @@ export function SiteHeader() {
                 key={to}
                 to={to}
                 end={to === '/'}
+                onClick={returnToTop(to)}
                 className={({ isActive }) => {
                   // On the homepage the scrollspy decides; elsewhere the route does.
                   const on = pathname === '/' ? spied : isActive
@@ -112,6 +137,7 @@ export function SiteHeader() {
                 key={to}
                 to={to}
                 end={to === '/'}
+                onClick={returnToTop(to)}
                 className={({ isActive }) =>
                   cn(
                     'flex min-h-[54px] items-center border-b border-cream/12 text-body last:border-0',

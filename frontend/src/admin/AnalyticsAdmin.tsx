@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { adminApi, reachable } from './client'
 import { AdminButton, AdminCard, Notice } from './ui'
 import { SkeletonForm } from './Loading'
@@ -12,6 +12,9 @@ interface Breakdown {
 
 interface Summary {
   days: number
+  from: string
+  to: string
+  custom: boolean
   views: number
   visitors: number
   registrations: number
@@ -31,29 +34,100 @@ const LOCALE_NAMES: Record<string, string> = {
   ta: 'தமிழ்',
 }
 
+/** One end of the analytics range. Label sits beside it, not above: this row
+ *  is chrome above a chart, and stacked labels would out-weigh it. */
+function DayInput({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  label: string
+  value: string
+  min?: string
+  max?: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <input
+      type="date"
+      aria-label={label}
+      value={value}
+      min={min || undefined}
+      max={max || undefined}
+      onChange={(e) => onChange(e.target.value)}
+      className="rounded-sm border border-[#DDDCD8] bg-white px-2 py-1 text-[0.72rem] text-navy-900 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/35"
+    />
+  )
+}
+
+function formatDay(iso: string): string {
+  // Parsed as a plain date, so it is not shifted by the viewer's timezone the
+  // way `new Date('2026-09-05')` would be west of Greenwich.
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
 /** §12 — basic website analytics, first-party and cookieless. */
 export function AnalyticsAdmin() {
   const [days, setDays] = useState<(typeof RANGES)[number]>(30)
+  // An explicit range, as Y-m-d. Either end may stand alone: a `from` with no
+  // `to` reads as "since", which is the usual way somebody asks about a
+  // launch date.
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [data, setData] = useState<Summary | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const load = (range: number) => {
+  const custom = Boolean(from || to)
+
+  const query = custom
+    ? new URLSearchParams({ ...(from ? { from } : {}), ...(to ? { to } : {}) }).toString()
+    : `days=${days}`
+
+  /*
+   * Guards against a stale answer winning.
+   *
+   * Picking a start and then an end fires two requests, and the first can
+   * come back second. That was visible: setting a range whose ends were
+   * briefly out of order produced a 422 that arrived after the good response
+   * and left the page showing an error for a range that was perfectly valid.
+   * Every request takes a number, and only the newest one is allowed to write
+   * to state.
+   */
+  const latest = useRef(0)
+
+  const load = () => {
+    const ticket = ++latest.current
     setError(null)
     return adminApi
-      .get<Summary>(`/admin/analytics?days=${range}`)
-      .then(setData)
-      .catch((e) => setError(reachable(e)))
+      .get<Summary>(`/admin/analytics?${query}`)
+      .then((result) => {
+        if (ticket === latest.current) setData(result)
+      })
+      .catch((e) => {
+        if (ticket === latest.current) setError(reachable(e))
+      })
   }
 
   useEffect(() => {
-    load(days)
-  }, [days])
+    // Debounced, like the registration search. A date input fires a change
+    // per arrow-key press in the picker, and without this a week's worth of
+    // queries goes out while somebody scrolls to the day they wanted.
+    const timer = setTimeout(load, 250)
+    return () => clearTimeout(timer)
+  }, [query])
 
   if (error) {
     return (
       <div className="flex flex-wrap items-center gap-3">
         <Notice kind="error">{error}</Notice>
-        <AdminButton variant="quiet" onClick={() => load(days)}>
+        <AdminButton variant="quiet" onClick={() => load()}>
           Try again
         </AdminButton>
       </div>
@@ -71,29 +145,66 @@ export function AnalyticsAdmin() {
           Counted on this server. No cookies, no third party, nothing
           identifying stored — which is why the site carries no cookie banner.
         </p>
-        <div className="flex gap-1">
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setDays(r)}
-              className={cn(
-                'rounded-sm border px-2.5 py-1 text-[0.72rem] font-semibold transition-colors',
-                days === r
-                  ? 'border-navy-900 bg-navy-900 text-cream'
-                  : 'border-[#DDDCD8] bg-white text-navy-800 hover:border-navy-600',
-              )}
-            >
-              {r} days
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex gap-1">
+            {RANGES.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => {
+                  // Choosing a preset clears the range, rather than leaving
+                  // two controls on screen disagreeing about the window.
+                  setFrom('')
+                  setTo('')
+                  setDays(r)
+                }}
+                className={cn(
+                  'rounded-sm border px-2.5 py-1 text-[0.72rem] font-semibold transition-colors',
+                  !custom && days === r
+                    ? 'border-navy-900 bg-navy-900 text-cream'
+                    : 'border-[#DDDCD8] bg-white text-navy-800 hover:border-navy-600',
+                )}
+              >
+                {r} days
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <DayInput label="From" value={from} max={to} onChange={setFrom} />
+            <span className="text-[0.72rem] text-slate">to</span>
+            <DayInput label="To" value={to} min={from} onChange={setTo} />
+            {custom && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFrom('')
+                  setTo('')
+                }}
+                className="rounded-sm border border-[#DDDCD8] bg-white px-2.5 py-1 text-[0.72rem] font-semibold text-navy-800 transition-colors hover:border-navy-600"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/*
+        Named only for a custom range. For a preset the buttons already say
+        which window is showing, and repeating it underneath is chrome.
+      */}
+      {data.custom && (
+        <p className="mb-4 text-[0.72rem] text-slate">
+          Showing {formatDay(data.from)} to {formatDay(data.to)} · {data.days}{' '}
+          {data.days === 1 ? 'day' : 'days'}
+        </p>
+      )}
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Visitors" value={data.visitors} hint="Counted once a day each" />
         <Stat label="Page views" value={data.views} />
-        <Stat label="Registrations" value={data.registrations} hint={`In these ${data.days} days`} />
+        <Stat label="Registrations" value={data.registrations} hint={data.days === 1 ? 'On this day' : `In these ${data.days} days`} />
         <Stat
           label="Registered"
           value={data.conversion === null ? '—' : `${data.conversion}%`}

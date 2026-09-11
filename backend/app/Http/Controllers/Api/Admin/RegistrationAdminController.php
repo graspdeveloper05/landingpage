@@ -19,6 +19,14 @@ class RegistrationAdminController extends Controller
             // Bounded rather than a bare integer: the value reaches an indexed
             // smallint column, and 2000-2100 is the range the column holds.
             'edition' => ['nullable', 'integer', 'min:2000', 'max:2100'],
+            // Received-between, on the date the person registered. Y-m-d
+            // exactly, because that is what <input type="date"> submits and
+            // anything else here is a malformed request rather than a date
+            // worth guessing at.
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            // A range that ends before it starts returns nothing and looks
+            // like an empty list rather than a mistake, so it is refused.
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
         ]);
 
         $editions = $this->editions();
@@ -27,12 +35,22 @@ class RegistrationAdminController extends Controller
         // registration would silently return an empty list that looks like a
         // year with no attendees. Falling back to the current edition says
         // instead that the request did not name a year we know about.
-        $requested = $filters['edition'] ?? null;
+        // Cast before comparing. A query parameter arrives as the string
+        // '2027' even after the integer validation rule passes, and a strict
+        // in_array against a list of ints then matched nothing -- every
+        // request fell back to the current edition and the dropdown snapped
+        // back on its own.
+        $requested = isset($filters['edition']) ? (int) $filters['edition'] : null;
         $edition = in_array($requested, array_column($editions, 'edition'), true)
-            ? (int) $requested
+            ? $requested
             : (int) config('event.edition');
 
-        $query = Registration::forEdition($edition)->latest('created_at');
+        $from = $filters['from'] ?? null;
+        $to = $filters['to'] ?? null;
+
+        $query = Registration::forEdition($edition)
+            ->registeredBetween($from, $to)
+            ->latest('created_at');
 
         if ($search = $filters['search'] ?? null) {
             // Escaped so a name containing % or _ searches for those
@@ -70,6 +88,17 @@ class RegistrationAdminController extends Controller
                 // response so a 2027 edition created in another tab appears
                 // here on the next load, with no separate endpoint to call.
                 'editions' => $editions,
+                // The unfiltered size of this edition, so the caption can say
+                // "12 of 47" while a range is applied. Without it the panel
+                // cannot tell a narrow range from an empty edition.
+                'editionTotal' => Registration::forEdition($edition)->count(),
+                // The panel renders dates in this zone rather than the
+                // viewer's. The date filter resolves its bounds in Kuala
+                // Lumpur, so a browser in another timezone would print a
+                // registration made at 00:30 KL as the previous day while the
+                // filter correctly counted it as this one -- the column and
+                // the filter contradicting each other on screen.
+                'timezone' => config('event.timezone'),
             ],
         ]);
     }
