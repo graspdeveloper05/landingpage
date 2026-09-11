@@ -17,7 +17,14 @@ class RegistrationExportController extends Controller
      */
     public function __invoke(Request $request): StreamedResponse
     {
-        $edition = (int) $request->query('edition', config('event.edition'));
+        // Validated, not just cast. `(int) 'all'` is 0, which would have
+        // streamed an empty CSV named ...-0-registrations.csv and looked like
+        // an event nobody signed up for rather than a bad request.
+        $requested = $request->query('edition');
+        $edition = filter_var($requested, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 2000, 'max_range' => 2100],
+        ]) ?: (int) config('event.edition');
+
         $filename = sprintf('seri-negara-dialogue-%d-registrations.csv', $edition);
 
         return response()->streamDownload(function () use ($edition) {
