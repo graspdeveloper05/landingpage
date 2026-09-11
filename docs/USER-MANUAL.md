@@ -24,8 +24,7 @@ visitor numbers — without calling a developer.
 9. [The four languages](#9-the-four-languages)
 10. [Privacy and attendee data (PDPA)](#10-privacy-and-attendee-data-pdpa)
 11. [Everyday questions and problems](#11-everyday-questions-and-problems)
-12. [Before the site is announced](#12-before-the-site-is-announced)
-13. [What belongs to you](#13-what-belongs-to-you)
+12. [What belongs to you](#12-what-belongs-to-you)
 
 ---
 
@@ -85,7 +84,7 @@ Once in, you will see five sections down the left: **Event, Speakers,
 Programme, Registrations, Analytics**. On a phone or tablet, tap the menu
 button at the top left to open the same list.
 
-**Signing out:** use the sign-out control in the panel. You are also signed out
+**Signing out:** press **Sign out**, at the foot of the left-hand menu. You are also signed out
 automatically after **two hours** of inactivity — this is deliberate, because
 the panel shows attendee personal data.
 
@@ -100,9 +99,16 @@ administers the server, using a single command. Ask your developer contact to:
 Every login has full access — there are no restricted roles. Only give a login
 to people who should be able to see the full attendee list.
 
-> ⚠️ **Important.** The site ships with a default login (`admin@serineg.com`).
-> It is publicly documented and must be replaced with real accounts *before*
-> the website is announced. See the checklist in section 12.
+> ⚠️ **Default login — change this before the site is announced.**
+>
+> The site ships with `admin@serineg.com` / `admin@123`. That password is
+> written in the source code, so anyone who can read the code can sign in —
+> and signing in shows every attendee's name, email address and mobile
+> number, which is personal data under the PDPA.
+>
+> Ask your developer contact to create a real login for each person who needs
+> one, and to delete this account. It is one command each. See the checklist
+> at the end of section 12.
 
 ---
 
@@ -127,6 +133,25 @@ everywhere on the site — and whether the registration form is open.
 There are two date fields and two time fields on purpose: one pair is the
 machine-readable truth, the other is the wording you want visitors to see.
 **Keep them in agreement.**
+
+### The hero — the top of the home page
+
+| Field | What it does |
+|---|---|
+| **Event name** | The line under the headline. For example *Seri Negara Dialogue 2026*. **Needed in all four languages.** |
+| **Subtitle** | For example *A National Conversation on Malaysia's Future*. **Needed in all four languages.** |
+| **Background image** | The photograph behind the headline. |
+
+**The background photograph** needs to be at least 1600 × 600; around
+2400 × 1000 is ideal. Keep the building and the people in the **right
+two-thirds** — the headline sits over the left third. The preview in the panel
+marks that left third for you, so you can see before saving whether a face
+would end up behind the words.
+
+Beneath the preview the panel says which image is in use — *the image that came
+with the site*, or *an uploaded image*. Once you have uploaded one, a **Use the
+original again** button appears: it puts the photograph that shipped with the
+site back, so a hero image can always be undone.
 
 ### Registration: open or closed
 
@@ -179,14 +204,16 @@ the home page.
 
 | Field | Notes |
 |---|---|
-| **Full name** | As it should be printed. |
+| **Full name** | As it should be printed. Names are never translated. |
+| **Role** | **Speaker** or **Moderator**. A moderator is badged as one in the line-up. |
 | **Organisation** | Their institution or company. |
 | **Id** | A short code such as `sp-09`. Set once when you create the speaker; it cannot be changed afterwards. If you are unsure, continue the numbering from the last speaker. |
 | **Designation** | Their title. **Needed in all four languages.** |
 | **Short biography** | A paragraph. **Needed in all four languages.** |
-| **Link — Label** | What the link is called, e.g. *Profile at Universiti Malaya*. |
-| **Link — Address** | The web address, starting with `https://`. |
+| **Official external link — Label** | What the link is called, e.g. *Profile at Universiti Malaya*. |
+| **Official external link — Address** | The web address, starting with `https://`. Opens in a new tab. |
 | **Portrait** | See below. |
+| **Still a placeholder** | Tick while the details are unconfirmed, so the pre-launch check can list them. Untick once the speaker is confirmed. |
 
 ### Portraits
 
@@ -197,6 +224,21 @@ you will see it appear in place.
 - **Shape:** portrait, 5:6 — **700 × 840 pixels** is the target. A square or
   landscape photo will be cropped and will not look right.
 - Use the best-quality original you have; the site optimises it for you.
+
+**To remove a photograph**, press **Remove photograph** beneath it, then save.
+The speaker falls back to the grey placeholder until you upload another.
+
+That button only appears once a real photograph has been uploaded. Speakers who
+still carry one of the stand-in illustrations that came with the site have
+nothing to remove — replace it by uploading over it.
+
+**When a speaker has no photograph**, the site shows a plain grey placeholder.
+It is deliberately colourless so that an unfinished entry is obvious at a
+glance, on the website as well as in the panel.
+
+The link is optional — leave both boxes blank if a speaker has none. The
+line-up then shows **No official link yet** in red against that speaker, as a
+reminder rather than a fault.
 
 ### Reordering
 
@@ -252,6 +294,16 @@ mobile, organisation, dietary requirements, and when they registered.**
 Type into the **Search** box. It matches name, email, organisation or
 reference number. Results narrow as you type.
 
+### Narrowing by date
+
+**Registered from** and **to** limit the list to people who registered between
+those dates — useful for counting the response to a particular announcement.
+The two pickers bound each other, so you cannot set a range that ends before it
+begins. **Clear dates** returns to the full list.
+
+Once there is more than one year's event, an **Event** dropdown appears for
+choosing between them. While there is only the 2026 edition it stays hidden.
+
 If there are many registrations, the list is paged — use the page controls
 beneath the table.
 
@@ -263,9 +315,12 @@ registration is safely recorded — only the email failed. Contact them directly
 
 ### Downloading the list
 
-Press **Download CSV**. You get a spreadsheet file containing every
-registration, which opens in Excel, Numbers or Google Sheets. Use it for name
-badges, catering numbers, seating and the door list.
+Press **Download CSV**. You get a spreadsheet file that opens in Excel, Numbers
+or Google Sheets. Use it for name badges, catering numbers, seating and the
+door list.
+
+**The download matches whatever you are looking at** — set the dates first and
+you get only those registrations, not the whole list.
 
 > 🔒 That file contains names, emails and mobile numbers — personal data under
 > the PDPA. Do not email it around or leave it in a shared folder. See
@@ -399,28 +454,7 @@ There is no reset email. Contact your developer, who can issue a new one.
 
 ---
 
-## 12. Before the site is announced
-
-**Your team must supply:**
-
-- [ ] 8 speaker portraits and the chairman's photo — 700 × 840 pixels
-- [ ] Confirmed speaker names and their official profile links
-- [ ] 3 social media links and a contact email address
-- [ ] A transparent version of the logo, and the real Seri Negara crest
-- [ ] Legal sign-off on the PDPA wording
-- [ ] A native speaker's review of the 中文 and தமிழ் translations
-- [ ] Written confirmation before any organisation is described on the site as a
-      partner, supporter or sponsor
-
-**Your developer must complete:**
-
-- [ ] Replace the default admin login with real accounts
-- [ ] Remove the search-engine block once real content is in place
-- [ ] Confirm the confirmation email sends from the correct address
-
----
-
-## 13. What belongs to you
+## 12. What belongs to you
 
 On handover, the following transfer to Chevening Alumni Malaysia:
 
@@ -433,6 +467,21 @@ On handover, the following transfer to Chevening Alumni Malaysia:
 There are no plugin licences, paid subscriptions or third-party services to
 renew — the site was built so that running it costs the hosting and the domain,
 and nothing else.
+
+### Before the site is announced
+
+A short list, all of it for your developer contact rather than for you, but
+worth checking has been done:
+
+- [ ] **Replace the default admin login.** A real account for each person who
+      needs one, and `admin@serineg.com` deleted. Nothing else on this list
+      matters as much.
+- [ ] Real speaker photographs and names in place of the stand-ins.
+- [ ] The PDPA wording on the registration form approved by whoever is
+      accountable for attendee data.
+- [ ] The Chinese and Tamil translations read by a native speaker.
+- [ ] Search engines allowed in — the site blocks them until launch, on
+      purpose, so half-finished pages are never indexed.
 
 ### Adding the 2027 edition
 
