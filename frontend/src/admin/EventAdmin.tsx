@@ -174,88 +174,70 @@ export function EventAdmin() {
         </p>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <AdminCard className="space-y-4">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">When</p>
+      {/*
+        Two explicit columns, each a stack, rather than four cards dropped
+        into a two-column grid.
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <AdminField
-              label="Date"
-              type="date"
-              value={form.date}
-              onChange={(v) => set('date', v)}
-              error={fieldErrors.date}
-              hint="Used by search engines and the calendar."
-            />
-            {/*
-              type="time" gives the browser's own picker, which shows AM/PM
-              when the machine is set to a 12-hour clock -- while the value it
-              submits is always 24-hour "14:30", which is exactly what the API
-              validates. Nobody has to think in 24-hour to fill it in, and
-              nothing downstream has to parse "2.30 pm".
-            */}
-            <AdminField
-              label="Start time"
-              type="time"
-              value={form.startTime}
-              onChange={(v) => set('startTime', v)}
-              error={fieldErrors.startTime}
-              hint="Pick a time. Visitors see the wording you set below."
-            />
-          </div>
-
-          {/*
-            The written date is separate from the date above on purpose. The
-            picker gives a machine an unambiguous 2026-10-08; these are what a
-            visitor reads, and rendering a Malaysian date in Tamil is a
-            translation rather than something to generate from a format string.
-          */}
-          <LocalizedFieldset
-            label="Date, as written"
-            value={form.dateLabel}
-            onChange={(v) => set('dateLabel', v)}
-            errors={localeErrors('dateLabel')}
-            hint="For example: 8 October 2026"
-          />
-
-          <LocalizedFieldset
-            label="Time, as written"
-            value={form.timeLabel}
-            onChange={(v) => set('timeLabel', v)}
-            errors={localeErrors('timeLabel')}
-            hint="For example: 2.30 PM onwards"
-          />
-        </AdminCard>
-
-        <AdminCard className="space-y-4">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
-            The hero
-          </p>
-
-          <LocalizedFieldset
-            label="Event name"
-            value={form.eventName}
-            onChange={(v) => set('eventName', v)}
-            errors={localeErrors('eventName')}
-            hint="The line under the headline. For example: Seri Negara Dialogue 2026"
-          />
-
-          <LocalizedFieldset
-            label="Subtitle"
-            value={form.subtitle}
-            onChange={(v) => set('subtitle', v)}
-            errors={localeErrors('subtitle')}
-            hint="For example: A National Conversation on Malaysia's Future"
-          />
-
-          <HeroImageField
-            value={form.heroImage}
-            onChange={(v) => set('heroImage', v)}
-            error={fieldErrors.heroImage}
-          />
-        </AdminCard>
-
+        As a flat grid the cards paired off by source order -- the short
+        "When" card landed beside the tall "The hero" card -- and grid items
+        stretch to their row. AdminField pushes its input to the bottom of
+        whatever height it is given, so a stretched card left a hand-sized
+        gap above every input. Columns that size to their own content cannot
+        do that, whatever is added to the other side.
+      */}
+      <div className="grid items-start gap-5 lg:grid-cols-2">
         <div className="space-y-5">
+          <AdminCard className="space-y-4">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">When</p>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <AdminField
+                label="Date"
+                type="date"
+                value={form.date}
+                onChange={(v) => set('date', v)}
+                error={fieldErrors.date}
+                hint="Used by search engines and the calendar."
+              />
+              {/*
+                type="time" gives the browser's own picker, which shows AM/PM
+                when the machine is set to a 12-hour clock -- while the value it
+                submits is always 24-hour "14:30", which is exactly what the API
+                validates. Nobody has to think in 24-hour to fill it in, and
+                nothing downstream has to parse "2.30 pm".
+              */}
+              <AdminField
+                label="Start time"
+                type="time"
+                value={form.startTime}
+                onChange={(v) => set('startTime', v)}
+                error={fieldErrors.startTime}
+                hint="Pick a time. Visitors see the wording you set below."
+              />
+            </div>
+
+            {/*
+              The written date is separate from the date above on purpose. The
+              picker gives a machine an unambiguous 2026-10-08; these are what a
+              visitor reads, and rendering a Malaysian date in Tamil is a
+              translation rather than something to generate from a format string.
+            */}
+            <LocalizedFieldset
+              label="Date, as written"
+              value={form.dateLabel}
+              onChange={(v) => set('dateLabel', v)}
+              errors={localeErrors('dateLabel')}
+              hint="For example: 8 October 2026"
+            />
+
+            <LocalizedFieldset
+              label="Time, as written"
+              value={form.timeLabel}
+              onChange={(v) => set('timeLabel', v)}
+              errors={localeErrors('timeLabel')}
+              hint="For example: 2.30 PM onwards"
+            />
+          </AdminCard>
           <AdminCard className="space-y-4">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">Where</p>
 
@@ -286,7 +268,36 @@ export function EventAdmin() {
               hint="The map shown on the page. Ends with &output=embed."
             />
           </AdminCard>
+        </div>
 
+        <div className="space-y-5">
+          <AdminCard className="space-y-4">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
+              The hero
+            </p>
+
+            <LocalizedFieldset
+              label="Event name"
+              value={form.eventName}
+              onChange={(v) => set('eventName', v)}
+              errors={localeErrors('eventName')}
+              hint="The line under the headline. For example: Seri Negara Dialogue 2026"
+            />
+
+            <LocalizedFieldset
+              label="Subtitle"
+              value={form.subtitle}
+              onChange={(v) => set('subtitle', v)}
+              errors={localeErrors('subtitle')}
+              hint="For example: A National Conversation on Malaysia's Future"
+            />
+
+            <HeroImageField
+              value={form.heroImage}
+              onChange={(v) => set('heroImage', v)}
+              error={fieldErrors.heroImage}
+            />
+          </AdminCard>
           <AdminCard className="space-y-3">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
               Registration

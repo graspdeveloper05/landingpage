@@ -62,6 +62,14 @@ export function AdminField({
     /*
      * A column with the input pushed to the bottom.
      *
+     * One constraint comes with this: the container must size to its content.
+     * `h-full` resolves against whatever height the parent is given, so a
+     * card stretched by a taller neighbour in a grid row makes the spacer
+     * below absorb all of it, and every input in that card drops to the
+     * bottom behind a hand-sized gap. If fields need to sit beside a tall
+     * panel, put them in a column that sizes itself -- see the note on the
+     * Event form's grid.
+     *
      * Fields sit side by side in a grid, and their hints are different
      * lengths: "Used by search engines" fits one line, "Pick a time. Visitors
      * see the wording you set below." wraps to two. With everything in normal
