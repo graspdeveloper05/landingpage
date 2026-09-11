@@ -17,6 +17,8 @@ class EventSetting extends Model
     protected $fillable = [
         'edition', 'date', 'date_label', 'start_time', 'time_label',
         'event_name', 'subtitle', 'hero_image',
+        'chairman_name', 'chairman_organisation', 'chairman_designation',
+        'chairman_message', 'chairman_quote', 'chairman_portrait',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
         'registration_open',
     ];
@@ -26,6 +28,9 @@ class EventSetting extends Model
         'time_label' => 'array',
         'event_name' => 'array',
         'subtitle' => 'array',
+        'chairman_designation' => 'array',
+        'chairman_message' => 'array',
+        'chairman_quote' => 'array',
         'capacity' => 'integer',
         'edition' => 'integer',
         'registration_open' => 'boolean',
@@ -49,6 +54,20 @@ class EventSetting extends Model
             'eventName' => $this->event_name,
             'subtitle' => $this->subtitle,
             'heroImage' => $this->hero_image,
+            /*
+             * Null until the team edits it, and the site then falls back to
+             * the chairman shipped in the data file -- the same rule the two
+             * hero lines follow. Sent as one object because that is the shape
+             * the component already consumes.
+             */
+            'chairman' => $this->chairman_name === null ? null : [
+                'name' => $this->chairman_name,
+                'organisation' => $this->chairman_organisation,
+                'designation' => $this->chairman_designation,
+                'message' => $this->chairman_message,
+                'quote' => $this->chairman_quote,
+                'portrait' => $this->chairman_portrait,
+            ],
             'venue' => $this->venue,
             'venueAddress' => $this->venue_address,
             'mapsUrl' => $this->maps_url,

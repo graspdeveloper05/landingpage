@@ -88,6 +88,44 @@ class EventAdminController extends Controller
              * and null is how the hero is reset to the shipped photograph.
              */
             'heroImage' => ['nullable', 'string', 'regex:#^/storage/hero/[0-9a-f-]{36}$#'],
+
+            /*
+             * §6 item 03 -- the Organising Chairman. Name and organisation
+             * read the same in every language, so they are plain strings;
+             * the three that are written prose are needed in all four.
+             */
+            'chairman' => ['required', 'array'],
+            'chairman.name' => ['required', 'string', 'max:150'],
+            'chairman.organisation' => ['required', 'string', 'max:150'],
+
+            'chairman.designation' => ['required', 'array'],
+            'chairman.designation.en' => ['required', 'string', 'max:200'],
+            'chairman.designation.ms' => ['required', 'string', 'max:200'],
+            'chairman.designation.zh' => ['required', 'string', 'max:200'],
+            'chairman.designation.ta' => ['required', 'string', 'max:200'],
+
+            'chairman.message' => ['required', 'array'],
+            'chairman.message.en' => ['required', 'string', 'max:1200'],
+            'chairman.message.ms' => ['required', 'string', 'max:1200'],
+            'chairman.message.zh' => ['required', 'string', 'max:1200'],
+            'chairman.message.ta' => ['required', 'string', 'max:1200'],
+
+            'chairman.quote' => ['required', 'array'],
+            'chairman.quote.en' => ['required', 'string', 'max:300'],
+            'chairman.quote.ms' => ['required', 'string', 'max:300'],
+            'chairman.quote.zh' => ['required', 'string', 'max:300'],
+            'chairman.quote.ta' => ['required', 'string', 'max:300'],
+
+            /*
+             * Either an upload of ours or empty, never an arbitrary string.
+             * The site renders this straight into an <img src>, so anything
+             * else is a stored injection into every visitor's page. Empty
+             * means no photograph yet, and the placeholder is drawn.
+             */
+            'chairman.portrait' => [
+                'present', 'string', 'max:255',
+                'regex:#^$|^/storage/portraits/[0-9a-f-]{36}\.[a-z]{3,4}$|^/portraits/[a-z0-9-]+\.svg$#',
+            ],
         ], [
             'capacity.min' => $registered > 0
                 ? "There are already {$registered} registrations. Capacity cannot be lower than that."
@@ -101,6 +139,10 @@ class EventAdminController extends Controller
             'eventName.*.required' => 'The event name is needed in all four languages.',
             'subtitle.*.required' => 'The subtitle is needed in all four languages.',
             'heroImage.regex' => 'Upload the image again -- that path is not one of ours.',
+            'chairman.designation.*.required' => 'The designation is needed in all four languages.',
+            'chairman.message.*.required' => 'The welcome message is needed in all four languages.',
+            'chairman.quote.*.required' => 'The pull quote is needed in all four languages.',
+            'chairman.portrait.regex' => 'Upload the photograph again -- that path is not one of ours.',
         ]);
 
         /*
@@ -134,6 +176,12 @@ class EventAdminController extends Controller
                 'registration_open' => $data['registrationOpen'],
                 'event_name' => $data['eventName'],
                 'subtitle' => $data['subtitle'],
+                'chairman_name' => $data['chairman']['name'],
+                'chairman_organisation' => $data['chairman']['organisation'],
+                'chairman_designation' => $data['chairman']['designation'],
+                'chairman_message' => $data['chairman']['message'],
+                'chairman_quote' => $data['chairman']['quote'],
+                'chairman_portrait' => $data['chairman']['portrait'],
                 ...$heroImage,
             ],
         );

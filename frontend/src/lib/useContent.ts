@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react'
-import { event as bundledEvent, programme as bundledProgramme, speakers as bundledSpeakers } from '@/data'
+import {
+  chairman as bundledChairman,
+  event as bundledEvent,
+  programme as bundledProgramme,
+  speakers as bundledSpeakers,
+} from '@/data'
 import { getEvent, getProgramme, getSpeakers } from '@/services/api'
 import { useI18n } from '@/i18n'
-import type { EventDetails, ProgrammeItem, Speaker } from '@/data/types'
+import type { Chairman, EventDetails, ProgrammeItem, Speaker } from '@/data/types'
 
 /*
  * Speakers and the programme, as edited by the organising team.
@@ -119,4 +124,17 @@ export function useEventLabels() {
     eventName: event.eventName?.[locale]?.trim() || t('hero.eventName'),
     subtitle: event.subtitle?.[locale]?.trim() || t('hero.subtitle'),
   }
+}
+
+/**
+ * The chairman the site should show: whatever the team has saved, otherwise
+ * the record shipped with the build.
+ *
+ * Not merged field by field. A half-saved chairman -- this edition's
+ * photograph above last year's name -- would be worse than either record on
+ * its own, so it is one or the other.
+ */
+export function useChairman(): Chairman {
+  const event = useEvent()
+  return event.chairman ?? bundledChairman
 }

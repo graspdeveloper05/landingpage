@@ -9,6 +9,7 @@ import {
 } from './client'
 import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
 import { useToast } from './Toast'
+import { isPlaceholderPortrait, portraitSrc } from '@/lib/portrait'
 import { SkeletonForm } from './Loading'
 
 interface EventForm {
@@ -20,12 +21,23 @@ interface EventForm {
   subtitle: Localized
   /** Base path of an uploaded hero, or null for the shipped photograph. */
   heroImage: string | null
+  chairman: ChairmanForm
   venue: string
   venueAddress: string
   mapsUrl: string
   mapEmbedUrl: string
   capacity: number
   registrationOpen: boolean
+}
+
+interface ChairmanForm {
+  name: string
+  organisation: string
+  designation: Localized
+  message: Localized
+  quote: Localized
+  /** '' means no photograph yet; the site draws its own stand-in. */
+  portrait: string
 }
 
 type ClosedReason = 'full' | 'closed' | 'past'
@@ -62,6 +74,14 @@ const BLANK: EventForm = {
   eventName: { ...EMPTY_LOCALIZED },
   subtitle: { ...EMPTY_LOCALIZED },
   heroImage: null,
+  chairman: {
+    name: '',
+    organisation: '',
+    designation: { ...EMPTY_LOCALIZED },
+    message: { ...EMPTY_LOCALIZED },
+    quote: { ...EMPTY_LOCALIZED },
+    portrait: '',
+  },
   venue: '',
   venueAddress: '',
   mapsUrl: '',
@@ -90,6 +110,7 @@ export function EventAdmin() {
               eventName: Localized | null
               subtitle: Localized | null
               heroImage: string | null
+              chairman: ChairmanForm | null
             })
           | null
         registered: number
@@ -108,6 +129,7 @@ export function EventAdmin() {
                 eventName: r.event.eventName ?? { ...EMPTY_LOCALIZED },
                 subtitle: r.event.subtitle ?? { ...EMPTY_LOCALIZED },
                 heroImage: r.event.heroImage ?? null,
+                chairman: r.event.chairman ?? BLANK.chairman,
               }
             : BLANK,
         )
@@ -298,6 +320,61 @@ export function EventAdmin() {
               error={fieldErrors.heroImage}
             />
           </AdminCard>
+
+          <AdminCard className="space-y-4">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
+              Organising Chairman
+            </p>
+
+            <ChairmanPortraitField
+              value={form.chairman.portrait}
+              onChange={(v) => set('chairman', { ...form.chairman, portrait: v })}
+              error={fieldErrors['chairman.portrait']}
+            />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <AdminField
+                label="Name"
+                value={form.chairman.name}
+                onChange={(v) => set('chairman', { ...form.chairman, name: v })}
+                error={fieldErrors['chairman.name']}
+                placeholder="Dato’ Rahman bin Abdullah"
+              />
+              <AdminField
+                label="Organisation"
+                value={form.chairman.organisation}
+                onChange={(v) => set('chairman', { ...form.chairman, organisation: v })}
+                error={fieldErrors['chairman.organisation']}
+                placeholder="Chevening Alumni Malaysia"
+              />
+            </div>
+
+            <LocalizedFieldset
+              label="Designation"
+              value={form.chairman.designation}
+              onChange={(v) => set('chairman', { ...form.chairman, designation: v })}
+              errors={localeErrors('chairman.designation')}
+              hint="For example: Organising Chairman, Seri Negara Dialogue 2026"
+            />
+
+            <LocalizedFieldset
+              label="Welcome message"
+              value={form.chairman.message}
+              onChange={(v) => set('chairman', { ...form.chairman, message: v })}
+              errors={localeErrors('chairman.message')}
+              hint="The short letter beside the photograph."
+              multiline
+            />
+
+            <LocalizedFieldset
+              label="Pull quote"
+              value={form.chairman.quote}
+              onChange={(v) => set('chairman', { ...form.chairman, quote: v })}
+              errors={localeErrors('chairman.quote')}
+              hint="The line set large to the right. One sentence."
+              multiline
+            />
+          </AdminCard>
           <AdminCard className="space-y-3">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
               Registration
@@ -478,6 +555,104 @@ function HeroImageField({
           {value && !uploading && (
             <AdminButton variant="quiet" onClick={() => onChange(null)}>
               Use the original again
+            </AdminButton>
+          )}
+
+          {(failed || error) && (
+            <p className="mt-1.5 text-[0.7rem] text-red-600">{failed ?? error}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The chairman's photograph.
+ *
+ * Uses the same endpoint and the same 5:6 shape as a speaker portrait, so the
+ * two sit together in the layout and there is one set of rules to explain.
+ * Uploading happens immediately and Save stores the path, which means
+ * abandoning the form leaves an unused file behind rather than a changed site.
+ */
+function ChairmanPortraitField({
+  value,
+  onChange,
+  error,
+}: {
+  value: string
+  onChange: (v: string) => void
+  error?: string
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [failed, setFailed] = useState<string | null>(null)
+  const toast = useToast()
+
+  async function upload(file: File) {
+    setUploading(true)
+    setFailed(null)
+    try {
+      const body = new FormData()
+      body.append('portrait', file)
+      const r = await adminApi.post<{ path: string }>('/admin/portraits', body)
+      onChange(r.path)
+      toast.success('Photograph uploaded. Save to put it on the site.')
+    } catch (e) {
+      // The field error names the actual dimension or format problem; the
+      // generic message only says that something went wrong.
+      setFailed(
+        e instanceof AdminError ? (e.fields.portrait ?? e.message) : 'Could not upload that image.',
+      )
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const uploaded = Boolean(value) && !isPlaceholderPortrait(value)
+
+  return (
+    <div>
+      <span className="block text-[0.78rem] font-semibold text-navy-900">Photograph</span>
+      <span className="mt-0.5 block text-[0.7rem] leading-snug text-slate">
+        Portrait shape, around 700 × 840. Head in the upper third.
+      </span>
+
+      <div className="mt-2 flex flex-wrap items-start gap-3">
+        <img
+          src={portraitSrc(value)}
+          alt=""
+          className="aspect-[5/6] w-24 shrink-0 rounded-sm border border-[#DDDCD8] object-cover"
+        />
+
+        <div className="min-w-[12rem] grow">
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={uploading}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              // Cleared so the same file chosen twice after a failure still
+              // fires a change event rather than looking inert.
+              e.target.value = ''
+              if (file) upload(file)
+            }}
+            className="block w-full text-[0.78rem] text-navy-800 file:mr-3 file:cursor-pointer file:rounded-sm file:border-0 file:bg-navy-900 file:px-3 file:py-1.5 file:text-[0.75rem] file:font-semibold file:text-cream hover:file:bg-navy-800 disabled:cursor-not-allowed"
+          />
+
+          <p className="mt-1.5 text-[0.7rem] text-slate">
+            {uploading
+              ? 'Uploading…'
+              : uploaded
+                ? 'Using an uploaded photograph.'
+                : 'No photograph yet — the site shows a stand-in.'}
+          </p>
+
+          {/* Offered only for a real photograph. The generated stand-in is
+              nobody's likeness, so removing it would swap one placeholder for
+              another. */}
+          {uploaded && !uploading && (
+            <AdminButton variant="quiet" onClick={() => onChange('')}>
+              Remove photograph
             </AdminButton>
           )}
 

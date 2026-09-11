@@ -69,6 +69,11 @@ export interface EventDetails {
    * the build is used.
    */
   heroImage?: string | null
+  /**
+   * The Organising Chairman as the team has edited him, or absent when they
+   * have not -- in which case the bundled record answers instead.
+   */
+  chairman?: Chairman | null
   venue: string
   venueAddress: string
   mapsUrl: string

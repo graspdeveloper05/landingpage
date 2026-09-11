@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
-import { chairman } from '@/data'
 import { useI18n, useLocalized } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import { ExternalIcon, QuoteMark } from '@/components/ui/Icons'
 import { portraitSrc } from '@/lib/portrait'
+import { useChairman } from '@/lib/useContent'
 
 /**
  * §6 item 03 — photograph, name, designation and welcome message.
@@ -14,6 +14,7 @@ import { portraitSrc } from '@/lib/portrait'
  * everything down and left the row reading as three unrelated blocks.
  */
 export function ChairmanWelcome() {
+  const chairman = useChairman()
   const { t } = useI18n()
   const L = useLocalized()
 
