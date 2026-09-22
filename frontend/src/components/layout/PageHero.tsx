@@ -10,16 +10,35 @@ import { Picture } from '@/components/ui/Picture'
  * in a short band, and the type sits on a cream scrim local to the left column,
  * exactly as the homepage hero does. Same device, same page, half the height.
  */
-export function PageHero({ title, sub }: { title: string; sub?: string }) {
+export function PageHero({
+  title,
+  sub,
+  image = '/scenes/colonnade',
+  position = 'center',
+}: {
+  title: string
+  sub?: string
+  /**
+   * Base path of the band's photograph, without extension. Each page can
+   * carry its own -- Programme uses the interior the client supplied for it.
+   */
+  image?: string
+  /**
+   * Which part of the photograph survives the crop. The band is far wider
+   * than any photograph is tall, so this decides what the reader sees.
+   */
+  position?: string
+}) {
   return (
     <section className="relative isolate flex h-[clamp(9rem,20vw,13.5rem)] items-center overflow-hidden border-b border-hair bg-cream">
       <Picture
-        base="/scenes/colonnade"
+        base={image}
         alt=""
         width={2000}
         height={1400}
         className="absolute inset-0 -z-10 block"
-        imgClassName="h-full w-full object-cover object-center"
+        imgClassName="h-full w-full object-cover"
+        style={{ objectPosition: position }}
       />
 
       {/* Local lift under the type only — the colonnade keeps its full strength
