@@ -116,8 +116,7 @@ export function Pillars() {
 
 /**
  * The faint line-work framing the band in the design: an eight-point star
- * lattice, the pattern of carved screens across Muzium Negara, and a pair of
- * tall arched windows at the sides.
+ * lattice, the pattern of carved screens across Muzium Negara.
  *
  * It lives at the edges only. A mask clears the middle, where the text is,
  * so the pattern frames the three conversations without ever sitting behind
@@ -126,27 +125,6 @@ export function Pillars() {
 function Ornament() {
   return (
     <>
-      {/* Tall arched windows at each side, like the museum's facade. */}
-      {(['left', 'right'] as const).map((side) => (
-        <svg
-          key={side}
-          aria-hidden
-          viewBox="0 0 120 320"
-          className={cn(
-            'pointer-events-none absolute top-1/2 -z-10 hidden h-[80%] -translate-y-1/2 text-gold-500 opacity-[0.16] lg:block',
-            side === 'left' ? '-left-6' : '-right-6 -scale-x-100',
-          )}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.1"
-        >
-          <path d="M10 320V120C10 55 60 18 60 18s50 37 50 102v200" />
-          <path d="M26 320V126c0-52 34-84 34-84s34 32 34 84v194" />
-          <path d="M60 42v278M26 170h68M26 230h68M26 290h68" />
-          <circle cx="60" cy="104" r="12" />
-        </svg>
-      ))}
-
       <svg
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-gold-500"
