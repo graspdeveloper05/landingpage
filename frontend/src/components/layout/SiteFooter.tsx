@@ -39,14 +39,19 @@ export function SiteFooter() {
             <Wordmark tone="light" />
             <span aria-hidden className="mt-4 block h-px w-24 bg-gold-500/50" />
 
-            <div className="mt-7 flex items-start gap-3">
-              <img
-                src="/brand/emblem-gold.webp"
-                alt=""
-                width={236}
-                height={176}
-                className="mt-0.5 h-7 w-auto shrink-0"
-              />
+            {/* The convener's own crest, on a white card: it is navy line art
+                and would vanish straight on the footer. */}
+            <div className="mt-7 flex items-center gap-4">
+              <span className="shrink-0 rounded-sm bg-white p-2 ring-1 ring-gold-500/30">
+                <img
+                  src="/partners/chevening-alumni-malaysia.png"
+                  alt=""
+                  width={274}
+                  height={397}
+                  loading="lazy"
+                  className="h-20 w-auto"
+                />
+              </span>
               <div>
                 <p className="text-micro font-medium uppercase tracking-[0.16em] text-cream/65">
                   {t('footer.convenedBy')}
