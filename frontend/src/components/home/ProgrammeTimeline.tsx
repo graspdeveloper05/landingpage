@@ -31,12 +31,17 @@ export function ProgrammeTimeline() {
         <ol className="relative">
           {programme.map((item, i) => {
             const crossed = i < passed
+            // The furthest point the line has reached: "you are here".
+            const current = crossed && i === passed - 1
 
             return (
               <Reveal
                 as="li"
                 key={item.id}
-                delay={i * 60}
+                variant="left"
+                // A clear stagger, so the afternoon reads as arriving in order
+                // rather than appearing all at once.
+                delay={i * 110}
                 className="relative pb-7 last:pb-0 sm:flex sm:gap-6"
               >
                 <time
@@ -61,7 +66,17 @@ export function ProgrammeTimeline() {
                       ? 'scale-110 border-gold-600 bg-gold-500 shadow-[0_0_0_3px_rgba(201,162,39,0.16)]'
                       : 'border-gold-500/55 bg-cream',
                   )}
-                />
+                >
+                  {/*
+                    Mounted the moment the line reaches this node, so the
+                    ripple plays once, as it is crossed -- the node answering
+                    the line rather than simply changing colour.
+                  */}
+                  {crossed && <span className="node-ripple" />}
+                  {/* The node the line has most recently reached keeps a slow
+                      pulse, marking the reader's place in the afternoon. */}
+                  {current && <span className="node-ripple node-ripple--live" />}
+                </span>
 
                 <div className="pl-8 sm:pl-4">
                   <p

@@ -245,6 +245,35 @@
   }
 }
 
+/*
+ * A gold ring spreading from a programme node as the drawn line reaches it.
+ *
+ * Inside the node, so it inherits the node's 45-degree turn and spreads as a
+ * diamond, not a circle. Plays once on mount -- the node answering the line.
+ * The --live variant repeats slowly on the node most recently reached.
+ * Reduced motion: the global rule cuts both to a single frame.
+ */
+.node-ripple {
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgba(201, 162, 39, 0.75);
+  pointer-events: none;
+  animation: node-ripple 0.9s cubic-bezier(0.2, 0.6, 0.3, 1) both;
+}
+.node-ripple--live {
+  animation: node-ripple 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) 0.9s infinite;
+}
+@keyframes node-ripple {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+
 /* Scroll-triggered reveal, driven by IntersectionObserver in useReveal().
    Scoped to `.js` so that without JavaScript — or if the observer never
    runs — the content is simply visible rather than stuck at opacity 0. */

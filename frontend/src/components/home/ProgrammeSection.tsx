@@ -62,7 +62,11 @@ export function ProgrammeSection({
               the colonnade has a deep navy wall exactly there — navy text on
               it measured 2.8:1. Its own light panel makes it independent of
               whatever the photograph happens to be doing behind it. */}
-            <figure className="sticky top-28 rounded-sm bg-cream/85 p-6 shadow-card backdrop-blur-[2px] border-l-2 border-gold-500">
+            {/* The drift sits on the card, inside the revealed wrapper, so it
+                starts once the card has slid in rather than fighting that
+                slide for the same transform. Sticky still works: a transform
+                moves the card within its stuck position, not out of it. */}
+            <figure className="anim-drift sticky top-28 rounded-sm bg-cream/85 p-6 shadow-card backdrop-blur-[2px] border-l-2 border-gold-500">
               <QuoteMark className="h-6 w-8 text-gold-500/70" />
               <blockquote className="mt-4 font-display text-h3 italic leading-relaxed text-navy-800">
                 {t('programme.quote')}
