@@ -2,7 +2,8 @@ import { useI18n } from '@/i18n'
 import { ButtonLink } from '@/components/ui/Button'
 import { Ornament } from '@/components/ui/Ornament'
 import { CalendarIcon, ChevronDown, ClockIcon, PinIcon } from '@/components/ui/Icons'
-import { RevealLines } from '@/components/ui/Reveal'
+import { MaskedLine } from '@/components/ui/Reveal'
+import { TypedLine } from '@/components/ui/TypedLine'
 import { Picture } from '@/components/ui/Picture'
 import { useParallax } from '@/lib/animation'
 import { useEventLabels } from '@/lib/useContent'
@@ -88,17 +89,21 @@ export function Hero() {
             matched the sunlit ones almost exactly. The halo lightens only the
             few pixels around each stroke, so the photograph is left unveiled.
           */}
-          <RevealLines
-            as="h1"
+          {/* Labelled with both lines in full, so a screen reader announces
+              the finished headline even while the second is still typing. */}
+          <h1
+            aria-label={`${t('hero.line1')} ${t('hero.line2')}`}
             className="font-display text-hero font-bold uppercase [text-shadow:0_0_34px_rgba(252,252,251,1),0_0_16px_rgba(252,252,251,1),0_0_6px_rgba(252,252,251,1),0_0_2px_rgba(252,252,251,1)]"
-            lines={[
-              { text: t('hero.line1'), className: 'block text-navy-900' },
-              // A deeper gold than gold-600, which measures only 3.3:1 even on solid
-              // cream -- too little headroom over a photograph. Still read as
-              // gold; it takes the halo to over 4:1.
-              { text: t('hero.line2'), className: 'block text-[#8A6912]' },
-            ]}
-          />
+          >
+            <MaskedLine delay={0}>
+              <span className="block text-navy-900">{t('hero.line1')}</span>
+            </MaskedLine>
+            {/* The answer, typed out once the question above has risen into
+                place. A deeper gold than gold-600, which measures only 3.3:1
+                even on solid cream -- too little headroom over a photograph;
+                with the halo it clears 3:1. */}
+            <TypedLine text={t('hero.line2')} className="block text-[#8A6912]" startDelay={750} speed={85} />
+          </h1>
 
           <p
             className="anim-rise mt-6 font-display text-h3 font-semibold uppercase tracking-[0.11em] text-navy-800"

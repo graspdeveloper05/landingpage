@@ -274,6 +274,39 @@
   }
 }
 
+/*
+ * The cursor of a TypedLine.
+ *
+ * Zero width, with the bar drawn as an overhang: a cursor that took up room
+ * would push the untyped remainder along and then let it jump back when it
+ * disappeared. Gold, and a little shorter than the capitals it follows.
+ */
+.typed-caret {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 0.78em;
+  vertical-align: baseline;
+}
+.typed-caret::after {
+  content: '';
+  position: absolute;
+  left: 0.06em;
+  bottom: -0.02em;
+  width: 0.07em;
+  height: 0.8em;
+  background: #c9a227;
+  border-radius: 1px;
+}
+.typed-caret--blink::after {
+  animation: caret-blink 0.9s steps(1, end) infinite;
+}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 /* Scroll-triggered reveal, driven by IntersectionObserver in useReveal().
    Scoped to `.js` so that without JavaScript — or if the observer never
    runs — the content is simply visible rather than stuck at opacity 0. */

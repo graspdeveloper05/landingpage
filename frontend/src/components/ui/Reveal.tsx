@@ -64,7 +64,7 @@ export function RevealLines({
   )
 }
 
-function MaskedLine({
+export function MaskedLine({
   children,
   delay,
   className,
