@@ -21,29 +21,44 @@
     "line2": "Satu Masa Depan.",
     "eventName": "Dialog Seri Negara 2026",
     "subtitle": "Perbualan Nasional Mengenai Masa Depan Malaysia",
-    "date": "8 Oktober 2026",
-    "time": "2.30 petang dan seterusnya",
-    "venue": "Muzium Negara, Kuala Lumpur",
+    "date": "8 Oktober 2026 (Khamis)",
+    "time": "1.30 petang dan seterusnya",
+    "venue": "Auditorium Muzium Negara",
     "cta": "Daftar sekarang",
     "merdeka": "Daripada Merdeka 70 menuju Malaysia 100",
     "scroll": "Tatal untuk meneroka",
-    "imageAlt": "Panorama Kuala Lumpur di belakang bangunan warisan Malaysia, dengan Jalur Gemilang berkibar.",
+    "imageAlt": "Pengunjung berjalan menuju Muzium Negara, dengan latar langit Kuala Lumpur.",
     "peopleAlt": "Rakyat Malaysia daripada pelbagai latar belakang berdiri bersama."
   },
-  "pillars": {
-    "historyTitle": "Sejarah Kita",
-    "historyText": "Perjalanan bersama",
-    "peopleTitle": "Rakyat Kita",
-    "peopleText": "Malaysia yang lebih kukuh",
-    "futureTitle": "Masa Depan Kita",
-    "futureText": "Generasi akan datang"
+  "conversation": {
+    "title": "Perbualan Yang Perlu Kita Adakan",
+    "sub": "Memahami asal usul kita, berdepan dengan keadaan kita hari ini, dan membentuk hala tuju kita seterusnya.",
+    "titles": [
+      "Sejarah Bersama Kita",
+      "Malaysia Hari Ini",
+      "Masa Depan Bersama Kita"
+    ],
+    "questions": [
+      "Apakah yang telah kita warisi?",
+      "Di manakah kedudukan kita?",
+      "Apakah yang akan kita bina bersama?"
+    ],
+    "texts": [
+      "Bagaimanakah pelbagai sejarah Malaysia membentuk identiti, institusi dan hubungan kita hari ini?",
+      "Apakah realiti, perpecahan dan aspirasi bersama yang mentakrifkan negara kita pada saat ini?",
+      "Apakah yang perlu kita ubah, lindungi dan cipta untuk generasi yang akan datang?"
+    ]
   },
   "about": {
     "title": "Mengenai Dialog",
+    "sub": "Perbualan Nasional Tentang Siapa Kita, dan Siapa Yang Kita Pilih Untuk Menjadi",
     "body": [
-      "Dialog Seri Negara ialah platform nasional untuk perbualan yang bermakna mengenai perjalanan Malaysia — daripada Merdeka 70 menuju Malaysia 100.",
-      "Ia menghimpunkan pemimpin, pemikir dan rakyat untuk merenung sejarah bersama, menangani cabaran semasa, dan meneroka masa depan yang lebih bersatu dan makmur."
+      "Ketika Malaysia menghampiri Merdeka 70 dan menuju Malaysia 100, kita berada pada saat yang penting: untuk merenung dengan jujur negara yang telah kita warisi dan menentukan, bersama-sama, negara yang ingin kita bina.",
+      "Dialog Seri Negara menghimpunkan pemimpin, pemikir dan rakyat untuk berdepan dengan persoalan sukar, merapatkan perbezaan kita dan mencari titik persamaan untuk masa depan Malaysia."
     ],
+    "closing": "Pelbagai sejarah telah membentuk kita. Bab seterusnya mesti ditulis bersama.",
+    "invite": "Jadilah sebahagian daripada perbualan ini. Bantu membentuk bab seterusnya Malaysia.",
+    "imageAlt": "Dewan utama Muzium Negara, disinari cahaya petang melalui kekisi kayu berukir.",
     "cta": "Ketahui lanjut",
     "ambitionTitle": "Hasrat jangka panjang",
     "ambitionBody": "Dialog pertama diadakan pada 2026. Ia dibina untuk kembali setiap tahun, supaya perbualan ini terus berkembang dan bukan bermula semula."
@@ -51,24 +66,36 @@
   "theme": {
     "title": "Tema 2026",
     "name": "Pelbagai Sejarah. Satu Masa Depan.",
-    "body": "Bagaimana kita menimba kekuatan daripada masa lalu, meneliti realiti hari ini, dan membina Malaysia yang lebih kukuh dan inklusif untuk generasi akan datang?",
+    "tagline": "Tiga Perbualan. Satu Tujuan Nasional.",
+    "body": "Bagaimanakah kita memahami sejarah yang membentuk kita, berdepan dengan realiti yang membentuk Malaysia hari ini, dan membina masa depan di mana setiap rakyat Malaysia berasa dimiliki dan dapat berjaya?",
     "cta": "Baca lanjut",
-    "quote": "Daripada pemeteraian kemerdekaan kita sehingga perbualan yang akan membentuk masa depan, Seri Negara kekal sebagai rumah untuk negara.",
-    "questionsTitle": "Persoalan di hadapan kita",
-    "questions": [
-      "Apakah maksud kemakmuran bersama apabila pertumbuhan dan gaji semakin berjauhan?",
-      "Institusi manakah yang masih mendapat kepercayaan rakyat, dan apa yang memulihkan yang selebihnya?",
-      "Bagaimana masyarakat majmuk berhujah dengan baik di ruang awam?",
-      "Apakah yang wajar diharapkan oleh rakyat Malaysia yang lahir pada 2026?"
+    "quote": "Sebuah negara bukan sekadar diwarisi. Ia diperbaharui oleh setiap generasi yang sanggup mendengar, mempersoal dan membina bersama.",
+    "quoteSource": "Dialog Seri Negara 2026",
+    "convTexts": [
+      "Bagaimanakah pelbagai sejarah Malaysia membentuk identiti, institusi dan kefahaman kita tentang siapa yang menjadi sebahagian daripada negara ini?",
+      "Apakah realiti yang perlu kita hadapi dengan jujur untuk membina semula kepercayaan, mengukuhkan institusi kita dan menyatukan sebuah negara yang pelbagai?",
+      "Apakah yang perlu kita pilih dan cipta hari ini supaya generasi akan datang mewarisi Malaysia yang bermaruah, penuh peluang dan rasa kekitaan?"
     ]
   },
   "chairman": {
     "title": "Ucapan Aluan Pengerusi Penganjur",
-    "cta": "Baca ucapan penuh"
+    "cta": "Baca ucapan aluan penuh"
   },
   "speakers": {
-    "title": "Pembentang & Moderator",
-    "sub": "Suara terkemuka. Masa depan bersama.",
+    "title": "Suara Dialog",
+    "sub": "Perspektif terkemuka. Satu perbualan nasional yang penting.",
+    "roles": {
+      "keynote": "Ucaptama",
+      "speaker": "Ahli Panel",
+      "moderator": "Moderator",
+      "mc": "Pengacara Majlis"
+    },
+    "groups": {
+      "keynote": "Ucaptama",
+      "speaker": "Ahli Panel",
+      "moderator": "Moderator",
+      "mc": "Pengacara Majlis"
+    },
     "moderatorBadge": "Moderator",
     "viewProfile": "Lihat profil",
     "profileOf": "Profil {{name}}",
@@ -77,9 +104,9 @@
   },
   "programme": {
     "title": "Atur Cara",
-    "sub": "Perbualan tepat pada masanya untuk hari esok yang lebih kukuh.",
+    "sub": "Petang perbualan yang jujur dan tujuan bersama.",
     "quote": "Platform untuk dialog bermakna merentas generasi.",
-    "note": "Masa mungkin diselaraskan menghampiri tarikh acara.",
+    "note": "Atur cara berakhir pada 5.45 petang. Masa tertakluk kepada susunan protokol muktamad.",
     "seeFull": "Lihat atur cara penuh"
   },
   "eventInfo": {
@@ -95,6 +122,8 @@
     "sub": "Jadilah sebahagian daripada perbualan ini.",
     "note": "Tempat duduk terhad. Sila daftar untuk mengesahkan kehadiran anda.",
     "cta": "Daftar",
+    "formCta": "Daftar sekarang",
+    "formNote": "Pendaftaran dibuat melalui Google Forms dan dibuka dalam tab baharu.",
     "capacity": "{{remaining}} daripada {{total}} tempat masih ada",
     "capacityLabel": "Tempat yang masih ada",
     "fields": {
@@ -139,13 +168,13 @@
       "body": "Terima kasih kepada semua yang menyertai kami. Butiran Dialog Seri Negara akan datang akan diterbitkan di sini."
     }
   },
-  "devices": {
-    "title": "Pengalaman lancar merentas peranti",
-    "mobile": "Mesra mudah alih",
-    "share": "Mudah dikongsi",
-    "register": "Pendaftaran mudah",
-    "languages": "Empat bahasa",
-    "future": "Dibina untuk masa depan"
+  "sponsors": {
+    "title": "Rakan & Penaja",
+    "foundingPatron": "Penaung Pengasas",
+    "convenedBy": "Dianjurkan Oleh",
+    "gold": "Penaja Emas Kami",
+    "silver": "Penaja Perak Kami",
+    "marketing": "Rakan Pemasaran"
   },
   "terms": {
     "title": "Terma Penggunaan",
@@ -170,7 +199,7 @@
     "terms": "Terma Penggunaan",
     "contact": "Hubungi",
     "copyright": "© 2026 Dialog Seri Negara. Dianjurkan oleh Chevening Alumni Malaysia.",
-    "linksNote": "Disenaraikan sebagai rujukan. Tiada perkongsian atau penajaan tersirat.",
+    "linksNote": "Laman web rasmi, dibuka dalam tab baharu.",
     "convenedBy": "Dianjurkan oleh",
     "tagline": "Malaysia yang lebih kukuh dan inklusif",
     "privacy": "Notis privasi",

@@ -196,7 +196,8 @@ export interface AdminSpeaker {
   portrait: string
   bio: Localized
   link: { label: string; url: string } | null
-  role: 'speaker' | 'moderator'
+  /** Keynote, panellist ('speaker'), moderator or Master of Ceremonies. */
+  role: 'keynote' | 'speaker' | 'moderator' | 'mc'
   placeholder: boolean
   sort_order: number
 }

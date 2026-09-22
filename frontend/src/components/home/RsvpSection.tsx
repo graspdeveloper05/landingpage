@@ -1,53 +1,58 @@
-import { useState } from 'react'
 import { useI18n } from '@/i18n'
-import { event } from '@/data'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
+import { ButtonLink } from '@/components/ui/Button'
 import { CalendarIcon, ClockIcon, PinIcon } from '@/components/ui/Icons'
 import { useParallax } from '@/lib/animation'
-import { RsvpForm } from '@/components/rsvp/RsvpForm'
-import { CapacityMeter } from '@/components/rsvp/CapacityMeter'
-import { SuccessPanel } from '@/components/rsvp/SuccessPanel'
-import type { RegistrationRecord } from '@/data/types'
+import { useEventLabels } from '@/lib/useContent'
+import { REGISTRATION_URL } from '@/lib/registration'
 import type { EventStatus } from '@/services/api'
 
 /**
- * §9 — registration is an essential Phase 1 function. Presented on the navy
- * panel from the concept: event details on the left, the form on the right.
+ * §9 — registration, now through the organising team's Google Form.
+ *
+ * The client moved registration there and had already started sending the
+ * form out, so it holds the attendee list. This panel keeps the event details
+ * and hands the visitor to the form, rather than running a second list beside
+ * it that would disagree with the first. The seat counter is gone at the
+ * client's request: the count lives in their form now, and a number here
+ * would be one this site cannot know.
+ *
+ * The date, time and venue come from the live event record, the same source
+ * as the hero. They used to come from the bundled fallback, which would have
+ * left this panel on the old start time after the hero had moved on.
  */
 export function RsvpSection({
   status,
-  refresh,
   showHeading = true,
 }: {
   status: EventStatus | null
-  refresh: () => void
+  refresh?: () => void
   /** False on /rsvp, where PageHero already carries the title. */
   showHeading?: boolean
 }) {
   const { t } = useI18n()
-  const [record, setRecord] = useState<RegistrationRecord | null>(null)
-  const [full, setFull] = useState(false)
+  const { event, date, time } = useEventLabels()
   const washRef = useParallax<HTMLImageElement>(0.07, 50)
 
   /*
-   * `full` is set when a submission comes back 409 mid-session -- the last
-   * seat went while this visitor was filling the form in. The server's reason
-   * covers everything else, including the two cases the seat count cannot
-   * express: the team closing registration, and the event being over.
+   * Two reasons still stop registration, both decided by the server: the team
+   * closing it from the panel, and the day having passed. "Full" no longer
+   * applies -- this site does not see the form's responses, so it cannot know.
    */
-  const closedReason = full ? 'full' : (status?.closedReason ?? null)
+  const closedReason =
+    status?.closedReason === 'past' || status?.closedReason === 'closed' ? status.closedReason : null
 
   return (
     <section id="rsvp" className="relative scroll-mt-24 overflow-hidden bg-navy-900 py-section">
       <img
         ref={washRef}
-        src="/scenes/colonnade.jpg"
+        src="/scenes/interior.jpg"
         alt=""
-        width={768}
-        height={469}
+        width={1672}
+        height={941}
         loading="lazy"
-        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.06]"
+        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.07]"
       />
 
       <div className="shell relative">
@@ -62,15 +67,7 @@ export function RsvpSection({
         )}
 
         <div className={showHeading ? 'mt-12' : ''}>
-          {record ? (
-            <SuccessPanel
-              record={record}
-              onAddAnother={() => {
-                setRecord(null)
-                refresh()
-              }}
-            />
-          ) : closedReason ? (
+          {closedReason ? (
             <div className="mx-auto max-w-xl border-l-2 border-gold-500 pl-6 text-cream">
               <h3 className="font-display text-h3 font-semibold">
                 {t(`rsvp.${closedReason}.title`)}
@@ -78,11 +75,11 @@ export function RsvpSection({
               <p className="mt-3 text-body text-cream/70">{t(`rsvp.${closedReason}.body`)}</p>
             </div>
           ) : (
-            <div className="grid gap-12 lg:grid-cols-12">
-              <Reveal variant="left" className="lg:col-span-4">
+            <div className="grid items-center gap-12 lg:grid-cols-12">
+              <Reveal variant="left" className="lg:col-span-5">
                 <dl className="space-y-5">
-                  <Detail icon={<CalendarIcon className="h-full w-full" />} label={t('eventInfo.dateLabel')} value={t('hero.date')} />
-                  <Detail icon={<ClockIcon className="h-full w-full" />} label={t('eventInfo.timeLabel')} value={t('hero.time')} />
+                  <Detail icon={<CalendarIcon className="h-full w-full" />} label={t('eventInfo.dateLabel')} value={date} />
+                  <Detail icon={<ClockIcon className="h-full w-full" />} label={t('eventInfo.timeLabel')} value={time} />
                   <Detail
                     icon={<PinIcon className="h-full w-full" />}
                     label={t('eventInfo.venueLabel')}
@@ -90,26 +87,20 @@ export function RsvpSection({
                     extra={event.venueAddress}
                   />
                 </dl>
-
-                {status && (
-                  <div className="mt-9 border-t border-cream/12 pt-6">
-                    <CapacityMeter remaining={status.remaining} total={status.capacity} />
-                  </div>
-                )}
-
-                <p className="mt-6 text-small italic leading-relaxed text-cream/70">
-                  {t('rsvp.note')}
-                </p>
               </Reveal>
 
-              <Reveal variant="right" delay={140} className="lg:col-span-8">
-                <RsvpForm
-                  onRegistered={(r) => {
-                    setRecord(r)
-                    refresh()
-                  }}
-                  onFull={() => setFull(true)}
-                />
+              <Reveal variant="right" delay={140} className="lg:col-span-7">
+                <div className="border border-gold-500/30 bg-navy-950/40 px-6 py-10 text-center backdrop-blur-[2px] sm:px-10">
+                  <p className="mx-auto max-w-md font-display text-h3 italic leading-snug text-cream">
+                    {t('rsvp.note')}
+                  </p>
+                  <div className="mt-8">
+                    <ButtonLink href={REGISTRATION_URL} withArrow>
+                      {t('rsvp.formCta')}
+                    </ButtonLink>
+                  </div>
+                  <p className="mt-5 text-small text-cream/60">{t('rsvp.formNote')}</p>
+                </div>
               </Reveal>
             </div>
           )}

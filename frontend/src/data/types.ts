@@ -4,6 +4,11 @@ export type Locale = (typeof LOCALES)[number]
 /** A string that exists in all four languages required by §3. */
 export type Localized = Record<Locale, string>
 
+export type SpeakerRole = 'keynote' | 'speaker' | 'moderator' | 'mc'
+
+/** The order the roles appear on the page, which is the order of the afternoon. */
+export const SPEAKER_ROLES: SpeakerRole[] = ['keynote', 'speaker', 'moderator', 'mc']
+
 export interface Speaker {
   id: string
   /** Personal names are not translated. */
@@ -15,7 +20,11 @@ export interface Speaker {
   bio: Localized
   /** §7 — relevant official external link. Opens in a new tab (§10). */
   link?: { label: string; url: string }
-  role: 'speaker' | 'moderator'
+  /**
+   * In running order: the keynote, the panellists ("speaker"), the moderator
+   * and the Master of Ceremonies.
+   */
+  role: SpeakerRole
   /** Content not yet supplied by the organising team. */
   placeholder?: boolean
 }
@@ -28,6 +37,11 @@ export interface Chairman {
   message: Localized
   /** The pull quote shown beside the welcome in the concept. */
   quote: Localized
+  /**
+   * The full welcome on the About page, paragraphs separated by a blank
+   * line. Optional: an edition can have only the short message.
+   */
+  letter?: Localized | null
   placeholder?: boolean
 }
 

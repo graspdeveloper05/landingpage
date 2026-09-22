@@ -3,8 +3,10 @@ import { useI18n } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import { ExternalIcon } from '@/components/ui/Icons'
+import { Picture } from '@/components/ui/Picture'
+import { REGISTRATION_URL } from '@/lib/registration'
 
-/** §6 item 01 — purpose and long-term ambition, with the heritage illustration. */
+/** §6 item 01 — purpose and invitation, beside the grand hall of Muzium Negara. */
 export function AboutSection({
   withLink = true,
   showHeading = true,
@@ -27,11 +29,33 @@ export function AboutSection({
               <Ornament className="mt-4 !justify-start" />
             </>
           )}
-          <div className={`prose-measure ${showHeading ? 'mt-6' : ''}`}>
+          <p className={`font-display text-h3 font-semibold text-navy-800 ${showHeading ? 'mt-6' : ''}`}>
+            {t('about.sub')}
+          </p>
+          <div className="prose-measure mt-5">
             {tList('about.body').map((p) => (
               <p key={p}>{p}</p>
             ))}
           </div>
+
+          {/* The client's closing line, set apart: it is the sentence the
+              section exists to leave the reader with. */}
+          <p className="mt-6 border-l-2 border-gold-500 pl-4 font-display text-lead italic text-navy-900">
+            {t('about.closing')}
+          </p>
+
+          <p className="mt-6 text-body text-navy-800">
+            {t('about.invite')}{' '}
+            <a
+              href={REGISTRATION_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-gold-700 underline decoration-gold-500/40 underline-offset-4 transition-colors hover:text-navy-900"
+            >
+              {t('rsvp.formCta')}
+              <span className="sr-only"> ({t('common.newTab')})</span>
+            </a>
+          </p>
 
           {withLink && (
             <Link
@@ -46,19 +70,20 @@ export function AboutSection({
         </Reveal>
 
         <Reveal variant="right" delay={140} className="lg:col-span-5">
-          <img
-            src="/scenes/heritage.webp"
-            alt=""
-            width={1100}
-            height={712}
+          {/*
+            The grand hall of Muzium Negara, from the client's images. A
+            photograph, where this used to be a line drawing: so it takes a
+            frame of its own rather than the multiply blend that let the drawing
+            sit on the page, which would muddy a photograph's colour.
+          */}
+          <Picture
+            base="/scenes/hall"
+            alt={t('about.imageAlt')}
+            width={1400}
+            height={788}
             loading="lazy"
-            /* The rendering ships on a near-white ground with no alpha.
-               mix-blend-multiply drops that into the cream section, so the
-               drawing sits on the page rather than inside a white box --
-               no card, no shadow, no border. */
-            /* anim-drift starts once the reveal beside it has settled --
-               see the note in index.css. */
-            className="anim-drift mx-auto w-full mix-blend-multiply"
+            className="anim-drift block overflow-hidden rounded-sm shadow-card"
+            imgClassName="block aspect-[16/10] h-auto w-full object-cover"
           />
         </Reveal>
       </div>

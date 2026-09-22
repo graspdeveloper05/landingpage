@@ -71,6 +71,18 @@ class ChairmanAdminController extends Controller
             'quote.ta' => ['required', 'string', 'max:300'],
 
             /*
+             * The full welcome on the About page. Optional as a whole -- a
+             * chairman with only a short message is a complete record -- but
+             * once it is written in one language it is needed in all four,
+             * or a Tamil reader is handed a letter in English.
+             */
+            'letter' => ['nullable', 'array'],
+            'letter.en' => ['required_with:letter', 'nullable', 'string', 'max:6000'],
+            'letter.ms' => ['required_with:letter', 'nullable', 'string', 'max:6000'],
+            'letter.zh' => ['required_with:letter', 'nullable', 'string', 'max:6000'],
+            'letter.ta' => ['required_with:letter', 'nullable', 'string', 'max:6000'],
+
+            /*
              * An upload of ours, one of the shipped stand-ins, or empty. The
              * site renders this straight into an <img src>, so any other
              * string is a stored injection into every visitor's page.
@@ -83,6 +95,7 @@ class ChairmanAdminController extends Controller
             'designation.*.required' => 'The designation is needed in all four languages.',
             'message.*.required' => 'The welcome message is needed in all four languages.',
             'quote.*.required' => 'The pull quote is needed in all four languages.',
+            'letter.*.required_with' => 'The full welcome is needed in all four languages.',
             'portrait.regex' => 'Upload the photograph again -- that path is not one of ours.',
         ]);
 
@@ -103,6 +116,11 @@ class ChairmanAdminController extends Controller
             'chairman_designation' => $data['designation'],
             'chairman_message' => $data['message'],
             'chairman_quote' => $data['quote'],
+            // An all-empty letter is stored as none, so the About page does
+            // not render a heading over four blank paragraphs.
+            'chairman_letter' => collect($data['letter'] ?? [])->filter(fn ($v) => filled($v))->isEmpty()
+                ? null
+                : $data['letter'],
             'chairman_portrait' => $data['portrait'],
         ]);
 

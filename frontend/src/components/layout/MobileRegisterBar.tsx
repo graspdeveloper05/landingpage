@@ -3,14 +3,20 @@ import { useLocation } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { ButtonLink } from '@/components/ui/Button'
 import { cn } from '@/lib/cn'
+import { REGISTRATION_URL } from '@/lib/registration'
+import { useEventLabels } from '@/lib/useContent'
 
 /**
  * §11 — "The RSVP button should be highly visible." Most visitors arrive on a
  * phone from WhatsApp, so once the hero scrolls away the registration action
  * follows them down the page.
  */
-export function MobileRegisterBar({ remaining }: { remaining: number | null }) {
+export function MobileRegisterBar() {
   const { t } = useI18n()
+  // The date rather than a seat count: the client removed the counter, and
+  // registrations now land in their Google Form where this site cannot see
+  // them to count.
+  const { date } = useEventLabels()
   const { pathname } = useLocation()
   const [shown, setShown] = useState(false)
 
@@ -33,9 +39,9 @@ export function MobileRegisterBar({ remaining }: { remaining: number | null }) {
     >
       <div className="shell flex items-center justify-between gap-4 py-3">
         <p className="tnum text-micro leading-tight text-cream/65">
-          {remaining === null ? t('hero.date') : t('rsvp.capacity', { remaining, total: 200 })}
+          {date}
         </p>
-        <ButtonLink to="/rsvp" className="px-6">
+        <ButtonLink href={REGISTRATION_URL} className="px-6">
           {t('rsvp.cta')}
         </ButtonLink>
       </div>

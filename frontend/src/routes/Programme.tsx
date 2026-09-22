@@ -3,6 +3,7 @@ import { PageHero } from '@/components/layout/PageHero'
 import { ProgrammeSection } from '@/components/home/ProgrammeSection'
 import { EventInfoSection } from '@/components/home/EventInfoSection'
 import { ButtonLink } from '@/components/ui/Button'
+import { REGISTRATION_URL } from '@/lib/registration'
 
 export function Programme() {
   const { t } = useI18n()
@@ -12,7 +13,7 @@ export function Programme() {
       <PageHero title={t('programme.title')} sub={t('programme.sub')} />
       <ProgrammeSection showHeading={false}>
         <div className="mt-10">
-          <ButtonLink to="/rsvp" withArrow>
+          <ButtonLink href={REGISTRATION_URL} withArrow>
             {t('hero.cta')}
           </ButtonLink>
         </div>

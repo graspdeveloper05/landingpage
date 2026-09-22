@@ -31,24 +31,24 @@ class ContentSeeder extends Seeder
             ['edition' => (int) config('event.edition')],
             [
                 'date' => config('event.date'),
-                'date_label' => [
-                    'en' => '8 October 2026',
-                    'ms' => '8 Oktober 2026',
-                    'zh' => '2026 年 10 月 8 日',
-                    'ta' => '8 அக்டோபர் 2026',
-                ],
+                'date_label' => config('event.date_label'),
                 'start_time' => config('event.start_time'),
-                'time_label' => [
-                    'en' => '2.30 PM onwards',
-                    'ms' => '2.30 petang dan seterusnya',
-                    'zh' => '下午 2.30 起',
-                    'ta' => 'பிற்பகல் 2.30 முதல்',
-                ],
+                'time_label' => config('event.time_label'),
                 'venue' => config('event.venue'),
                 'venue_address' => config('event.venue_address'),
                 'maps_url' => config('event.maps_url'),
                 'map_embed_url' => config('event.map_embed_url'),
                 'capacity' => (int) config('event.capacity'),
+
+                // The chairman lives on the edition. Seeded here too so a
+                // fresh install arrives at the same content as an upgrade.
+                'chairman_name' => config('chairman.name'),
+                'chairman_organisation' => config('chairman.organisation'),
+                'chairman_designation' => config('chairman.designation'),
+                'chairman_message' => config('chairman.message'),
+                'chairman_quote' => config('chairman.quote'),
+                'chairman_letter' => config('chairman.letter'),
+                'chairman_portrait' => '',
             ],
         );
 

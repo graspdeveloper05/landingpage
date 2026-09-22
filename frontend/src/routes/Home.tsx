@@ -8,11 +8,11 @@ import { SpeakerGrid } from '@/components/home/SpeakerGrid'
 import { ProgrammeSection } from '@/components/home/ProgrammeSection'
 import { EventInfoSection } from '@/components/home/EventInfoSection'
 import { RsvpSection } from '@/components/home/RsvpSection'
-import { DevicesSection } from '@/components/home/DevicesSection'
+import { SponsorsSection } from '@/components/home/SponsorsSection'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { ButtonLink } from '@/components/ui/Button'
 import type { EventStatus } from '@/services/api'
-import { usePanelAndModerators } from '@/lib/useContent'
+import { useSpeakerGroups } from '@/lib/useContent'
 
 /**
  * §6 — the homepage carries the whole story in the order the brief sets out,
@@ -20,7 +20,7 @@ import { usePanelAndModerators } from '@/lib/useContent'
  */
 export function Home({ status, refresh }: { status: EventStatus | null; refresh: () => void }) {
   const { t } = useI18n()
-  const { panelSpeakers, moderators } = usePanelAndModerators()
+  const { speakers } = useSpeakerGroups()
 
   return (
     <>
@@ -34,7 +34,7 @@ export function Home({ status, refresh }: { status: EventStatus | null; refresh:
         <div className="shell">
           <SectionHeading title={t('speakers.title')} sub={t('speakers.sub')} />
           <div className="mt-12">
-            <SpeakerGrid speakers={[...panelSpeakers, ...moderators]} />
+            <SpeakerGrid speakers={speakers} />
           </div>
           <div className="mt-12 text-center">
             <ButtonLink to="/speakers" variant="outlineNavy" withArrow>
@@ -54,7 +54,7 @@ export function Home({ status, refresh }: { status: EventStatus | null; refresh:
 
       <EventInfoSection />
       <RsvpSection status={status} refresh={refresh} />
-      <DevicesSection />
+      <SponsorsSection />
     </>
   )
 }

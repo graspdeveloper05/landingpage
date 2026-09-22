@@ -21,10 +21,10 @@ export function ProgrammeSection({
     <section id="programme" className="relative scroll-mt-24 overflow-hidden border-t border-hair py-section">
       <img
         ref={backdropRef}
-        src="/scenes/colonnade.jpg"
+        src="/scenes/staircase.jpg"
         alt=""
-        width={768}
-        height={469}
+        width={1672}
+        height={941}
         loading="lazy"
         className="absolute inset-0 -z-10 h-full w-full scale-110 object-cover"
       />
@@ -33,7 +33,8 @@ export function ProgrammeSection({
         quote sits on bright marble. Over the timeline column it is veiled,
         because measuring the text against the bare image put the gold times at
         3.1:1 and the italic session details at 2.4:1 — both well under 4.5:1.
-        The gradient clears completely by 78%, so the colonnade still reads.
+        The gradient clears completely by 78%, so the staircase and its carved
+        screens -- the client's own photograph of the museum -- still read.
       */}
       <div
         className="absolute inset-0 -z-10"

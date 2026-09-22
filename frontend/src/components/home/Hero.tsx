@@ -6,6 +6,7 @@ import { RevealLines } from '@/components/ui/Reveal'
 import { Picture } from '@/components/ui/Picture'
 import { useParallax } from '@/lib/animation'
 import { useEventLabels } from '@/lib/useContent'
+import { REGISTRATION_URL } from '@/lib/registration'
 
 /**
  * §6 — the visitor must immediately grasp what this is, why it matters, when
@@ -110,7 +111,7 @@ export function Hero() {
           </dl>
 
           <div className="anim-rise mt-10" style={{ animationDelay: '0.58s' }}>
-            <ButtonLink to="/rsvp" withArrow>
+            <ButtonLink href={REGISTRATION_URL} withArrow>
               {t('hero.cta')}
             </ButtonLink>
           </div>

@@ -18,6 +18,8 @@ interface ChairmanForm {
   designation: Localized
   message: Localized
   quote: Localized
+  /** The full welcome on the About page. Paragraphs separated by a blank line. */
+  letter: Localized
   /** '' means no photograph yet; the site draws its own stand-in. */
   portrait: string
 }
@@ -28,6 +30,7 @@ const BLANK: ChairmanForm = {
   designation: { ...EMPTY_LOCALIZED },
   message: { ...EMPTY_LOCALIZED },
   quote: { ...EMPTY_LOCALIZED },
+  letter: { ...EMPTY_LOCALIZED },
   portrait: '',
 }
 
@@ -50,12 +53,16 @@ export function ChairmanAdmin() {
   const load = () => {
     setError(null)
     return adminApi
-      .get<{ chairman: ChairmanForm | null; edition: number }>('/admin/chairman')
+      .get<{
+        chairman: (Omit<ChairmanForm, 'letter'> & { letter: Localized | null }) | null
+        edition: number
+      }>('/admin/chairman')
       .then((r) => {
         // Null on an edition nobody has edited. The site falls back to the
         // bundled record then, and this form opens empty rather than showing
         // values that are not actually stored.
-        setForm(r.chairman ?? BLANK)
+        // The letter is null on an edition saved before it existed.
+        setForm(r.chairman ? { ...r.chairman, letter: r.chairman.letter ?? { ...EMPTY_LOCALIZED } } : BLANK)
         setEdition(r.edition)
       })
       .catch((e) => {
@@ -192,6 +199,20 @@ export function ChairmanAdmin() {
               onChange={(v) => set('quote', v)}
               errors={localeErrors('quote')}
               hint="Set large to the right of the letter. One sentence."
+              multiline
+            />
+          </AdminCard>
+
+          <AdminCard className="space-y-4">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
+              Full welcome
+            </p>
+            <LocalizedFieldset
+              label="The full letter"
+              value={form.letter}
+              onChange={(v) => set('letter', v)}
+              errors={localeErrors('letter')}
+              hint="Shown on the About page, where “Read the full welcome” leads. Leave a blank line between paragraphs. Optional — leave all four empty and the page shows no letter."
               multiline
             />
           </AdminCard>

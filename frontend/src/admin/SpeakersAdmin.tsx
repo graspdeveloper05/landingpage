@@ -219,7 +219,22 @@ function SpeakerForm({
   onSaved: (name: string) => void
 }) {
   const isNew = speaker === null
-  const [form, setForm] = useState<AdminSpeaker>(speaker ?? BLANK)
+  // A biography can come back as null in some or all languages -- the
+  // confirmed speakers have none. Normalised to empty strings, or the four
+  // inputs start uncontrolled and React complains the moment one is typed in.
+  const [form, setForm] = useState<AdminSpeaker>(() =>
+    speaker
+      ? {
+          ...speaker,
+          bio: {
+            en: speaker.bio?.en ?? '',
+            ms: speaker.bio?.ms ?? '',
+            zh: speaker.bio?.zh ?? '',
+            ta: speaker.bio?.ta ?? '',
+          },
+        }
+      : BLANK,
+  )
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -392,8 +407,12 @@ function SpeakerForm({
                 onChange={(e) => set('role', e.target.value as AdminSpeaker['role'])}
                 className="mt-1.5 block w-full rounded-sm border border-hair bg-white px-3 py-2 text-body text-navy-950 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/40"
               >
-                <option value="speaker">Speaker</option>
+                {/* In running order. "Panellist" is stored as "speaker", the
+                    name the role had before the others existed. */}
+                <option value="keynote">Keynote Address</option>
+                <option value="speaker">Panellist</option>
                 <option value="moderator">Moderator</option>
+                <option value="mc">Master of Ceremonies</option>
               </select>
             </label>
           </div>
@@ -410,6 +429,7 @@ function SpeakerForm({
             value={form.bio}
             onChange={(v) => set('bio', v)}
             errors={localeErrors('bio')}
+            hint="Optional. Leave all four empty and the card shows no “View profile”. Once written in one language, it is needed in all four."
             multiline
           />
 

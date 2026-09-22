@@ -3,36 +3,49 @@ import { PageHero } from '@/components/layout/PageHero'
 import { SpeakerGrid } from '@/components/home/SpeakerGrid'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { ButtonLink } from '@/components/ui/Button'
-import { usePanelAndModerators } from '@/lib/useContent'
+import { useSpeakerGroups } from '@/lib/useContent'
+import { REGISTRATION_URL } from '@/lib/registration'
+import { cn } from '@/lib/cn'
 
+/**
+ * §7 — everyone on the programme, grouped by what they do on the day, in the
+ * order the afternoon runs: keynote, panellists, moderator, Master of
+ * Ceremonies. Groups alternate their ground so each reads as its own band.
+ */
 export function Speakers() {
   const { t } = useI18n()
-  const { panelSpeakers, moderators } = usePanelAndModerators()
+  const { groups } = useSpeakerGroups()
 
   return (
     <>
       <PageHero title={t('speakers.title')} sub={t('speakers.sub')} />
 
-      <section className="bg-cream py-section">
+      {groups.map(({ role, speakers }, i) => (
+        <section
+          key={role}
+          className={cn('py-section', i % 2 === 0 ? 'bg-cream' : 'border-t border-hair bg-cream-deep')}
+        >
           <div className="shell">
-          <SpeakerGrid speakers={panelSpeakers} />
-        </div>
-      </section>
+            <SectionHeading title={t(`speakers.groups.${role}`)} />
+            {/* A lone speaker is held to one column's width rather than
+                stretched across the page. */}
+            <div
+              className={cn(
+                'mt-12',
+                speakers.length === 1 && 'mx-auto w-full max-w-[17rem]',
+              )}
+            >
+              <SpeakerGrid speakers={speakers} columns={speakers.length === 1 ? 1 : undefined} />
+            </div>
+          </div>
+        </section>
+      ))}
 
-      <section className="border-t border-hair bg-cream-deep py-section">
-          <div className="shell">
-          <SectionHeading title={t('speakers.moderatorBadge')} />
-          {/* A single card, held to roughly one column of the grid above. */}
-          <div className="mx-auto mt-12 w-full max-w-[17rem]">
-            <SpeakerGrid speakers={moderators} columns={1} />
-          </div>
-          <div className="mt-14 text-center">
-            <ButtonLink to="/rsvp" withArrow>
-              {t('hero.cta')}
-            </ButtonLink>
-          </div>
-        </div>
-      </section>
+      <div className="border-t border-hair bg-cream py-section text-center">
+        <ButtonLink href={REGISTRATION_URL} withArrow>
+          {t('hero.cta')}
+        </ButtonLink>
+      </div>
     </>
   )
 }

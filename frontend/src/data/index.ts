@@ -22,8 +22,6 @@ export const currentEdition = editions[CURRENT_EDITION]
 
 export const { event, speakers, chairman, programme } = currentEdition
 
-export const panelSpeakers = speakers.filter((s) => s.role === 'speaker')
-export const moderators = speakers.filter((s) => s.role === 'moderator')
 
 export { quickLinks } from './quickLinks'
 export * from './types'

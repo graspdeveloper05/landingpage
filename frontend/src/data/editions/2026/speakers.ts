@@ -1,209 +1,176 @@
 import type { Chairman, Speaker } from '@/data/types'
 
 /* ============================================================================
- * PLACEHOLDER CONTENT — THESE PEOPLE DO NOT EXIST
- * ----------------------------------------------------------------------------
- * Every name, organisation and biography below is invented. They are written to
- * look realistic so the layout can be judged at true proportions — which also
- * means they can be mistaken for a confirmed line-up. Do not put this in front
- * of the client, a deck, or anything public until it is replaced.
+ * GENERATED from backend/config by scripts/sync-bundled-content.mjs.
+ * Do not edit by hand -- edit the config and run the script.
  *
- * The roles (Former President, Chief Executive Officer, Academic and Author,
- * Social Leader, Policy Expert, Youth Leader, Business Leader, Moderator) come
- * from the approved UI/UX concept and are the part worth keeping.
- *
- * Replace each entry with confirmed details and drop `placeholder: true` as
- * each one is verified. `npm run check:placeholders` counts what is left.
- *
- * Portraits are neutral 5:6 SVGs in /public/portraits — swap for professional
- * photographs at the same ratio.
+ * This is the fallback shown only when the API cannot be reached. The live
+ * site reads the same content from the database, where the organising team
+ * edits it in the admin panel.
  * ==========================================================================*/
 
 export const speakers: Speaker[] = [
   {
-    id: 'sp-01',
-    name: 'Tan Sri Dr. Zulkifli bin Mahmud',
-    designation: {
-      en: 'Former President',
-      ms: 'Bekas Presiden',
-      zh: '前任主席',
-      ta: 'முன்னாள் தலைவர்',
+    "id": "aaron-ago-dagang",
+    "name": "YB Datuk Aaron Ago Dagang",
+    "designation": {
+      "en": "Minister of National Unity",
+      "ms": "Menteri Perpaduan Negara",
+      "zh": "国家团结部长",
+      "ta": "தேசிய ஒற்றுமை அமைச்சர்"
     },
-    organisation: 'Institute of Public Administration Malaysia',
-    portrait: '/portraits/placeholder-01.svg',
-    bio: {
-      en: 'Spent three decades in the public service, latterly leading reform of federal–state coordination. Now writes and lectures on the design of Malaysian institutions.',
-      ms: 'Berkhidmat tiga dekad dalam perkhidmatan awam, terkini memimpin reformasi penyelarasan persekutuan–negeri. Kini menulis dan memberi kuliah mengenai reka bentuk institusi Malaysia.',
-      zh: '在公共服务领域任职三十年，近年主导联邦与州政府协调机制的改革，现从事马来西亚制度设计的写作与教学。',
-      ta: 'மூன்று தசாப்தங்கள் பொதுப் பணியில் இருந்தார்; சமீபத்தில் மத்திய–மாநில ஒருங்கிணைப்புச் சீர்திருத்தத்தை வழிநடத்தினார். தற்போது மலேசிய நிறுவனங்களின் வடிவமைப்பு குறித்து எழுதுகிறார், விரிவுரை ஆற்றுகிறார்.',
+    "organisation": "Ministry of National Unity",
+    "portrait": "",
+    "bio": {
+      "en": "",
+      "ms": "",
+      "zh": "",
+      "ta": ""
     },
-    role: 'speaker',
-    placeholder: true,
+    "role": "keynote"
   },
   {
-    id: 'sp-02',
-    name: 'Datin Sri Cheah Su Lin',
-    designation: {
-      en: 'Chief Executive Officer',
-      ms: 'Ketua Pegawai Eksekutif',
-      zh: '首席执行官',
-      ta: 'தலைமை நிர்வாக அதிகாரி',
+    "id": "nazir-razak",
+    "name": "Tan Sri Nazir Razak",
+    "designation": {
+      "en": "Chairman",
+      "ms": "Pengerusi",
+      "zh": "主席",
+      "ta": "தலைவர்"
     },
-    organisation: 'Nusantara Capital Group',
-    portrait: '/portraits/placeholder-02.svg',
-    bio: {
-      en: 'Leads a regional investment group with a focus on productivity and higher-value industry. A frequent voice on wages and the shape of Malaysian growth.',
-      ms: 'Mengetuai kumpulan pelaburan serantau yang menumpukan produktiviti dan industri bernilai tinggi. Kerap memberi pandangan mengenai gaji dan corak pertumbuhan Malaysia.',
-      zh: '领导一家专注于生产力与高附加值产业的区域投资集团，长期就薪资水平与马来西亚增长格局发声。',
-      ta: 'உற்பத்தித்திறன் மற்றும் உயர் மதிப்புத் தொழில்துறையில் கவனம் செலுத்தும் ஒரு பிராந்திய முதலீட்டுக் குழுவை வழிநடத்துகிறார். ஊதியம் மற்றும் மலேசிய வளர்ச்சியின் தன்மை குறித்து அடிக்கடி கருத்து தெரிவிப்பவர்.',
+    "organisation": "Yayasan Tun Razak",
+    "portrait": "",
+    "bio": {
+      "en": "",
+      "ms": "",
+      "zh": "",
+      "ta": ""
     },
-    role: 'speaker',
-    placeholder: true,
+    "role": "speaker"
   },
   {
-    id: 'sp-03',
-    name: 'Professor Dr. Meena Ramakrishnan',
-    designation: {
-      en: 'Academic and Author',
-      ms: 'Ahli Akademik dan Penulis',
-      zh: '学者兼作家',
-      ta: 'கல்வியாளர் மற்றும் எழுத்தாளர்',
+    "id": "ruzina-hasan",
+    "name": "H.E. Ruzina Hasan",
+    "designation": {
+      "en": "Acting Deputy British High Commissioner to Malaysia",
+      "ms": "Pemangku Timbalan Pesuruhjaya Tinggi British ke Malaysia",
+      "zh": "英国驻马来西亚代理副高级专员",
+      "ta": "மலேசியாவுக்கான பிரிட்டிஷ் பதில் துணை உயர் ஸ்தானிகர்"
     },
-    organisation: 'Faculty of Social Sciences, Universiti Malaya',
-    portrait: '/portraits/placeholder-03.svg',
-    bio: {
-      en: 'Teaches and publishes on constitutional history and how plural societies argue in public. Author of three books on Malaysian civic life.',
-      ms: 'Mengajar dan menerbitkan kajian mengenai sejarah perlembagaan dan cara masyarakat majmuk berhujah di ruang awam. Penulis tiga buah buku mengenai kehidupan sivik Malaysia.',
-      zh: '教学与研究领域涵盖宪政史，以及多元社会如何在公共领域展开辩论，著有三部关于马来西亚公民生活的作品。',
-      ta: 'அரசியலமைப்பு வரலாறு மற்றும் பன்முகச் சமூகங்கள் பொது வெளியில் விவாதிக்கும் முறை குறித்து கற்பிக்கிறார், நூல்கள் வெளியிடுகிறார். மலேசியக் குடிமை வாழ்வு குறித்த மூன்று நூல்களின் ஆசிரியர்.',
+    "organisation": "British High Commission Kuala Lumpur",
+    "portrait": "",
+    "bio": {
+      "en": "",
+      "ms": "",
+      "zh": "",
+      "ta": ""
     },
-    role: 'speaker',
-    placeholder: true,
+    "role": "speaker"
   },
   {
-    id: 'sp-04',
-    name: 'Puan Sharifah Aminah binti Yusof',
-    designation: {
-      en: 'Social Leader',
-      ms: 'Pemimpin Sosial',
-      zh: '社会领袖',
-      ta: 'சமூகத் தலைவர்',
+    "id": "syahredzan-johan",
+    "name": "YB Syahredzan Johan",
+    "designation": {
+      "en": "Member of Parliament for Bangi",
+      "ms": "Ahli Parlimen Bangi",
+      "zh": "万宜国会议员",
+      "ta": "பாங்கி நாடாளுமன்ற உறுப்பினர்"
     },
-    organisation: 'Yayasan Harmoni Malaysia',
-    portrait: '/portraits/placeholder-04.svg',
-    bio: {
-      en: 'Builds community programmes across Peninsular Malaysia, working on cohesion between neighbourhoods that rarely meet. Twenty years in the non-profit sector.',
-      ms: 'Membina program komuniti di seluruh Semenanjung Malaysia, memberi tumpuan kepada perpaduan antara kejiranan yang jarang bertemu. Dua puluh tahun dalam sektor bukan untung.',
-      zh: '在马来西亚半岛推动社区计划，致力于促进平日鲜少往来的社区之间的融合，投身非营利领域二十年。',
-      ta: 'மலாய் தீபகற்பம் முழுவதும் சமூகத் திட்டங்களை உருவாக்குகிறார்; அரிதாகவே சந்திக்கும் அக்கம்பக்கங்களுக்கிடையேயான ஒற்றுமையில் பணியாற்றுகிறார். இலாப நோக்கற்ற துறையில் இருபது ஆண்டுகள்.',
+    "organisation": "Parliament of Malaysia",
+    "portrait": "",
+    "bio": {
+      "en": "",
+      "ms": "",
+      "zh": "",
+      "ta": ""
     },
-    role: 'speaker',
-    placeholder: true,
+    "role": "speaker"
   },
   {
-    id: 'sp-05',
-    name: 'Encik Daniel Tan Chee Meng',
-    designation: {
-      en: 'Policy Expert',
-      ms: 'Pakar Dasar',
-      zh: '政策专家',
-      ta: 'கொள்கை நிபுணர்',
+    "id": "aira-azhari",
+    "name": "Ms Aira Azhari",
+    "designation": {
+      "en": "Chief Executive Officer",
+      "ms": "Ketua Pegawai Eksekutif",
+      "zh": "首席执行官",
+      "ta": "தலைமை நிர்வாக அதிகாரி"
     },
-    organisation: 'Institute of Strategic and International Studies',
-    portrait: '/portraits/placeholder-05.svg',
-    bio: {
-      en: 'Researches public trust in institutions and what it takes to rebuild it. Advises on national development planning.',
-      ms: 'Menyelidik kepercayaan rakyat terhadap institusi dan apa yang diperlukan untuk memulihkannya. Menasihati perancangan pembangunan negara.',
-      zh: '研究公众对制度的信任及其重建路径，并参与国家发展规划的咨询工作。',
-      ta: 'நிறுவனங்கள் மீதான மக்கள் நம்பிக்கையையும், அதை மீளக் கட்டியெழுப்பத் தேவையானவற்றையும் ஆய்வு செய்கிறார். தேசிய வளர்ச்சித் திட்டமிடலில் ஆலோசனை வழங்குகிறார்.',
+    "organisation": "IDEAS",
+    "portrait": "",
+    "bio": {
+      "en": "",
+      "ms": "",
+      "zh": "",
+      "ta": ""
     },
-    role: 'speaker',
-    placeholder: true,
+    "role": "speaker"
   },
   {
-    id: 'sp-06',
-    name: 'Cik Nur Aisyah binti Roslan',
-    designation: {
-      en: 'Youth Leader',
-      ms: 'Pemimpin Belia',
-      zh: '青年领袖',
-      ta: 'இளையோர் தலைவர்',
+    "id": "jason-wee",
+    "name": "Jason Wee",
+    "designation": {
+      "en": "Co-Founder",
+      "ms": "Pengasas Bersama",
+      "zh": "联合创办人",
+      "ta": "இணை நிறுவனர்"
     },
-    organisation: 'Suara Belia Malaysia',
-    portrait: '/portraits/placeholder-06.svg',
-    bio: {
-      en: 'Works on civic participation among first-time voters and rural youth enterprise in Sabah and Sarawak. Chevening alumna.',
-      ms: 'Bergiat dalam penyertaan sivik pengundi kali pertama serta keusahawanan belia luar bandar di Sabah dan Sarawak. Alumni Chevening.',
-      zh: '致力于提升首投族的公民参与，以及沙巴与砂拉越乡区青年的创业发展，Chevening 校友。',
-      ta: 'முதல் முறை வாக்காளர்களின் குடிமைப் பங்கேற்பு மற்றும் சபா, சரவாக்கின் கிராமப்புற இளையோர் தொழில்முனைவில் பணியாற்றுகிறார். Chevening முன்னாள் மாணவி.',
+    "organisation": "Architects of Diversity",
+    "portrait": "",
+    "bio": {
+      "en": "",
+      "ms": "",
+      "zh": "",
+      "ta": ""
     },
-    role: 'speaker',
-    placeholder: true,
+    "role": "moderator"
   },
   {
-    id: 'sp-07',
-    name: 'Dato’ Vijay Kumar Selvarajah',
-    designation: {
-      en: 'Business Leader',
-      ms: 'Pemimpin Perniagaan',
-      zh: '商界领袖',
-      ta: 'வணிகத் தலைவர்',
+    "id": "nurfarahanim-che-mansor",
+    "name": "Ms Nurfarahanim Che Mansor",
+    "designation": {
+      "en": "Committee Member",
+      "ms": "Ahli Jawatankuasa",
+      "zh": "委员会成员",
+      "ta": "குழு உறுப்பினர்"
     },
-    organisation: 'Selvarajah Group Holdings',
-    portrait: '/portraits/placeholder-07.svg',
-    bio: {
-      en: 'Built a family manufacturing business into a regional group employing four thousand people. Speaks on skills, wages and industrial transition.',
-      ms: 'Membangunkan perniagaan pembuatan keluarga menjadi kumpulan serantau yang menggaji empat ribu pekerja. Berucap mengenai kemahiran, gaji dan peralihan industri.',
-      zh: '将家族制造业发展为雇用四千人的区域集团，常就技能培训、薪资与产业转型发表见解。',
-      ta: 'குடும்ப உற்பத்தி நிறுவனத்தை நான்காயிரம் பேருக்கு வேலை வழங்கும் பிராந்தியக் குழுமமாக வளர்த்தவர். திறன்கள், ஊதியம் மற்றும் தொழில்துறை மாற்றம் குறித்து உரையாற்றுகிறார்.',
+    "organisation": "Chevening Alumni Malaysia",
+    "portrait": "/portraits/nurfarahanim-che-mansor.jpg",
+    "bio": {
+      "en": "",
+      "ms": "",
+      "zh": "",
+      "ta": ""
     },
-    role: 'speaker',
-    placeholder: true,
-  },
-  {
-    id: 'mod-01',
-    name: 'Ms. Melissa Chong Wai Yee',
-    designation: {
-      en: 'Moderator',
-      ms: 'Moderator',
-      zh: '主持人',
-      ta: 'நெறியாளர்',
-    },
-    organisation: 'Independent Broadcast Journalist',
-    portrait: '/portraits/placeholder-08.svg',
-    bio: {
-      en: 'Two decades interviewing Malaysian public figures across radio and television. Moderates both afternoon panels.',
-      ms: 'Dua dekad menemu bual tokoh awam Malaysia menerusi radio dan televisyen. Mengendalikan kedua-dua sesi panel petang.',
-      zh: '二十年来在广播与电视上访问马来西亚公众人物，主持下午的两场对谈。',
-      ta: 'இரண்டு தசாப்தங்களாக வானொலி மற்றும் தொலைக்காட்சியில் மலேசியப் பொதுநபர்களை நேர்காணல் செய்துள்ளார். மதிய அமர்வுகள் இரண்டையும் நெறிப்படுத்துகிறார்.',
-    },
-    role: 'moderator',
-    placeholder: true,
-  },
+    "role": "mc"
+  }
 ]
 
-/** PLACEHOLDER — invented. Replace with the confirmed chairman's message. */
 export const chairman: Chairman = {
-  name: 'Dato’ Rahman bin Abdullah',
-  designation: {
-    en: 'Organising Chairman, Seri Negara Dialogue 2026',
-    ms: 'Pengerusi Penganjur, Dialog Seri Negara 2026',
-    zh: '2026 年斯里尼加拉对话筹委会主席',
-    ta: 'ஏற்பாட்டுத் தலைவர், சேரி நெகாரா உரையாடல் 2026',
+  "name": "Dr. Vighneswaran N. Vithiatharan",
+  "designation": {
+    "en": "Organising Chairman, Seri Negara Dialogue 2026",
+    "ms": "Pengerusi Penganjur, Dialog Seri Negara 2026",
+    "zh": "2026 年斯里尼加拉对话筹委会主席",
+    "ta": "ஏற்பாட்டுத் தலைவர், சேரி நெகாரா உரையாடல் 2026"
   },
-  organisation: 'Chevening Alumni Malaysia',
-  portrait: '/portraits/placeholder-chair.svg',
-  message: {
-    en: 'This Dialogue is an invitation — for all of us — to reflect, to listen, and to shape a stronger Malaysia together.',
-    ms: 'Dialog ini adalah jemputan — untuk kita semua — agar merenung, mendengar, dan membina Malaysia yang lebih kukuh bersama-sama.',
-    zh: '这场对话是一份邀请——邀请我们每一个人一同反思、聆听，携手塑造更强大的马来西亚。',
-    ta: 'இந்த உரையாடல் நம் அனைவருக்குமான ஓர் அழைப்பு — சிந்திக்கவும், கேட்கவும், வலிமையான மலேசியாவை இணைந்து உருவாக்கவும்.',
+  "organisation": "Chevening Alumni Malaysia",
+  "portrait": "",
+  "message": {
+    "en": "Welcome to the Seri Negara Dialogue 2026. Malaysia’s future will not be shaped by silence, or by agreement on everything. It will be shaped by our courage to listen, question honestly and find common purpose across our differences.",
+    "ms": "Selamat datang ke Dialog Seri Negara 2026. Masa depan Malaysia tidak akan dibentuk oleh kebisuan, atau oleh persetujuan dalam segala hal. Ia akan dibentuk oleh keberanian kita untuk mendengar, mempersoal dengan jujur dan menemui tujuan bersama di sebalik perbezaan kita.",
+    "zh": "欢迎莅临 2026 年斯里尼加拉对话。马来西亚的未来不会由沉默塑造，也不会由凡事一致塑造，而是由我们倾听的勇气、坦诚质疑的勇气，以及跨越分歧寻找共同目标的勇气所塑造。",
+    "ta": "சேரி நெகாரா உரையாடல் 2026 க்கு வரவேற்கிறோம். மலேசியாவின் எதிர்காலம் மௌனத்தாலோ, எல்லாவற்றிலும் உடன்பாட்டாலோ வடிவமைக்கப்படாது. கேட்கவும், நேர்மையாகக் கேள்வி எழுப்பவும், நமது வேறுபாடுகளைக் கடந்து பொதுவான நோக்கத்தைக் கண்டறியவும் நாம் கொள்ளும் துணிவால்தான் அது வடிவமைக்கப்படும்."
   },
-  quote: {
-    en: 'A more united and progressive Malaysia is a future we can build together.',
-    ms: 'Malaysia yang lebih bersatu dan progresif ialah masa depan yang boleh kita bina bersama.',
-    zh: '一个更团结、更进步的马来西亚，是我们能够共同建构的未来。',
-    ta: 'மேலும் ஒற்றுமையான, முன்னேற்றமான மலேசியா — நாம் இணைந்து கட்டியெழுப்பக்கூடிய எதிர்காலம்.',
+  "quote": {
+    "en": "Many histories have brought us here. The next chapter is ours to write — together.",
+    "ms": "Pelbagai sejarah telah membawa kita ke sini. Bab seterusnya milik kita untuk ditulis — bersama-sama.",
+    "zh": "众多历史带领我们来到这里。下一章，由我们共同书写。",
+    "ta": "பல வரலாறுகள் நம்மை இங்கு கொண்டு வந்துள்ளன. அடுத்த அத்தியாயத்தை நாம் எழுத வேண்டும் — இணைந்து."
   },
-  placeholder: true,
+  "letter": {
+    "en": "Welcome to the Seri Negara Dialogue 2026.\n\nMalaysia’s story has never been a single story. It has been shaped by different histories, communities, struggles and hopes. These differences need not divide us; understood honestly, they can become a source of strength.\n\nAs Malaysia approaches Merdeka 70 and looks towards Malaysia 100, we have an opportunity to reflect on the nation we have inherited and ask what kind of nation we wish to leave behind. This requires more than comfortable conversations. It calls for the courage to listen, question long-held assumptions and confront the realities shaping our society.\n\nThe Seri Negara Dialogue brings together leaders, thinkers and citizens not to seek agreement on everything, but to find common purpose across our differences. It is a space to rebuild trust, strengthen our shared sense of belonging and consider how each of us can contribute to Malaysia’s next chapter.\n\nI warmly invite you to be part of this important conversation. Come with your experiences, your questions and your hopes for our country.\n\nMany histories have brought us here. The future is ours to shape, together.",
+    "ms": "Selamat datang ke Dialog Seri Negara 2026.\n\nKisah Malaysia tidak pernah menjadi satu kisah tunggal. Ia dibentuk oleh pelbagai sejarah, komuniti, perjuangan dan harapan. Perbezaan ini tidak semestinya memecahbelahkan kita; jika difahami dengan jujur, ia boleh menjadi sumber kekuatan.\n\nKetika Malaysia menghampiri Merdeka 70 dan menuju Malaysia 100, kita berpeluang untuk merenung negara yang telah kita warisi dan bertanya negara bagaimanakah yang ingin kita tinggalkan. Ini memerlukan lebih daripada perbualan yang selesa. Ia menuntut keberanian untuk mendengar, mempersoalkan andaian yang lama dipegang dan berdepan dengan realiti yang membentuk masyarakat kita.\n\nDialog Seri Negara menghimpunkan pemimpin, pemikir dan rakyat bukan untuk mencari persetujuan dalam segala hal, tetapi untuk menemui tujuan bersama di sebalik perbezaan kita. Ia merupakan ruang untuk membina semula kepercayaan, mengukuhkan rasa kekitaan bersama dan menimbang bagaimana setiap daripada kita dapat menyumbang kepada bab seterusnya Malaysia.\n\nDengan sukacitanya saya menjemput anda untuk menjadi sebahagian daripada perbualan penting ini. Datanglah dengan pengalaman, persoalan dan harapan anda untuk negara kita.\n\nPelbagai sejarah telah membawa kita ke sini. Masa depan milik kita untuk dibentuk, bersama-sama.",
+    "zh": "欢迎莅临 2026 年斯里尼加拉对话。\n\n马来西亚的故事从来不是单一的故事。它由不同的历史、社群、奋斗与希望所塑造。这些差异不必使我们分裂；若能坦诚理解，它们可以成为力量的源泉。\n\n随着马来西亚迈向独立 70 周年、展望建国 100 周年，我们有机会反思我们所继承的国家，并思考我们希望留下一个怎样的国家。这需要的不只是轻松的对话，更需要倾听的勇气、质疑固有观念的勇气，以及正视形塑我们社会之现实的勇气。\n\n斯里尼加拉对话汇聚领袖、思想者与公民，目的不在于凡事达成共识，而在于跨越分歧、寻找共同目标。这是一个重建信任、强化共同归属感，并思考我们每个人如何为马来西亚下一章作出贡献的空间。\n\n我诚挚邀请您参与这场重要的对话。请带着您的经历、您的问题，以及您对我们国家的期望而来。\n\n众多历史带领我们来到这里。未来由我们共同塑造。",
+    "ta": "சேரி நெகாரா உரையாடல் 2026 க்கு உங்களை வரவேற்கிறோம்.\n\nமலேசியாவின் கதை ஒருபோதும் ஒற்றைக் கதையாக இருந்ததில்லை. அது பல்வேறு வரலாறுகள், சமூகங்கள், போராட்டங்கள் மற்றும் நம்பிக்கைகளால் வடிவமைக்கப்பட்டுள்ளது. இந்த வேறுபாடுகள் நம்மைப் பிரிக்க வேண்டியதில்லை; நேர்மையாகப் புரிந்துகொள்ளப்பட்டால், அவை வலிமையின் ஆதாரமாக மாறலாம்.\n\nமலேசியா மெர்டேக்கா 70 ஐ நெருங்கி, மலேசியா 100 ஐ நோக்கிப் பார்க்கும் இவ்வேளையில், நாம் மரபாகப் பெற்ற தேசத்தைச் சிந்தித்து, எத்தகைய தேசத்தை விட்டுச் செல்ல விரும்புகிறோம் என்று கேட்கும் வாய்ப்பு நமக்கு உள்ளது. இதற்கு வசதியான உரையாடல்களைவிட மேலானது தேவை. கேட்கவும், நீண்டகால அனுமானங்களைக் கேள்விக்குட்படுத்தவும், நமது சமூகத்தை வடிவமைக்கும் யதார்த்தங்களை எதிர்கொள்ளவும் துணிவு தேவை.\n\nசேரி நெகாரா உரையாடல், எல்லாவற்றிலும் உடன்பாட்டைத் தேடுவதற்காக அல்ல, மாறாக நமது வேறுபாடுகளைக் கடந்து பொதுவான நோக்கத்தைக் கண்டறிவதற்காகத் தலைவர்கள், சிந்தனையாளர்கள் மற்றும் குடிமக்களை ஒன்றிணைக்கிறது. நம்பிக்கையை மீண்டும் கட்டியெழுப்பவும், நமது பகிர்ந்த சொந்த உணர்வை வலுப்படுத்தவும், மலேசியாவின் அடுத்த அத்தியாயத்திற்கு நாம் ஒவ்வொருவரும் எவ்வாறு பங்களிக்கலாம் என்று சிந்திக்கவும் இது ஒரு களம்.\n\nஇந்த முக்கியமான உரையாடலின் ஒரு பகுதியாக இருக்க உங்களை அன்புடன் அழைக்கிறேன். உங்கள் அனுபவங்களோடும், கேள்விகளோடும், நமது நாட்டுக்கான நம்பிக்கைகளோடும் வாருங்கள்.\n\nபல வரலாறுகள் நம்மை இங்கு கொண்டு வந்துள்ளன. எதிர்காலம் நாம் இணைந்து வடிவமைக்க வேண்டியது."
+  }
 }

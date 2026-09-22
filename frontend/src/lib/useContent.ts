@@ -7,7 +7,7 @@ import {
 } from '@/data'
 import { getEvent, getProgramme, getSpeakers } from '@/services/api'
 import { useI18n } from '@/i18n'
-import type { Chairman, EventDetails, ProgrammeItem, Speaker } from '@/data/types'
+import { SPEAKER_ROLES, type Chairman, type EventDetails, type ProgrammeItem, type Speaker } from '@/data/types'
 
 /*
  * Speakers and the programme, as edited by the organising team.
@@ -58,13 +58,27 @@ export function useProgramme(): ProgrammeItem[] {
 }
 
 /** Split the same way `@/data` splits the bundled list, so callers match. */
-export function usePanelAndModerators() {
+/**
+ * Everyone on the programme, and the same people grouped by role in running
+ * order: keynote, panellists, moderator, Master of Ceremonies.
+ *
+ * This used to return panellists and moderators only, which was all the site
+ * had. The confirmed line-up added a keynote and an MC, and a filter that
+ * named two roles would have dropped the Minister's keynote from the page
+ * without a word -- so groups are built from the full list of roles, and a
+ * role with nobody in it is simply left out.
+ */
+export function useSpeakerGroups() {
   const speakers = useSpeakers()
-  return {
-    panelSpeakers: speakers.filter((s) => s.role === 'speaker'),
-    moderators: speakers.filter((s) => s.role === 'moderator'),
-    speakers,
-  }
+  const byOrder = [...speakers].sort(
+    (a, b) => SPEAKER_ROLES.indexOf(a.role) - SPEAKER_ROLES.indexOf(b.role),
+  )
+  const groups = SPEAKER_ROLES.map((role) => ({
+    role,
+    speakers: speakers.filter((s) => s.role === role),
+  })).filter((g) => g.speakers.length > 0)
+
+  return { speakers: byOrder, groups }
 }
 
 /* -------------------------------------------------------------------------- */

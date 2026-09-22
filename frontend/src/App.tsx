@@ -50,7 +50,6 @@ export default function App() {
 function PublicSite() {
   const { status, refresh } = useEventStatus()
   const { locale } = useI18n()
-  const remaining = status?.remaining ?? null
 
   // §12 — counted here rather than in App, so the admin panel's own routes
   // are never recorded as visits.
@@ -79,7 +78,7 @@ function PublicSite() {
       </main>
 
       <SiteFooter />
-      <MobileRegisterBar remaining={remaining} />
+      <MobileRegisterBar />
       <BackToTop />
     </>
   )

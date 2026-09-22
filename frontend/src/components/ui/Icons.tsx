@@ -32,6 +32,29 @@ export const FutureIcon = ({ className }: P) => (
     <path d="M12 3l2.4 5.4 5.6.5-4.3 3.9 1.3 5.7L12 15.6 6.9 18.5l1.3-5.7L4 8.9l5.6-.5z" />
   </svg>
 )
+/*
+ * The three conversations, after the client's design: a sailing ship for the
+ * histories that arrived by sea, a domed civic building for the nation as it
+ * stands, and a sun rising over the horizon for what comes next.
+ */
+export const ShipIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden {...S}>
+    <path d="M12 3v13" /><path d="M12 4.5 18 13h-6z" /><path d="M11 6.5 6.5 13H11" />
+    <path d="M3.5 16h17l-2.2 3.4a1.5 1.5 0 0 1-1.3.6H7a1.5 1.5 0 0 1-1.3-.6z" />
+  </svg>
+)
+export const CapitolIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden {...S}>
+    <path d="M12 3.2v1.6" /><path d="M8 10a4 4 0 0 1 8 0" /><path d="M6 10h12" />
+    <path d="M7.5 10v8M10.5 10v8M13.5 10v8M16.5 10v8" /><path d="M4.5 18h15M3.5 20.5h17" />
+  </svg>
+)
+export const SunriseIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden {...S}>
+    <path d="M6.5 16a5.5 5.5 0 0 1 11 0" /><path d="M3 16h18M6 19h12" />
+    <path d="M12 5.5v2.5M5.3 8.3l1.8 1.8M18.7 8.3l-1.8 1.8M2.8 12.6h2.4M18.8 12.6h2.4" />
+  </svg>
+)
 export const ShareIcon = ({ className }: P) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden {...S}>
     <circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" />

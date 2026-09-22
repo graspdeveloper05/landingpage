@@ -18,7 +18,7 @@ class EventSetting extends Model
         'edition', 'date', 'date_label', 'start_time', 'time_label',
         'event_name', 'subtitle', 'hero_image',
         'chairman_name', 'chairman_organisation', 'chairman_designation',
-        'chairman_message', 'chairman_quote', 'chairman_portrait',
+        'chairman_message', 'chairman_quote', 'chairman_letter', 'chairman_portrait',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
         'registration_open',
     ];
@@ -31,6 +31,7 @@ class EventSetting extends Model
         'chairman_designation' => 'array',
         'chairman_message' => 'array',
         'chairman_quote' => 'array',
+        'chairman_letter' => 'array',
         'capacity' => 'integer',
         'edition' => 'integer',
         'registration_open' => 'boolean',
@@ -91,6 +92,9 @@ class EventSetting extends Model
             'designation' => $this->chairman_designation,
             'message' => $this->chairman_message,
             'quote' => $this->chairman_quote,
+            // The full welcome. Null on an edition saved before it existed,
+            // and the About page then simply has no letter to show.
+            'letter' => $this->chairman_letter,
             'portrait' => (string) $this->chairman_portrait,
         ];
     }

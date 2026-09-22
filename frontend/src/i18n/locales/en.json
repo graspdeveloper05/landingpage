@@ -21,29 +21,44 @@
     "line2": "One Future.",
     "eventName": "Seri Negara Dialogue 2026",
     "subtitle": "A National Conversation on Malaysia's Future",
-    "date": "8 October 2026",
-    "time": "2.30 PM onwards",
-    "venue": "Muzium Negara, Kuala Lumpur",
+    "date": "8 October 2026 (Thursday)",
+    "time": "1.30 PM onwards",
+    "venue": "Auditorium Muzium Negara",
     "cta": "Register now",
     "merdeka": "From Merdeka 70 towards Malaysia 100",
     "scroll": "Scroll to explore",
-    "imageAlt": "The Kuala Lumpur skyline behind a Malaysian heritage building, with the national flag flying.",
+    "imageAlt": "Visitors walking up to Muzium Negara, with the Kuala Lumpur skyline beyond.",
     "peopleAlt": "Malaysians of different backgrounds standing together."
   },
-  "pillars": {
-    "historyTitle": "Our History",
-    "historyText": "A shared journey",
-    "peopleTitle": "Our People",
-    "peopleText": "A stronger Malaysia",
-    "futureTitle": "Our Future",
-    "futureText": "Generations to come"
+  "conversation": {
+    "title": "The Conversation We Must Have",
+    "sub": "Understanding where we came from, confronting where we are, and shaping where we go next.",
+    "titles": [
+      "Our Shared Histories",
+      "Malaysia Today",
+      "Our Shared Future"
+    ],
+    "questions": [
+      "What have we inherited?",
+      "Where do we stand?",
+      "What will we build together?"
+    ],
+    "texts": [
+      "How have Malaysia’s many histories shaped our identity, institutions and relationships today?",
+      "What realities, divisions and shared aspirations define our nation at this moment?",
+      "What must we change, protect and create for the generations that follow?"
+    ]
   },
   "about": {
     "title": "About the Dialogue",
+    "sub": "A National Conversation About Who We Are, and Who We Choose to Become",
     "body": [
-      "Seri Negara Dialogue is a national platform for thoughtful conversation on Malaysia’s journey — from Merdeka 70 towards Malaysia 100.",
-      "It brings together leaders, thinkers and citizens to reflect on our shared history, address contemporary challenges, and explore a more united and prosperous future."
+      "As Malaysia approaches Merdeka 70 and looks towards Malaysia 100, we stand at an important moment: to reflect honestly on the nation we have inherited and decide, together, the nation we want to build.",
+      "The Seri Negara Dialogue brings leaders, thinkers and citizens together to confront difficult questions, bridge our differences and find common ground for Malaysia’s future."
     ],
+    "closing": "Many histories have shaped us. Our next chapter must be written together.",
+    "invite": "Be part of the conversation. Help shape Malaysia’s next chapter.",
+    "imageAlt": "The grand hall of Muzium Negara, lit by afternoon sun through carved timber screens.",
     "cta": "Learn more",
     "ambitionTitle": "Long-term ambition",
     "ambitionBody": "The first Dialogue is held in 2026. It is built to return each year, so the conversation accumulates rather than restarts."
@@ -51,24 +66,36 @@
   "theme": {
     "title": "2026 Theme",
     "name": "Many Histories. One Future.",
-    "body": "How do we draw strength from our past, examine today’s realities, and build a stronger, more inclusive Malaysia for the next generation?",
+    "tagline": "Three Conversations. One National Purpose.",
+    "body": "How do we understand the histories that formed us, confront the realities shaping Malaysia today, and build a future in which every Malaysian can belong and thrive?",
     "cta": "Read more",
-    "quote": "From the signing of our independence to the conversations that will shape our future, Seri Negara remains a home for the nation.",
-    "questionsTitle": "Questions before the room",
-    "questions": [
-      "What does shared prosperity mean when growth and wages have moved apart?",
-      "Which institutions still earn public trust, and what restores the ones that do not?",
-      "How does a plural society argue well in public?",
-      "What should a Malaysian born in 2026 be able to expect?"
+    "quote": "A nation is not only inherited. It is renewed by every generation willing to listen, question and build together.",
+    "quoteSource": "Seri Negara Dialogue 2026",
+    "convTexts": [
+      "How have Malaysia’s many histories shaped our identity, institutions and understanding of who belongs?",
+      "What realities must we confront honestly to rebuild trust, strengthen our institutions and hold together a diverse nation?",
+      "What must we choose and create today so that the next generation inherits a Malaysia of dignity, opportunity and belonging?"
     ]
   },
   "chairman": {
     "title": "Organising Chairman’s Welcome",
-    "cta": "Read full message"
+    "cta": "Read the full welcome"
   },
   "speakers": {
-    "title": "Speakers & Moderator",
-    "sub": "Distinguished voices. A shared future.",
+    "title": "Voices of the Dialogue",
+    "sub": "Distinguished perspectives. One important national conversation.",
+    "roles": {
+      "keynote": "Keynote Address",
+      "speaker": "Panellist",
+      "moderator": "Moderator",
+      "mc": "Master of Ceremonies"
+    },
+    "groups": {
+      "keynote": "Keynote Address",
+      "speaker": "Panellists",
+      "moderator": "Moderator",
+      "mc": "Master of Ceremonies"
+    },
     "moderatorBadge": "Moderator",
     "viewProfile": "View profile",
     "profileOf": "Profile of {{name}}",
@@ -77,9 +104,9 @@
   },
   "programme": {
     "title": "Programme",
-    "sub": "A timely conversation for a stronger tomorrow.",
+    "sub": "An afternoon of honest conversation and shared purpose.",
     "quote": "A platform for meaningful dialogue across generations.",
-    "note": "Timings may be adjusted closer to the event.",
+    "note": "Programme concludes at 5.45 PM. Timings remain subject to final protocol arrangements.",
     "seeFull": "See the full programme"
   },
   "eventInfo": {
@@ -95,6 +122,8 @@
     "sub": "Be part of the conversation.",
     "note": "Seats are limited. Kindly register to confirm your attendance.",
     "cta": "Register",
+    "formCta": "Register now",
+    "formNote": "Registration is handled through Google Forms and opens in a new tab.",
     "capacity": "{{remaining}} of {{total}} seats remaining",
     "capacityLabel": "Seats remaining",
     "fields": {
@@ -139,13 +168,13 @@
       "body": "Thank you to everyone who joined us. Details of the next Seri Negara Dialogue will be published here."
     }
   },
-  "devices": {
-    "title": "A seamless experience across devices",
-    "mobile": "Mobile friendly",
-    "share": "Easy to share",
-    "register": "Simple registration",
-    "languages": "Four languages",
-    "future": "Built for the future"
+  "sponsors": {
+    "title": "Partners & Sponsors",
+    "foundingPatron": "Founding Patron",
+    "convenedBy": "Convened By",
+    "gold": "Our Gold Sponsors",
+    "silver": "Our Silver Sponsors",
+    "marketing": "Marketing Partners"
   },
   "terms": {
     "title": "Terms of Use",
@@ -170,7 +199,7 @@
     "terms": "Terms of Use",
     "contact": "Contact",
     "copyright": "© 2026 Seri Negara Dialogue. Convened by Chevening Alumni Malaysia.",
-    "linksNote": "Listed for reference. No partnership or sponsorship is implied.",
+    "linksNote": "Official websites, opening in a new tab.",
     "convenedBy": "Convened by",
     "tagline": "A stronger, more inclusive Malaysia",
     "privacy": "Privacy notice",

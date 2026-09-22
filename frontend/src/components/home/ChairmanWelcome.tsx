@@ -73,7 +73,7 @@ export function ChairmanWelcome() {
             </div>
 
             <Link
-              to="/about"
+              to="/about#welcome"
               className="group inline-flex min-h-[44px] shrink-0 items-center gap-2 text-small font-semibold uppercase tracking-[0.12em] text-gold-700 transition-colors hover:text-navy-900"
             >
               {t('chairman.cta')}

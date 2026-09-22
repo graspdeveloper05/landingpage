@@ -46,13 +46,13 @@ const src = {
       '一场关于马来西亚未来的全国对话',
       'மலேசியாவின் எதிர்காலம் குறித்த ஒரு தேசிய உரையாடல்',
     ),
-    date: L('8 October 2026', '8 Oktober 2026', '2026 年 10 月 8 日', '8 அக்டோபர் 2026'),
-    time: L('2.30 PM onwards', '2.30 petang dan seterusnya', '下午 2.30 起', 'பிற்பகல் 2.30 முதல்'),
+    date: L('8 October 2026 (Thursday)', '8 Oktober 2026 (Khamis)', '2026 年 10 月 8 日（星期四）', '8 அக்டோபர் 2026 (வியாழன்)'),
+    time: L('1.30 PM onwards', '1.30 petang dan seterusnya', '下午 1.30 起', 'பிற்பகல் 1.30 முதல்'),
     venue: L(
-      'Muzium Negara, Kuala Lumpur',
-      'Muzium Negara, Kuala Lumpur',
-      '国家博物馆，吉隆坡',
-      'முசியும் நெகாரா, கோலாலம்பூர்',
+      'Auditorium Muzium Negara',
+      'Auditorium Muzium Negara',
+      '国家博物馆礼堂',
+      'முசியும் நெகாரா அரங்கம்',
     ),
     cta: L('Register now', 'Daftar sekarang', '立即报名', 'இப்போதே பதிவு செய்க'),
     merdeka: L(
@@ -63,10 +63,10 @@ const src = {
     ),
     scroll: L('Scroll to explore', 'Tatal untuk meneroka', '向下浏览', 'உருட்டி அறிக'),
     imageAlt: L(
-      'The Kuala Lumpur skyline behind a Malaysian heritage building, with the national flag flying.',
-      'Panorama Kuala Lumpur di belakang bangunan warisan Malaysia, dengan Jalur Gemilang berkibar.',
-      '马来西亚传统建筑与吉隆坡天际线，国旗迎风飘扬。',
-      'மலேசியப் பாரம்பரியக் கட்டிடத்தின் பின்னணியில் கோலாலம்பூர் நகர்க்காட்சி, தேசியக் கொடி பறக்கிறது.',
+      'Visitors walking up to Muzium Negara, with the Kuala Lumpur skyline beyond.',
+      'Pengunjung berjalan menuju Muzium Negara, dengan latar langit Kuala Lumpur.',
+      '访客走向国家博物馆，远处是吉隆坡的天际线。',
+      'கோலாலம்பூர் நகர்க்காட்சியின் பின்னணியில், முசியும் நெகாராவை நோக்கி நடந்து செல்லும் வருகையாளர்கள்.',
     ),
     peopleAlt: L(
       'Malaysians of different backgrounds standing together.',
@@ -76,31 +76,86 @@ const src = {
     ),
   },
 
-  pillars: {
-    historyTitle: L('Our History', 'Sejarah Kita', '我们的历史', 'நமது வரலாறு'),
-    historyText: L('A shared journey', 'Perjalanan bersama', '共同走过的路', 'பகிர்ந்த பயணம்'),
-    peopleTitle: L('Our People', 'Rakyat Kita', '我们的人民', 'நமது மக்கள்'),
-    peopleText: L('A stronger Malaysia', 'Malaysia yang lebih kukuh', '更强大的马来西亚', 'வலிமையான மலேசியா'),
-    futureTitle: L('Our Future', 'Masa Depan Kita', '我们的未来', 'நமது எதிர்காலம்'),
-    futureText: L('Generations to come', 'Generasi akan datang', '世代相传', 'வரவிருக்கும் தலைமுறைகள்'),
+  conversation: {
+    title: L('The Conversation We Must Have', 'Perbualan Yang Perlu Kita Adakan', '我们必须展开的对话', 'நாம் நடத்த வேண்டிய உரையாடல்'),
+    sub: L(
+      'Understanding where we came from, confronting where we are, and shaping where we go next.',
+      'Memahami asal usul kita, berdepan dengan keadaan kita hari ini, dan membentuk hala tuju kita seterusnya.',
+      '理解我们从何而来，正视我们身处何方，塑造我们将往何处。',
+      'நாம் எங்கிருந்து வந்தோம் என்பதைப் புரிந்துகொண்டு, இன்று நாம் எங்கு நிற்கிறோம் என்பதை எதிர்கொண்டு, அடுத்து எங்கு செல்கிறோம் என்பதை வடிவமைப்போம்.',
+    ),
+    titles: [
+      L('Our Shared Histories', 'Sejarah Bersama Kita', '我们共同的历史', 'நமது பகிர்ந்த வரலாறுகள்'),
+      L('Malaysia Today', 'Malaysia Hari Ini', '今日马来西亚', 'இன்றைய மலேசியா'),
+      L('Our Shared Future', 'Masa Depan Bersama Kita', '我们共同的未来', 'நமது பகிர்ந்த எதிர்காலம்'),
+    ],
+    questions: [
+      L('What have we inherited?', 'Apakah yang telah kita warisi?', '我们继承了什么？', 'நாம் எதை மரபாகப் பெற்றுள்ளோம்?'),
+      L('Where do we stand?', 'Di manakah kedudukan kita?', '我们身处何方？', 'நாம் எங்கு நிற்கிறோம்?'),
+      L('What will we build together?', 'Apakah yang akan kita bina bersama?', '我们将共同建设什么？', 'நாம் இணைந்து எதைக் கட்டியெழுப்புவோம்?'),
+    ],
+    texts: [
+      L(
+        'How have Malaysia’s many histories shaped our identity, institutions and relationships today?',
+        'Bagaimanakah pelbagai sejarah Malaysia membentuk identiti, institusi dan hubungan kita hari ini?',
+        '马来西亚的众多历史如何塑造了我们今日的认同、体制与彼此关系？',
+        'மலேசியாவின் பல வரலாறுகள் இன்று நமது அடையாளம், நிறுவனங்கள் மற்றும் உறவுகளை எவ்வாறு வடிவமைத்துள்ளன?',
+      ),
+      L(
+        'What realities, divisions and shared aspirations define our nation at this moment?',
+        'Apakah realiti, perpecahan dan aspirasi bersama yang mentakrifkan negara kita pada saat ini?',
+        '此时此刻，哪些现实、分歧与共同愿景定义着我们的国家？',
+        'இந்தத் தருணத்தில் நமது தேசத்தை வரையறுக்கும் யதார்த்தங்கள், பிளவுகள் மற்றும் பகிர்ந்த அபிலாஷைகள் எவை?',
+      ),
+      L(
+        'What must we change, protect and create for the generations that follow?',
+        'Apakah yang perlu kita ubah, lindungi dan cipta untuk generasi yang akan datang?',
+        '为了后代，我们必须改变、守护与创造什么？',
+        'வரவிருக்கும் தலைமுறைகளுக்காக நாம் எதை மாற்ற வேண்டும், எதைப் பாதுகாக்க வேண்டும், எதை உருவாக்க வேண்டும்?',
+      ),
+    ],
   },
 
   about: {
     title: L('About the Dialogue', 'Mengenai Dialog', '关于本对话', 'உரையாடல் பற்றி'),
+    sub: L(
+      'A National Conversation About Who We Are, and Who We Choose to Become',
+      'Perbualan Nasional Tentang Siapa Kita, dan Siapa Yang Kita Pilih Untuk Menjadi',
+      '一场关于我们是谁、以及我们选择成为谁的全国对话',
+      'நாம் யார், நாம் யாராக மாறத் தேர்ந்தெடுக்கிறோம் என்பது பற்றிய ஒரு தேசிய உரையாடல்',
+    ),
     body: [
       L(
-        'Seri Negara Dialogue is a national platform for thoughtful conversation on Malaysia’s journey — from Merdeka 70 towards Malaysia 100.',
-        'Dialog Seri Negara ialah platform nasional untuk perbualan yang bermakna mengenai perjalanan Malaysia — daripada Merdeka 70 menuju Malaysia 100.',
-        '斯里尼加拉对话是一个全国性平台，让我们深思马来西亚从独立 70 年迈向 100 年的旅程。',
-        'சேரி நெகாரா உரையாடல், மெர்டேக்கா 70 இலிருந்து மலேசியா 100 நோக்கிய நமது பயணம் குறித்து ஆழமாக உரையாடுவதற்கான ஒரு தேசிய மேடை.',
+        'As Malaysia approaches Merdeka 70 and looks towards Malaysia 100, we stand at an important moment: to reflect honestly on the nation we have inherited and decide, together, the nation we want to build.',
+        'Ketika Malaysia menghampiri Merdeka 70 dan menuju Malaysia 100, kita berada pada saat yang penting: untuk merenung dengan jujur negara yang telah kita warisi dan menentukan, bersama-sama, negara yang ingin kita bina.',
+        '随着马来西亚迈向独立 70 周年、展望建国 100 周年，我们正站在一个重要时刻：坦诚反思我们所继承的国家，并共同决定我们想要建设的国家。',
+        'மலேசியா மெர்டேக்கா 70 ஐ நெருங்கி, மலேசியா 100 ஐ நோக்கிப் பார்க்கும் இவ்வேளையில், நாம் ஒரு முக்கியமான தருணத்தில் நிற்கிறோம்: நாம் மரபாகப் பெற்ற தேசத்தை நேர்மையாகச் சிந்தித்து, நாம் கட்டியெழுப்ப விரும்பும் தேசத்தை இணைந்து தீர்மானிக்கும் தருணம் இது.',
       ),
       L(
-        'It brings together leaders, thinkers and citizens to reflect on our shared history, address contemporary challenges, and explore a more united and prosperous future.',
-        'Ia menghimpunkan pemimpin, pemikir dan rakyat untuk merenung sejarah bersama, menangani cabaran semasa, dan meneroka masa depan yang lebih bersatu dan makmur.',
-        '它汇聚领袖、思想者与公民，共同回顾我们的历史、正视当代挑战，并探索更团结、更繁荣的未来。',
-        'தலைவர்கள், சிந்தனையாளர்கள் மற்றும் குடிமக்களை ஒன்றிணைத்து, நமது பகிர்ந்த வரலாற்றைச் சிந்திக்கவும், தற்கால சவால்களை எதிர்கொள்ளவும், மேலும் ஒற்றுமையான வளமான எதிர்காலத்தை ஆராயவும் வழிவகுக்கிறது.',
+        'The Seri Negara Dialogue brings leaders, thinkers and citizens together to confront difficult questions, bridge our differences and find common ground for Malaysia’s future.',
+        'Dialog Seri Negara menghimpunkan pemimpin, pemikir dan rakyat untuk berdepan dengan persoalan sukar, merapatkan perbezaan kita dan mencari titik persamaan untuk masa depan Malaysia.',
+        '斯里尼加拉对话汇聚领袖、思想者与公民，直面艰难的问题、弥合彼此的分歧，为马来西亚的未来寻找共同点。',
+        'சேரி நெகாரா உரையாடல், கடினமான கேள்விகளை எதிர்கொள்ளவும், நமது வேறுபாடுகளுக்குப் பாலம் அமைக்கவும், மலேசியாவின் எதிர்காலத்திற்கான பொதுவான தளத்தைக் கண்டறியவும் தலைவர்கள், சிந்தனையாளர்கள் மற்றும் குடிமக்களை ஒன்றிணைக்கிறது.',
       ),
     ],
+    closing: L(
+      'Many histories have shaped us. Our next chapter must be written together.',
+      'Pelbagai sejarah telah membentuk kita. Bab seterusnya mesti ditulis bersama.',
+      '众多历史塑造了我们。我们的下一章，必须共同书写。',
+      'பல வரலாறுகள் நம்மை வடிவமைத்துள்ளன. நமது அடுத்த அத்தியாயம் இணைந்தே எழுதப்பட வேண்டும்.',
+    ),
+    invite: L(
+      'Be part of the conversation. Help shape Malaysia’s next chapter.',
+      'Jadilah sebahagian daripada perbualan ini. Bantu membentuk bab seterusnya Malaysia.',
+      '加入这场对话，共同塑造马来西亚的下一章。',
+      'இந்த உரையாடலின் ஒரு பகுதியாகுங்கள். மலேசியாவின் அடுத்த அத்தியாயத்தை வடிவமைக்க உதவுங்கள்.',
+    ),
+    imageAlt: L(
+      'The grand hall of Muzium Negara, lit by afternoon sun through carved timber screens.',
+      'Dewan utama Muzium Negara, disinari cahaya petang melalui kekisi kayu berukir.',
+      '国家博物馆大厅，午后阳光透过雕花木屏洒落。',
+      'செதுக்கப்பட்ட மரத் திரைகள் வழியே பிற்பகல் ஒளி பாயும் முசியும் நெகாராவின் பெருமண்டபம்.',
+    ),
     cta: L('Learn more', 'Ketahui lanjut', '了解更多', 'மேலும் அறிக'),
     ambitionTitle: L('Long-term ambition', 'Hasrat jangka panjang', '长远目标', 'நீண்டகால நோக்கம்'),
     ambitionBody: L(
@@ -114,44 +169,50 @@ const src = {
   theme: {
     title: L('2026 Theme', 'Tema 2026', '2026 年主题', '2026 கருப்பொருள்'),
     name: L('Many Histories. One Future.', 'Pelbagai Sejarah. Satu Masa Depan.', '众多历史。一个未来。', 'பல வரலாறுகள். ஒரே எதிர்காலம்.'),
+    tagline: L(
+      'Three Conversations. One National Purpose.',
+      'Tiga Perbualan. Satu Tujuan Nasional.',
+      '三场对话，一个国家目标。',
+      'மூன்று உரையாடல்கள். ஒரே தேசிய நோக்கம்.',
+    ),
     body: L(
-      'How do we draw strength from our past, examine today’s realities, and build a stronger, more inclusive Malaysia for the next generation?',
-      'Bagaimana kita menimba kekuatan daripada masa lalu, meneliti realiti hari ini, dan membina Malaysia yang lebih kukuh dan inklusif untuk generasi akan datang?',
-      '我们如何从过往汲取力量、正视今日现实，并为下一代建设一个更强大、更包容的马来西亚？',
-      'நமது கடந்த காலத்திலிருந்து வலிமை பெற்று, இன்றைய நிலைமைகளை ஆராய்ந்து, அடுத்த தலைமுறைக்கு வலிமையான, உள்ளடக்கிய மலேசியாவை எவ்வாறு கட்டியெழுப்புவது?',
+      'How do we understand the histories that formed us, confront the realities shaping Malaysia today, and build a future in which every Malaysian can belong and thrive?',
+      'Bagaimanakah kita memahami sejarah yang membentuk kita, berdepan dengan realiti yang membentuk Malaysia hari ini, dan membina masa depan di mana setiap rakyat Malaysia berasa dimiliki dan dapat berjaya?',
+      '我们如何理解塑造我们的历史、正视形塑今日马来西亚的现实，并建设一个让每一位马来西亚人都能有所归属、蓬勃发展的未来？',
+      'நம்மை உருவாக்கிய வரலாறுகளை எவ்வாறு புரிந்துகொள்வது, இன்றைய மலேசியாவை வடிவமைக்கும் யதார்த்தங்களை எவ்வாறு எதிர்கொள்வது, ஒவ்வொரு மலேசியரும் சொந்தம் கொண்டாடிச் செழிக்கக்கூடிய எதிர்காலத்தை எவ்வாறு கட்டியெழுப்புவது?',
     ),
     cta: L('Read more', 'Baca lanjut', '阅读更多', 'மேலும் படிக்க'),
     quote: L(
-      'From the signing of our independence to the conversations that will shape our future, Seri Negara remains a home for the nation.',
-      'Daripada pemeteraian kemerdekaan kita sehingga perbualan yang akan membentuk masa depan, Seri Negara kekal sebagai rumah untuk negara.',
-      '从独立的签署，到形塑未来的每一场对话，斯里尼加拉始终是国家之家。',
-      'நமது சுதந்திரம் கையெழுத்தான தருணம் முதல், நமது எதிர்காலத்தை வடிவமைக்கும் உரையாடல்கள் வரை — சேரி நெகாரா தேசத்தின் இல்லமாகவே நிலைக்கிறது.',
+      'A nation is not only inherited. It is renewed by every generation willing to listen, question and build together.',
+      'Sebuah negara bukan sekadar diwarisi. Ia diperbaharui oleh setiap generasi yang sanggup mendengar, mempersoal dan membina bersama.',
+      '一个国家不仅是被继承的。它由每一个愿意倾听、质疑并共同建设的世代不断更新。',
+      'ஒரு தேசம் மரபாகப் பெறப்படுவது மட்டுமல்ல. கேட்கவும், கேள்வி எழுப்பவும், இணைந்து கட்டியெழுப்பவும் தயாராக இருக்கும் ஒவ்வொரு தலைமுறையாலும் அது புதுப்பிக்கப்படுகிறது.',
     ),
-    questionsTitle: L('Questions before the room', 'Persoalan di hadapan kita', '摆在我们面前的提问', 'நம் முன் உள்ள வினாக்கள்'),
-    questions: [
+    quoteSource: L('Seri Negara Dialogue 2026', 'Dialog Seri Negara 2026', '斯里尼加拉对话 2026', 'சேரி நெகாரா உரையாடல் 2026'),
+    /*
+     * The three conversations as the theme section tells them. The same three
+     * as the band under the hero, deliberately, but the client wrote the
+     * third line of each differently here -- about belonging rather than
+     * relationships -- so they are kept as two sets rather than one.
+     */
+    convTexts: [
       L(
-        'What does shared prosperity mean when growth and wages have moved apart?',
-        'Apakah maksud kemakmuran bersama apabila pertumbuhan dan gaji semakin berjauhan?',
-        '当经济增长与薪资水平渐行渐远，共享繁荣还意味着什么？',
-        'வளர்ச்சியும் ஊதியமும் விலகிச் செல்லும்போது, பகிர்ந்த செழிப்பு என்பதன் பொருள் என்ன?',
+        'How have Malaysia’s many histories shaped our identity, institutions and understanding of who belongs?',
+        'Bagaimanakah pelbagai sejarah Malaysia membentuk identiti, institusi dan kefahaman kita tentang siapa yang menjadi sebahagian daripada negara ini?',
+        '马来西亚的众多历史如何塑造了我们的认同、体制，以及我们对归属的理解？',
+        'மலேசியாவின் பல வரலாறுகள் நமது அடையாளம், நிறுவனங்கள் மற்றும் யார் இங்கு சொந்தமானவர் என்ற நமது புரிதலை எவ்வாறு வடிவமைத்துள்ளன?',
       ),
       L(
-        'Which institutions still earn public trust, and what restores the ones that do not?',
-        'Institusi manakah yang masih mendapat kepercayaan rakyat, dan apa yang memulihkan yang selebihnya?',
-        '哪些机构仍然赢得公众信任，而失去信任的又该如何重建？',
-        'எந்த நிறுவனங்கள் இன்னும் மக்கள் நம்பிக்கையைப் பெறுகின்றன, இழந்தவற்றை எது மீட்கும்?',
+        'What realities must we confront honestly to rebuild trust, strengthen our institutions and hold together a diverse nation?',
+        'Apakah realiti yang perlu kita hadapi dengan jujur untuk membina semula kepercayaan, mengukuhkan institusi kita dan menyatukan sebuah negara yang pelbagai?',
+        '我们必须坦诚正视哪些现实，才能重建信任、强化体制，并凝聚一个多元的国家？',
+        'நம்பிக்கையை மீண்டும் கட்டியெழுப்பவும், நமது நிறுவனங்களை வலுப்படுத்தவும், பன்முகத் தேசத்தை ஒன்றாக இணைத்து வைக்கவும் நாம் எந்த யதார்த்தங்களை நேர்மையாக எதிர்கொள்ள வேண்டும்?',
       ),
       L(
-        'How does a plural society argue well in public?',
-        'Bagaimana masyarakat majmuk berhujah dengan baik di ruang awam?',
-        '一个多元社会如何在公共领域好好地争论？',
-        'பன்முகச் சமூகம் பொது வெளியில் எவ்வாறு நன்றாக விவாதிக்கும்?',
-      ),
-      L(
-        'What should a Malaysian born in 2026 be able to expect?',
-        'Apakah yang wajar diharapkan oleh rakyat Malaysia yang lahir pada 2026?',
-        '一个在 2026 年出生的马来西亚人，应该能够期待什么？',
-        '2026 இல் பிறக்கும் ஒரு மலேசியர் எதை எதிர்பார்க்க முடியும்?',
+        'What must we choose and create today so that the next generation inherits a Malaysia of dignity, opportunity and belonging?',
+        'Apakah yang perlu kita pilih dan cipta hari ini supaya generasi akan datang mewarisi Malaysia yang bermaruah, penuh peluang dan rasa kekitaan?',
+        '我们今天必须作出怎样的选择与创造，才能让下一代继承一个有尊严、有机会、有归属感的马来西亚？',
+        'அடுத்த தலைமுறை கண்ணியம், வாய்ப்பு மற்றும் சொந்த உணர்வு நிறைந்த மலேசியாவை மரபாகப் பெற, இன்று நாம் எதைத் தேர்ந்தெடுத்து உருவாக்க வேண்டும்?',
       ),
     ],
   },
@@ -163,17 +224,31 @@ const src = {
       '筹委会主席致辞',
       'ஏற்பாட்டுத் தலைவரின் வரவேற்புரை',
     ),
-    cta: L('Read full message', 'Baca ucapan penuh', '阅读完整致辞', 'முழு உரையைப் படிக்க'),
+    cta: L('Read the full welcome', 'Baca ucapan aluan penuh', '阅读完整致辞', 'முழு வரவேற்புரையைப் படிக்க'),
   },
 
   speakers: {
-    title: L('Speakers & Moderator', 'Pembentang & Moderator', '讲者与主持人', 'உரையாளர்களும் நெறியாளரும்'),
+    title: L('Voices of the Dialogue', 'Suara Dialog', '对话之声', 'உரையாடலின் குரல்கள்'),
     sub: L(
-      'Distinguished voices. A shared future.',
-      'Suara terkemuka. Masa depan bersama.',
-      '卓越的声音，共同的未来。',
-      'சிறந்த குரல்கள். பகிர்ந்த எதிர்காலம்.',
+      'Distinguished perspectives. One important national conversation.',
+      'Perspektif terkemuka. Satu perbualan nasional yang penting.',
+      '卓越的观点，一场重要的全国对话。',
+      'சிறந்த கண்ணோட்டங்கள். ஒரு முக்கியமான தேசிய உரையாடல்.',
     ),
+    // One label per role, used as the ribbon on a card and as the heading
+    // of its group. "speaker" is a panellist.
+    roles: {
+      keynote: L('Keynote Address', 'Ucaptama', '主题演讲', 'சிறப்புரை'),
+      speaker: L('Panellist', 'Ahli Panel', '座谈嘉宾', 'குழு உறுப்பினர்'),
+      moderator: L('Moderator', 'Moderator', '主持人', 'நெறியாளர்'),
+      mc: L('Master of Ceremonies', 'Pengacara Majlis', '司仪', 'நிகழ்ச்சித் தொகுப்பாளர்'),
+    },
+    groups: {
+      keynote: L('Keynote Address', 'Ucaptama', '主题演讲', 'சிறப்புரை'),
+      speaker: L('Panellists', 'Ahli Panel', '座谈嘉宾', 'குழு உறுப்பினர்கள்'),
+      moderator: L('Moderator', 'Moderator', '主持人', 'நெறியாளர்'),
+      mc: L('Master of Ceremonies', 'Pengacara Majlis', '司仪', 'நிகழ்ச்சித் தொகுப்பாளர்'),
+    },
     moderatorBadge: L('Moderator', 'Moderator', '主持人', 'நெறியாளர்'),
     viewProfile: L('View profile', 'Lihat profil', '查看简介', 'சுயவிவரம் காண்க'),
     profileOf: L('Profile of {{name}}', 'Profil {{name}}', '{{name}} 的简介', '{{name}} அவர்களின் சுயவிவரம்'),
@@ -184,10 +259,10 @@ const src = {
   programme: {
     title: L('Programme', 'Atur Cara', '议程', 'நிகழ்ச்சி நிரல்'),
     sub: L(
-      'A timely conversation for a stronger tomorrow.',
-      'Perbualan tepat pada masanya untuk hari esok yang lebih kukuh.',
-      '一场适逢其时的对话，为更强大的明天。',
-      'வலிமையான நாளைக்கான சரியான தருணத்தின் உரையாடல்.',
+      'An afternoon of honest conversation and shared purpose.',
+      'Petang perbualan yang jujur dan tujuan bersama.',
+      '一个坦诚对话、目标一致的午后。',
+      'நேர்மையான உரையாடலும் பகிர்ந்த நோக்கமும் நிறைந்த ஒரு பிற்பகல்.',
     ),
     quote: L(
       'A platform for meaningful dialogue across generations.',
@@ -196,10 +271,10 @@ const src = {
       'தலைமுறைகளைக் கடந்த அர்த்தமுள்ள உரையாடலுக்கான மேடை.',
     ),
     note: L(
-      'Timings may be adjusted closer to the event.',
-      'Masa mungkin diselaraskan menghampiri tarikh acara.',
-      '时间安排可能在活动前作出调整。',
-      'நிகழ்வு நெருங்கும்போது நேரங்கள் மாறக்கூடும்.',
+      'Programme concludes at 5.45 PM. Timings remain subject to final protocol arrangements.',
+      'Atur cara berakhir pada 5.45 petang. Masa tertakluk kepada susunan protokol muktamad.',
+      '活动于下午 5.45 结束。时间安排以最终礼宾安排为准。',
+      'நிகழ்ச்சி மாலை 5.45 க்கு நிறைவடைகிறது. நேரங்கள் இறுதி நெறிமுறை ஏற்பாடுகளுக்கு உட்பட்டவை.',
     ),
     seeFull: L('See the full programme', 'Lihat atur cara penuh', '查看完整议程', 'முழு நிகழ்ச்சி நிரலைக் காண்க'),
   },
@@ -233,6 +308,13 @@ const src = {
       'இருக்கைகள் வரையறுக்கப்பட்டவை. வருகையை உறுதிப்படுத்த பதிவு செய்யுங்கள்.',
     ),
     cta: L('Register', 'Daftar', '报名', 'பதிவு செய்க'),
+    formCta: L('Register now', 'Daftar sekarang', '立即报名', 'இப்போதே பதிவு செய்க'),
+    formNote: L(
+      'Registration is handled through Google Forms and opens in a new tab.',
+      'Pendaftaran dibuat melalui Google Forms dan dibuka dalam tab baharu.',
+      '报名通过 Google 表单进行，将在新分页中开启。',
+      'பதிவு Google Forms மூலம் நடைபெறுகிறது, புதிய தாவலில் திறக்கும்.',
+    ),
     capacity: L(
       '{{remaining}} of {{total}} seats remaining',
       '{{remaining}} daripada {{total}} tempat masih ada',
@@ -325,18 +407,13 @@ const src = {
     },
   },
 
-  devices: {
-    title: L(
-      'A seamless experience across devices',
-      'Pengalaman lancar merentas peranti',
-      '跨装置的流畅体验',
-      'அனைத்துச் சாதனங்களிலும் தடையற்ற அனுபவம்',
-    ),
-    mobile: L('Mobile friendly', 'Mesra mudah alih', '适配手机', 'கைபேசிக்கு ஏற்றது'),
-    share: L('Easy to share', 'Mudah dikongsi', '易于分享', 'பகிர எளிது'),
-    register: L('Simple registration', 'Pendaftaran mudah', '报名简便', 'எளிய பதிவு'),
-    languages: L('Four languages', 'Empat bahasa', '四种语言', 'நான்கு மொழிகள்'),
-    future: L('Built for the future', 'Dibina untuk masa depan', '为未来而建', 'எதிர்காலத்திற்காகக் கட்டப்பட்டது'),
+  sponsors: {
+    title: L('Partners & Sponsors', 'Rakan & Penaja', '合作伙伴与赞助商', 'கூட்டாளர்களும் ஆதரவாளர்களும்'),
+    foundingPatron: L('Founding Patron', 'Penaung Pengasas', '创始赞助人', 'நிறுவனப் புரவலர்'),
+    convenedBy: L('Convened By', 'Dianjurkan Oleh', '主办单位', 'ஏற்பாடு செய்பவர்'),
+    gold: L('Our Gold Sponsors', 'Penaja Emas Kami', '金级赞助商', 'எங்கள் தங்க ஆதரவாளர்கள்'),
+    silver: L('Our Silver Sponsors', 'Penaja Perak Kami', '银级赞助商', 'எங்கள் வெள்ளி ஆதரவாளர்கள்'),
+    marketing: L('Marketing Partners', 'Rakan Pemasaran', '营销合作伙伴', 'சந்தைப்படுத்தல் கூட்டாளர்கள்'),
   },
 
   terms: {
@@ -405,10 +482,10 @@ const src = {
       '© 2026 சேரி நெகாரா உரையாடல். Chevening Alumni Malaysia ஏற்பாடு செய்கிறது.',
     ),
     linksNote: L(
-      'Listed for reference. No partnership or sponsorship is implied.',
-      'Disenaraikan sebagai rujukan. Tiada perkongsian atau penajaan tersirat.',
-      '仅供参考，不代表任何合作或赞助关系。',
-      'குறிப்புக்காக மட்டுமே. எந்தக் கூட்டாண்மையையோ ஆதரவையோ இது குறிக்கவில்லை.',
+      'Official websites, opening in a new tab.',
+      'Laman web rasmi, dibuka dalam tab baharu.',
+      '官方网站，将在新分页中开启。',
+      'அதிகாரப்பூர்வ இணையதளங்கள், புதிய தாவலில் திறக்கும்.',
     ),
     convenedBy: L('Convened by', 'Dianjurkan oleh', '主办单位', 'ஏற்பாடு செய்பவர்'),
     tagline: L(

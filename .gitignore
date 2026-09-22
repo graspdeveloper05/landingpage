@@ -30,6 +30,8 @@ backend/public/scenes/
 backend/public/brand/
 backend/public/portraits/
 backend/public/favicon.svg
+backend/public/favicon-16.png
+backend/public/partners/
 backend/public/og-image.jpg
 backend/public/sitemap.xml
 backend/public/robots.txt
@@ -56,3 +58,11 @@ frontend/tsconfig.tsbuildinfo
 
 # sharp is installed ad-hoc for image work, never committed
 node_modules
+
+# ── Client source material ──────────────────────────────────────────────────
+# The client's feedback deck and the original images it came with -- about
+# 70 MB, and not the site. What the site uses is resized into frontend/public.
+# `~$*` is the lock file PowerPoint leaves while a deck is open.
+correction_assets/
+*.pptx
+~$*

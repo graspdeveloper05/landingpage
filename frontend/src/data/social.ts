@@ -9,15 +9,16 @@ export interface SocialLink {
 }
 
 /* ============================================================================
- * PLACEHOLDER — no accounts have been created for the Dialogue yet.
- * Each entry points at "#" and is flagged, so `npm run check:placeholders`
- * blocks a deploy while any dead link remains. Replace `url` with the real
- * profile and drop the flag, or delete the entry if that network is not used.
+ * Instagram only, per the client's feedback of September 2026: LinkedIn,
+ * Facebook and YouTube are removed.
+ *
+ * NO URL YET — the client asked for Instagram without giving the address.
+ * Paste the profile link into `url` and drop the flag. Until then the footer
+ * leaves the icon out entirely rather than publishing a link to nowhere, and
+ * `npm run check:placeholders` still reports it.
  * ==========================================================================*/
 export const socialLinks: SocialLink[] = [
-  { id: 'so-linkedin', icon: 'linkedin', network: 'LinkedIn', url: '#', placeholder: true },
-  { id: 'so-facebook', icon: 'facebook', network: 'Facebook', url: '#', placeholder: true },
-  { id: 'so-youtube', icon: 'youtube', network: 'YouTube', url: '#', placeholder: true },
+  { id: 'so-instagram', icon: 'instagram', network: 'Instagram', url: '', placeholder: true },
 ]
 
 /**

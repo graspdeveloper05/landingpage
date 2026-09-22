@@ -46,7 +46,8 @@ function walkImages(dir) {
 }
 
 const social = fs.readFileSync('src/data/social.ts', 'utf8')
-const deadSocial = (social.match(/url:\s*'#'/g) ?? []).length
+// '#' and '' both mean "no address yet" -- the Instagram entry is the latter.
+const deadSocial = (social.match(/url:\s*'(#)?'/g) ?? []).length
 
 console.log('Placeholder audit')
 console.log('  invented people (placeholder: true)  ', records - deadSocial)

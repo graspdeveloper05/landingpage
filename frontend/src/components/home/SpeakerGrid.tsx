@@ -31,6 +31,9 @@ export function SpeakerGrid({
 }) {
   const { t } = useI18n()
   const L = useLocalized()
+  // A biography can be absent altogether, or null in a language -- the
+  // confirmed line-up arrived without any. Always a string from here on.
+  const bioOf = (s: Speaker) => (s.bio ? (L(s.bio) ?? '') : '')
   const [active, setActive] = useState<Speaker | null>(null)
 
   return (
@@ -45,12 +48,24 @@ export function SpeakerGrid({
           columns === 4 && 'max-w-[62rem]',
         )}
       >
-        {speakers.map((speaker, i) => (
+        {speakers.map((speaker, i) => {
+          /*
+           * A card opens a profile only when there is something to show in
+           * it. The confirmed speakers arrived without biographies, and a
+           * "View profile" that opens onto a name and an empty page reads as
+           * a broken site rather than an unfinished one.
+           */
+          const hasProfile = Boolean(bioOf(speaker).trim()) || Boolean(speaker.link)
+          const Card = hasProfile ? 'button' : 'div'
+
+          return (
           <Reveal as="li" key={speaker.id} variant="scale" delay={(i % columns) * 90} className="h-full">
-            <button
-              type="button"
-              onClick={() => setActive(speaker)}
-              className="lift group flex h-full w-full flex-col overflow-hidden rounded-sm border border-hair bg-white text-left shadow-card"
+            <Card
+              {...(hasProfile ? { type: 'button' as const, onClick: () => setActive(speaker) } : {})}
+              className={cn(
+                'group flex h-full w-full flex-col overflow-hidden rounded-sm border border-hair bg-white text-left shadow-card',
+                hasProfile && 'lift',
+              )}
             >
               <span className="relative block overflow-hidden">
                 <img
@@ -61,9 +76,13 @@ export function SpeakerGrid({
                   loading="lazy"
                   className="aspect-[4/5] w-full object-cover transition-transform duration-500 ease-gentle group-hover:scale-[1.04]"
                 />
-                {speaker.role === 'moderator' && (
+                {/* Every role but a panellist carries its name: the keynote,
+                    the moderator and the MC are each one person doing one
+                    job. Panellists are the majority, so labelling them too
+                    would label nothing. */}
+                {speaker.role !== 'speaker' && (
                   <span className="absolute right-0 top-3 bg-gold-500 px-3 py-1 text-micro font-semibold uppercase tracking-[0.14em] text-navy-950">
-                    {t('speakers.moderatorBadge')}
+                    {t(`speakers.roles.${speaker.role}`)}
                   </span>
                 )}
               </span>
@@ -78,14 +97,17 @@ export function SpeakerGrid({
                 <span className="text-pretty text-micro leading-snug text-slate/80 sm:text-small">
                   {speaker.organisation}
                 </span>
-                <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-micro font-semibold uppercase tracking-[0.12em] text-gold-600 transition-colors group-hover:text-navy-900">
-                  {t('speakers.viewProfile')}
-                  <ExternalIcon className="h-2.5 w-2.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </span>
+                {hasProfile && (
+                  <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-micro font-semibold uppercase tracking-[0.12em] text-gold-600 transition-colors group-hover:text-navy-900">
+                    {t('speakers.viewProfile')}
+                    <ExternalIcon className="h-2.5 w-2.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </span>
+                )}
               </span>
-            </button>
+            </Card>
           </Reveal>
-        ))}
+          )
+        })}
       </ul>
 
       <Modal
@@ -103,11 +125,9 @@ export function SpeakerGrid({
               className="aspect-[5/6] w-full rounded-sm object-cover sm:col-span-4"
             />
             <div className="sm:col-span-8">
-              {active.role === 'moderator' && (
-                <p className="text-micro font-semibold uppercase tracking-[0.14em] text-gold-600">
-                  {t('speakers.moderatorBadge')}
-                </p>
-              )}
+              <p className="text-micro font-semibold uppercase tracking-[0.14em] text-gold-600">
+                {t(`speakers.roles.${active.role}`)}
+              </p>
               <h2 className="mt-1 font-display text-section font-semibold text-navy-900">
                 {active.name}
               </h2>
@@ -115,7 +135,9 @@ export function SpeakerGrid({
               <p className="text-small text-slate/80">{active.organisation}</p>
 
               <Ornament className="my-5 !justify-start" />
-              <p className="max-w-measure text-body text-navy-800">{L(active.bio)}</p>
+              {bioOf(active).trim() && (
+                <p className="max-w-measure text-body text-navy-800">{bioOf(active)}</p>
+              )}
 
               {active.link && (
                 <a

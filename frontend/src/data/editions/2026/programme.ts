@@ -1,109 +1,113 @@
 import type { ProgrammeItem } from '@/data/types'
 
 /* ============================================================================
- * Programme as set out in the approved UI/UX concept. The brief confirms only
- * the 2.30 PM start; the session breakdown is still subject to the organising
- * team's confirmation. Edit this file to change timings or sessions — no
- * component changes are required (§8).
+ * GENERATED from backend/config by scripts/sync-bundled-content.mjs.
+ * Do not edit by hand -- edit the config and run the script.
+ *
+ * This is the fallback shown only when the API cannot be reached. The live
+ * site reads the same content from the database, where the organising team
+ * edits it in the admin panel.
  * ==========================================================================*/
 
 export const programme: ProgrammeItem[] = [
   {
-    id: 'pr-01',
-    time: '14:30',
-    title: {
-      en: 'Registration & Refreshments',
-      ms: 'Pendaftaran & Jamuan Ringan',
-      zh: '签到与茶点',
-      ta: 'பதிவு & சிற்றுண்டி',
+    "id": "arrival",
+    "time": "13:30",
+    "title": {
+      "en": "Arrival, Registration & Refreshments",
+      "ms": "Ketibaan, Pendaftaran & Jamuan Ringan",
+      "zh": "抵达、报到及茶点",
+      "ta": "வருகை, பதிவு மற்றும் சிற்றுண்டி"
     },
+    "detail": {
+      "en": "Until 2.30 PM",
+      "ms": "Sehingga 2.30 petang",
+      "zh": "至下午 2.30",
+      "ta": "பிற்பகல் 2.30 வரை"
+    }
   },
   {
-    id: 'pr-02',
-    time: '15:00',
-    title: {
-      en: 'Opening Remarks',
-      ms: 'Ucapan Pembukaan',
-      zh: '开幕致辞',
-      ta: 'தொடக்க உரை',
+    "id": "welcome",
+    "time": "14:30",
+    "title": {
+      "en": "Welcome Address",
+      "ms": "Ucapan Alu-aluan",
+      "zh": "欢迎致辞",
+      "ta": "வரவேற்புரை"
     },
+    "detail": {
+      "en": "Begins at 2.30 PM sharp",
+      "ms": "Bermula tepat 2.30 petang",
+      "zh": "下午 2.30 准时开始",
+      "ta": "பிற்பகல் 2.30 க்குச் சரியாகத் தொடங்கும்"
+    }
   },
   {
-    id: 'pr-03',
-    time: '15:15',
-    title: {
-      en: 'Keynote Address',
-      ms: 'Ucaptama',
-      zh: '主旨演讲',
-      ta: 'முதன்மை உரை',
+    "id": "opening",
+    "time": "14:45",
+    "title": {
+      "en": "Opening Address",
+      "ms": "Ucapan Perasmian",
+      "zh": "开幕致辞",
+      "ta": "தொடக்கவுரை"
     },
-    detail: {
-      en: 'Malaysia at an Inflection Point',
-      ms: 'Malaysia di Titik Perubahan',
-      zh: '马来西亚的转折点',
-      ta: 'திருப்புமுனையில் மலேசியா',
-    },
+    "detail": {
+      "en": "YB Datuk Aaron Ago Dagang, Minister of National Unity",
+      "ms": "YB Datuk Aaron Ago Dagang, Menteri Perpaduan Negara",
+      "zh": "YB Datuk Aaron Ago Dagang，国家团结部长",
+      "ta": "YB Datuk Aaron Ago Dagang, தேசிய ஒற்றுமை அமைச்சர்"
+    }
   },
   {
-    id: 'pr-04',
-    time: '15:45',
-    title: {
-      en: 'Panel Discussion 1',
-      ms: 'Sesi Panel 1',
-      zh: '第一场专题对谈',
-      ta: 'கலந்துரையாடல் அமர்வு 1',
+    "id": "dialogue",
+    "time": "15:10",
+    "title": {
+      "en": "Seri Negara Dialogue",
+      "ms": "Dialog Seri Negara",
+      "zh": "斯里尼加拉对话",
+      "ta": "சேரி நெகாரா உரையாடல்"
     },
-    detail: {
-      en: 'Our Shared History, Our Shared Future',
-      ms: 'Sejarah Kita Bersama, Masa Depan Kita Bersama',
-      zh: '共同的历史，共同的未来',
-      ta: 'நமது பகிர்ந்த வரலாறு, நமது பகிர்ந்த எதிர்காலம்',
-    },
+    "detail": {
+      "en": "Many Histories. One Future.",
+      "ms": "Pelbagai Sejarah. Satu Masa Depan.",
+      "zh": "众多历史。一个未来。",
+      "ta": "பல வரலாறுகள். ஒரே எதிர்காலம்."
+    }
   },
   {
-    id: 'pr-05',
-    time: '16:45',
-    title: {
-      en: 'Panel Discussion 2',
-      ms: 'Sesi Panel 2',
-      zh: '第二场专题对谈',
-      ta: 'கலந்துரையாடல் அமர்வு 2',
+    "id": "audience",
+    "time": "16:40",
+    "title": {
+      "en": "Audience Dialogue",
+      "ms": "Dialog Bersama Hadirin",
+      "zh": "观众对话",
+      "ta": "பார்வையாளர் உரையாடல்"
     },
-    detail: {
-      en: 'Building a More United and Inclusive Malaysia',
-      ms: 'Membina Malaysia yang Lebih Bersatu dan Inklusif',
-      zh: '建设更团结、更包容的马来西亚',
-      ta: 'மேலும் ஒற்றுமையான, உள்ளடக்கிய மலேசியாவைக் கட்டியெழுப்புதல்',
-    },
+    "detail": {
+      "en": "Questions and reflections from participants",
+      "ms": "Soalan dan renungan daripada peserta",
+      "zh": "与会者的提问与反思",
+      "ta": "பங்கேற்பாளர்களின் கேள்விகளும் சிந்தனைகளும்"
+    }
   },
   {
-    id: 'pr-06',
-    time: '17:45',
-    title: {
-      en: 'Reflections from the Floor',
-      ms: 'Refleksi daripada Hadirin',
-      zh: '现场回应与交流',
-      ta: 'அவையினரின் சிந்தனைகள்',
-    },
+    "id": "closing",
+    "time": "17:15",
+    "title": {
+      "en": "Closing Reflections",
+      "ms": "Renungan Penutup",
+      "zh": "闭幕感言",
+      "ta": "நிறைவுச் சிந்தனைகள்"
+    }
   },
   {
-    id: 'pr-07',
-    time: '18:15',
-    title: {
-      en: 'Closing Remarks',
-      ms: 'Ucapan Penutup',
-      zh: '闭幕致辞',
-      ta: 'நிறைவுரை',
-    },
-  },
-  {
-    id: 'pr-08',
-    time: '18:30',
-    title: {
-      en: 'Networking & Refreshments',
-      ms: 'Sesi Rangkaian & Jamuan Ringan',
-      zh: '交流与茶点',
-      ta: 'கலந்துரையாடல் & சிற்றுண்டி',
-    },
-  },
+    "id": "networking",
+    "time": "17:30",
+    "title": {
+      "en": "Networking & Refreshments",
+      "ms": "Sesi Jaringan & Jamuan Ringan",
+      "zh": "交流联谊及茶点",
+      "ta": "கலந்துரையாடல் மற்றும் சிற்றுண்டி"
+    }
+  }
 ]

@@ -84,7 +84,9 @@ export function SiteFooter() {
           <div className="lg:col-span-4 lg:text-right">
             <h2 className="sr-only">{t('footer.followUs')}</h2>
             <ul className="flex gap-2.5 lg:justify-end">
-              {socialLinks.map(({ id, icon, network, url }) => {
+              {/* Only networks with a real address. An icon linking to "#"
+                  looks exactly like a working one until somebody taps it. */}
+              {socialLinks.filter((l) => l.url && l.url !== '#').map(({ id, icon, network, url }) => {
                 const Icon = SOCIAL_ICONS[icon]
                 return (
                   <li key={id}>

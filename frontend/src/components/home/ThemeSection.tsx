@@ -4,7 +4,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import { ExternalIcon, QuoteMark } from '@/components/ui/Icons'
 
-/** §6 item 02 — the 2026 theme, its questions, and the pull quote. */
+/** §6 item 02 — the 2026 theme, its three conversations, and the pull quote. */
 export function ThemeSection({
   withQuestions = true,
   showHeading = true,
@@ -28,19 +28,34 @@ export function ThemeSection({
             </>
           )}
           <p className="mt-6 font-display text-h3 font-semibold text-navy-800">{t('theme.name')}</p>
-          <p className="prose-measure mt-3">{t('theme.body')}</p>
+          <p className="mt-2 text-small font-semibold uppercase tracking-[0.14em] text-gold-700">
+            {t('theme.tagline')}
+          </p>
+          <p className="prose-measure mt-4">{t('theme.body')}</p>
 
           {withQuestions ? (
+            /* The three conversations in full, as the client wrote them for
+               this section: a title, the question it asks, and what it means. */
             <ol className="mt-8 max-w-measure">
-              {tList('theme.questions').map((q, i) => (
-                <li key={q} className="flex gap-5 border-t border-hair py-4 last:border-b">
+              {tList('conversation.titles').map((title, i) => (
+                <li key={title} className="flex gap-5 border-t border-hair py-5 last:border-b">
                   <span
                     aria-hidden
                     className="tnum pt-0.5 font-display text-small font-semibold text-gold-700"
                   >
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <span className="text-body text-navy-800">{q}</span>
+                  <span>
+                    <span className="block text-small font-semibold uppercase tracking-[0.12em] text-navy-900">
+                      {title}
+                    </span>
+                    <span className="mt-1 block font-display italic text-gold-700">
+                      {tList('conversation.questions')[i]}
+                    </span>
+                    <span className="mt-2 block text-body text-navy-800">
+                      {tList('theme.convTexts')[i]}
+                    </span>
+                  </span>
                 </li>
               ))}
             </ol>
@@ -71,6 +86,11 @@ export function ThemeSection({
               {t('theme.quote')}
             </blockquote>
             <QuoteMark className="mt-4 h-6 w-8 rotate-180 text-gold-500/70" />
+            {/* Attributed, as the client set it: the words belong to the
+                Dialogue itself rather than to any one speaker. */}
+            <figcaption className="mt-3 text-micro font-semibold uppercase tracking-[0.16em] text-slate">
+              — {t('theme.quoteSource')}
+            </figcaption>
           </figure>
         </Reveal>
       </div>

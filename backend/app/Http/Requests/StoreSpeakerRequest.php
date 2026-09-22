@@ -35,7 +35,10 @@ class StoreSpeakerRequest extends FormRequest
             // been supplied, and the panel can clear one. The site falls back
             // to a placeholder -- see frontend/src/lib/portrait.ts.
             'portrait' => ['present', 'nullable', 'string', 'max:255'],
-            'role' => ['required', Rule::in(['speaker', 'moderator'])],
+            // In running order: the keynote, the panellists, the moderator
+            // and the Master of Ceremonies. "speaker" is a panellist; the name
+            // is kept so rows saved before the other roles existed still pass.
+            'role' => ['required', Rule::in(['keynote', 'speaker', 'moderator', 'mc'])],
             'placeholder' => ['boolean'],
             'sort_order' => ['integer', 'min:0', 'max:999'],
 
@@ -45,11 +48,18 @@ class StoreSpeakerRequest extends FormRequest
             'designation.zh' => ['required', 'string', 'max:150'],
             'designation.ta' => ['required', 'string', 'max:150'],
 
-            'bio' => ['required', 'array'],
-            'bio.en' => ['required', 'string', 'max:2000'],
-            'bio.ms' => ['required', 'string', 'max:2000'],
-            'bio.zh' => ['required', 'string', 'max:2000'],
-            'bio.ta' => ['required', 'string', 'max:2000'],
+            /*
+             * Optional. The confirmed line-up arrived with names and titles
+             * and no biographies, and inventing one for a real Minister is
+             * not a gap worth filling. Empty in every language hides "View
+             * profile"; a biography in some languages and not others is
+             * still refused, so no reader is shown a blank one.
+             */
+            'bio' => ['present', 'array'],
+            'bio.en' => ['nullable', 'string', 'max:2000'],
+            'bio.ms' => ['nullable', 'string', 'max:2000', 'required_with:bio.en'],
+            'bio.zh' => ['nullable', 'string', 'max:2000', 'required_with:bio.en'],
+            'bio.ta' => ['nullable', 'string', 'max:2000', 'required_with:bio.en'],
 
             // Optional as a whole, but a link with no address is not a link.
             'link' => ['nullable', 'array'],
@@ -64,7 +74,9 @@ class StoreSpeakerRequest extends FormRequest
             'id.regex' => 'Use lowercase letters, numbers and hyphens only.',
             'id.unique' => 'Another speaker already uses that id.',
             'designation.*.required' => 'The designation is needed in all four languages.',
-            'bio.*.required' => 'The biography is needed in all four languages.',
+            // Optional, but not in one language only: a Tamil reader shown a
+            // blank profile beside an English one is worse than none at all.
+            'bio.*.required_with' => 'Once the biography is written in one language, it is needed in all four.',
             'link.url.url' => 'Enter a full address, including https://',
         ];
     }

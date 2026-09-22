@@ -38,19 +38,39 @@ export function Button({
 
 export function ButtonLink({
   to,
+  href,
   variant = 'gold',
   withArrow,
   className,
   children,
 }: {
-  to: string
   variant?: Variant
   withArrow?: boolean
   className?: string
   children: ReactNode
-}) {
+} & (
+  | { to: string; href?: never }
+  /**
+   * An address off this site -- registration, since it moved to Google
+   * Forms. Opens in a new tab so the visitor keeps their place here, with
+   * `noopener` so the other page cannot reach back into this one.
+   */
+  | { href: string; to?: never }
+)) {
+  const classes = cn(base, variants[variant], className)
+
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={classes}>
+        {children}
+        {withArrow && <Arrow />}
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+    )
+  }
+
   return (
-    <Link to={to} className={cn(base, variants[variant], className)}>
+    <Link to={to!} className={classes}>
       {children}
       {withArrow && <Arrow />}
     </Link>
