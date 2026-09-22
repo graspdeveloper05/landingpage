@@ -33,14 +33,16 @@ export function ProgrammeSection({
         quote sits on bright marble. Over the timeline column it is veiled,
         because measuring the text against the bare image put the gold times at
         3.1:1 and the italic session details at 2.4:1 — both well under 4.5:1.
-        The gradient clears completely by 78%, so the staircase and its carved
-        screens -- the client's own photograph of the museum -- still read.
+        Lighter than it was, and held to the left: it used to run at 94% and
+        stay until 78% across, milking out most of the client's photograph.
+        Now it sits behind the timeline column alone and is gone by 58%, so the
+        staircase and its carved screens run at full strength beyond it.
       */}
       <div
         className="absolute inset-0 -z-10"
         style={{
           backgroundImage:
-            'linear-gradient(to right, rgba(252,252,251,0.94) 0%, rgba(252,252,251,0.90) 38%, rgba(252,252,251,0.55) 62%, rgba(252,252,251,0) 78%)',
+            'linear-gradient(to right, rgba(252,252,251,0.82) 0%, rgba(252,252,251,0.74) 32%, rgba(252,252,251,0.42) 46%, rgba(252,252,251,0) 58%)',
         }}
       />
 
