@@ -124,7 +124,6 @@
     "note": "Seats are limited. Kindly register to confirm your attendance.",
     "cta": "Register",
     "formCta": "Register now",
-    "formNote": "Registration is handled through Google Forms and opens in a new tab.",
     "capacity": "{{remaining}} of {{total}} seats remaining",
     "capacityLabel": "Seats remaining",
     "fields": {
@@ -137,7 +136,14 @@
       "dietaryHint": "Leave blank if none.",
       "optional": "Optional",
       "pdpa": "I have read the PDPA notice and consent to the processing of my personal data for this event.",
-      "pdpaLink": "Read the privacy notice"
+      "pdpaLink": "Read the privacy notice",
+      "yes": "Yes",
+      "no": "No",
+      "cheveningScholar": "Are you a Chevening scholar?",
+      "cheveningCohort": "Your Chevening cohort",
+      "cheveningCohortHint": "For example, 2019/20.",
+      "cheveningUniversity": "Your university (under the Chevening scholarship)",
+      "camMember": "Are you a CAM member?"
     },
     "submit": "Submit registration",
     "submitting": "Sending…",
@@ -148,6 +154,9 @@
       "organisation": "Enter your organisation.",
       "designation": "Enter your designation.",
       "pdpa": "Tick the box to continue.",
+      "choose": "Choose yes or no.",
+      "cheveningCohort": "Enter your Chevening cohort.",
+      "cheveningUniversity": "Enter your university.",
       "generic": "The registration did not go through. Try again."
     },
     "success": {
@@ -190,6 +199,7 @@
     "body": [
       "The details you give when registering are collected by the organising team of Seri Negara Dialogue for one purpose: managing attendance at the event on 8 October 2026.",
       "They are used to confirm your place, to plan seating and catering, and to contact you about this event. They are not sold, and they are not shared with third parties beyond what the venue requires for access.",
+      "A copy of your registration is also recorded in the organising team's own registration form (Google Forms), where Chevening Alumni Malaysia keeps the attendee list.",
       "You may ask for your details to be corrected or removed at any time by writing to the organising team."
     ]
   },

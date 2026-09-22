@@ -49,17 +49,27 @@ class RegistrationExportController extends Controller
             // which mangles the Chinese and Tamil the form accepts.
             fwrite($handle, "\xEF\xBB\xBF");
 
-            fputcsv($handle, array_values(Registration::EXPORT_COLUMNS));
+            // The Chevening answers follow the core columns, one per question.
+            fputcsv($handle, [
+                ...array_values(Registration::EXPORT_COLUMNS),
+                ...array_values(Registration::ANSWER_LABELS),
+            ]);
 
             Registration::forEdition($edition)
                 ->registeredBetween($from, $to)
                 ->orderBy('id')
                 ->chunk(200, function ($rows) use ($handle) {
                     foreach ($rows as $row) {
-                        fputcsv($handle, array_map(
-                            fn (string $column) => $this->guard((string) $row->{$column}),
-                            array_keys(Registration::EXPORT_COLUMNS),
-                        ));
+                        fputcsv($handle, [
+                            ...array_map(
+                                fn (string $column) => $this->guard((string) $row->{$column}),
+                                array_keys(Registration::EXPORT_COLUMNS),
+                            ),
+                            ...array_map(
+                                fn (string $key) => $this->guard((string) ($row->answers[$key] ?? '')),
+                                array_keys(Registration::ANSWER_LABELS),
+                            ),
+                        ]);
                     }
                 });
 

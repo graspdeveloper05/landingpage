@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { ButtonLink } from '@/components/ui/Button'
 import { cn } from '@/lib/cn'
-import { REGISTRATION_URL } from '@/lib/registration'
+import { REGISTRATION_PATH } from '@/lib/registration'
 import { useEventLabels } from '@/lib/useContent'
 
 /**
@@ -41,7 +41,7 @@ export function MobileRegisterBar() {
         <p className="tnum text-micro leading-tight text-cream/65">
           {date}
         </p>
-        <ButtonLink href={REGISTRATION_URL} className="px-6">
+        <ButtonLink to={REGISTRATION_PATH} className="px-6">
           {t('rsvp.cta')}
         </ButtonLink>
       </div>

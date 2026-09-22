@@ -4,7 +4,7 @@ import { SpeakerGrid } from '@/components/home/SpeakerGrid'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { ButtonLink } from '@/components/ui/Button'
 import { useSpeakerGroups } from '@/lib/useContent'
-import { REGISTRATION_URL } from '@/lib/registration'
+import { REGISTRATION_PATH } from '@/lib/registration'
 import { cn } from '@/lib/cn'
 
 /**
@@ -42,7 +42,7 @@ export function Speakers() {
       ))}
 
       <div className="border-t border-hair bg-cream py-section text-center">
-        <ButtonLink href={REGISTRATION_URL} withArrow>
+        <ButtonLink to={REGISTRATION_PATH} withArrow>
           {t('hero.cta')}
         </ButtonLink>
       </div>

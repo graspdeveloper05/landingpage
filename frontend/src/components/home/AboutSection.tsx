@@ -4,7 +4,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import { ExternalIcon } from '@/components/ui/Icons'
 import { Picture } from '@/components/ui/Picture'
-import { REGISTRATION_URL } from '@/lib/registration'
+import { REGISTRATION_PATH } from '@/lib/registration'
 
 /** §6 item 01 — purpose and invitation, beside the grand hall of Muzium Negara. */
 export function AboutSection({
@@ -46,15 +46,12 @@ export function AboutSection({
 
           <p className="mt-6 text-body text-navy-800">
             {t('about.invite')}{' '}
-            <a
-              href={REGISTRATION_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to={REGISTRATION_PATH}
               className="font-semibold text-gold-700 underline decoration-gold-500/40 underline-offset-4 transition-colors hover:text-navy-900"
             >
               {t('rsvp.formCta')}
-              <span className="sr-only"> ({t('common.newTab')})</span>
-            </a>
+            </Link>
           </p>
 
           {withLink && (

@@ -20,7 +20,7 @@ class EventSetting extends Model
         'chairman_name', 'chairman_organisation', 'chairman_designation',
         'chairman_message', 'chairman_quote', 'chairman_letter', 'chairman_portrait',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
-        'registration_open',
+        'registration_open', 'google_form_url', 'google_form',
     ];
 
     protected $casts = [
@@ -35,6 +35,7 @@ class EventSetting extends Model
         'capacity' => 'integer',
         'edition' => 'integer',
         'registration_open' => 'boolean',
+        'google_form' => 'array',
     ];
 
     /**
@@ -69,6 +70,10 @@ class EventSetting extends Model
             'capacity' => $this->capacity,
             'registrationOpen' => (bool) $this->registration_open,
             'isPast' => $this->hasPassed(),
+            // Where the visitor's browser copies each registration: the
+            // form's id, field numbers and pages, as read by
+            // GoogleFormReader. Null when the team has switched copying off.
+            'googleForm' => $this->google_form,
         ];
     }
 

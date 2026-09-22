@@ -7,7 +7,7 @@ import { TypedLine } from '@/components/ui/TypedLine'
 import { Picture } from '@/components/ui/Picture'
 import { useParallax } from '@/lib/animation'
 import { useEventLabels } from '@/lib/useContent'
-import { REGISTRATION_URL } from '@/lib/registration'
+import { REGISTRATION_PATH } from '@/lib/registration'
 
 /**
  * §6 — the visitor must immediately grasp what this is, why it matters, when
@@ -129,7 +129,7 @@ export function Hero() {
           </dl>
 
           <div className="anim-rise mt-10" style={{ animationDelay: '0.58s' }}>
-            <ButtonLink href={REGISTRATION_URL} withArrow>
+            <ButtonLink to={REGISTRATION_PATH} withArrow>
               {t('hero.cta')}
             </ButtonLink>
           </div>

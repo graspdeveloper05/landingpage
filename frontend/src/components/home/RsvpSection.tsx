@@ -1,29 +1,29 @@
+import { useState } from 'react'
 import { useI18n } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
-import { ButtonLink } from '@/components/ui/Button'
 import { CalendarIcon, ClockIcon, PinIcon } from '@/components/ui/Icons'
+import { RsvpForm } from '@/components/rsvp/RsvpForm'
+import { SuccessPanel } from '@/components/rsvp/SuccessPanel'
 import { useParallax } from '@/lib/animation'
 import { useEventLabels } from '@/lib/useContent'
-import { REGISTRATION_URL } from '@/lib/registration'
+import type { RegistrationRecord } from '@/data/types'
 import type { EventStatus } from '@/services/api'
 
 /**
- * §9 — registration, now through the organising team's Google Form.
+ * §9 -- registration, on the site's own form.
  *
- * The client moved registration there and had already started sending the
- * form out, so it holds the attendee list. This panel keeps the event details
- * and hands the visitor to the form, rather than running a second list beside
- * it that would disagree with the first. The seat counter is gone at the
- * client's request: the count lives in their form now, and a number here
- * would be one this site cannot know.
+ * Each registration is saved here -- the admin list, the CSV, the
+ * confirmation email -- and a copy is submitted to the organising team's
+ * Google Form, so their response sheet holds everyone too. The seat counter
+ * stays off at the client's request; capacity is still enforced by the server.
  *
  * The date, time and venue come from the live event record, the same source
- * as the hero. They used to come from the bundled fallback, which would have
- * left this panel on the old start time after the hero had moved on.
+ * as the hero.
  */
 export function RsvpSection({
   status,
+  refresh,
   showHeading = true,
 }: {
   status: EventStatus | null
@@ -34,14 +34,13 @@ export function RsvpSection({
   const { t } = useI18n()
   const { event, date, time } = useEventLabels()
   const washRef = useParallax<HTMLImageElement>(0.07, 50)
+  const [record, setRecord] = useState<RegistrationRecord | null>(null)
+  const [full, setFull] = useState(false)
 
-  /*
-   * Two reasons still stop registration, both decided by the server: the team
-   * closing it from the panel, and the day having passed. "Full" no longer
-   * applies -- this site does not see the form's responses, so it cannot know.
-   */
-  const closedReason =
-    status?.closedReason === 'past' || status?.closedReason === 'closed' ? status.closedReason : null
+  // `full` is set when a submission comes back 409 mid-session -- the last
+  // seat went while this visitor was filling the form in. The server's reason
+  // covers the rest: the team closing registration, and the day having passed.
+  const closedReason = full ? 'full' : (status?.closedReason ?? null)
 
   return (
     <section id="rsvp" className="relative scroll-mt-24 overflow-hidden bg-navy-900 py-section">
@@ -67,7 +66,15 @@ export function RsvpSection({
         )}
 
         <div className={showHeading ? 'mt-12' : ''}>
-          {closedReason ? (
+          {record ? (
+            <SuccessPanel
+              record={record}
+              onAddAnother={() => {
+                setRecord(null)
+                refresh?.()
+              }}
+            />
+          ) : closedReason ? (
             <div className="mx-auto max-w-xl border-l-2 border-gold-500 pl-6 text-cream">
               <h3 className="font-display text-h3 font-semibold">
                 {t(`rsvp.${closedReason}.title`)}
@@ -90,16 +97,15 @@ export function RsvpSection({
               </Reveal>
 
               <Reveal variant="right" delay={140} className="lg:col-span-7">
-                <div className="border border-gold-500/30 bg-navy-950/40 px-6 py-10 text-center backdrop-blur-[2px] sm:px-10">
-                  <p className="mx-auto max-w-md font-display text-h3 italic leading-snug text-cream">
-                    {t('rsvp.note')}
-                  </p>
-                  <div className="mt-8">
-                    <ButtonLink href={REGISTRATION_URL} withArrow>
-                      {t('rsvp.formCta')}
-                    </ButtonLink>
-                  </div>
-                  <p className="mt-5 text-small text-cream/60">{t('rsvp.formNote')}</p>
+                <div className="border border-gold-500/30 bg-navy-950/40 px-6 py-8 backdrop-blur-[2px] sm:px-10 sm:py-10">
+                  <p className="mb-7 font-display text-h3 italic leading-snug text-cream">{t('rsvp.note')}</p>
+                  <RsvpForm
+                    onRegistered={(r) => {
+                      setRecord(r)
+                      refresh?.()
+                    }}
+                    onFull={() => setFull(true)}
+                  />
                 </div>
               </Reveal>
             </div>

@@ -60,6 +60,7 @@ class RegistrationAdminController extends Controller
                 $q->where('full_name', 'like', $term)
                     ->orWhere('email', 'like', $term)
                     ->orWhere('organisation', 'like', $term)
+                    ->orWhere('mobile', 'like', $term)
                     ->orWhere('reference', 'like', $term);
             });
         }
@@ -77,6 +78,8 @@ class RegistrationAdminController extends Controller
                 'dietary' => $r->dietary,
                 'submittedAt' => $r->created_at?->toIso8601String(),
                 'confirmationSent' => $r->confirmation_sent_at !== null,
+                // The Chevening questions, labelled for display.
+                'answers' => $this->labelled($r->answers),
             ]),
             'meta' => [
                 'total' => $page->total(),
@@ -101,6 +104,23 @@ class RegistrationAdminController extends Controller
                 'timezone' => config('event.timezone'),
             ],
         ]);
+    }
+
+    /** @return array<string, string>|null */
+    private function labelled(?array $answers): ?array
+    {
+        if (! $answers) {
+            return null;
+        }
+
+        $out = [];
+        foreach (Registration::ANSWER_LABELS as $key => $label) {
+            if (($answers[$key] ?? '') !== '') {
+                $out[$label] = $answers[$key];
+            }
+        }
+
+        return $out ?: null;
     }
 
     /**

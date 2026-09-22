@@ -18,6 +18,7 @@ class Registration extends Model
         'organisation',
         'designation',
         'dietary',
+        'answers',
         'pdpa_accepted',
         'pdpa_accepted_at',
         'edition',
@@ -29,6 +30,7 @@ class Registration extends Model
     protected function casts(): array
     {
         return [
+            'answers' => 'array',
             'pdpa_accepted' => 'boolean',
             'pdpa_accepted_at' => 'datetime',
             'confirmation_sent_at' => 'datetime',
@@ -49,6 +51,19 @@ class Registration extends Model
         'organisation' => 'Organisation',
         'designation' => 'Designation',
         'dietary' => 'Dietary requirement',
+    ];
+
+    /**
+     * The questions the organising team's Google Form asks beyond the core
+     * fields, as stored in `answers`, with the labels the panel and the CSV
+     * show. Cohort, university and CAM membership are asked only of
+     * Chevening scholars.
+     */
+    public const ANSWER_LABELS = [
+        'chevening_scholar' => 'Chevening scholar',
+        'chevening_cohort' => 'Chevening cohort',
+        'chevening_university' => 'University (Chevening)',
+        'cam_member' => 'CAM member',
     ];
 
     public function scopeForEdition($query, int $edition)

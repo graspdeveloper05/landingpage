@@ -100,7 +100,31 @@ export interface EventDetails {
   mapEmbedUrl: string
   /** §9 — estimated capacity is approximately 200 participants. */
   capacity: number
+  /**
+   * The Google Form each registration is copied into, as set in the panel.
+   * Null when the team has switched copying off; absent from the bundled
+   * fallback, when the form built into the site is used.
+   */
+  googleForm?: GoogleFormTarget | null
 }
+
+/** A Google Form, as the server read it: its id, field numbers and pages. */
+export interface GoogleFormTarget {
+  id: string
+  entries: Record<GoogleFormField, number>
+  pages: Record<GoogleFormField, number>
+}
+
+export type GoogleFormField =
+  | 'fullName'
+  | 'mobile'
+  | 'organisation'
+  | 'designation'
+  | 'dietary'
+  | 'cheveningScholar'
+  | 'cheveningCohort'
+  | 'cheveningUniversity'
+  | 'camMember'
 
 export interface QuickLink {
   id: string
@@ -115,6 +139,15 @@ export interface Registration {
   organisation: string
   designation: string
   dietary: string
+  /**
+   * Asked because the organising team's Google Form asks them, and each
+   * registration is copied there. Cohort, university and CAM membership only
+   * when cheveningScholar is 'yes'.
+   */
+  cheveningScholar: '' | 'yes' | 'no'
+  cheveningCohort: string
+  cheveningUniversity: string
+  camMember: '' | 'yes' | 'no'
   pdpaAccepted: boolean
 }
 

@@ -1,12 +1,8 @@
 /**
- * Where people register.
+ * Where people register: the site's own form, on the RSVP page.
  *
- * The organising team's own Google Form, per the client's feedback of
- * September 2026: they had already started distributing it, so it is where
- * the attendee list lives. Running the site's form alongside it would split
- * that list in two, with no single count of who is coming.
- *
- * Every "Register" on the site points here. Changing form means changing
- * this one line.
+ * Registrations are saved by the site and copied into the organising team's
+ * Google Form by the server, so there is one attendee list in both places.
+ * Every "Register" on the site points here.
  */
-export const REGISTRATION_URL = 'https://forms.gle/wBqr41qWEWuZy1fG9'
+export const REGISTRATION_PATH = '/rsvp'

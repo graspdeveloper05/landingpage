@@ -38,6 +38,14 @@ class StoreRegistrationRequest extends FormRequest
             'designation' => ['required', 'string', 'max:150'],
             'dietary' => ['nullable', 'string', 'max:255'],
 
+            // The organising team's Google Form asks these, and every site
+            // registration is copied into it, so they are asked here too --
+            // the alumni details only of scholars, as on their form.
+            'cheveningScholar' => ['required', Rule::in(['yes', 'no'])],
+            'cheveningCohort' => ['exclude_unless:cheveningScholar,yes', 'required', 'string', 'max:40'],
+            'cheveningUniversity' => ['exclude_unless:cheveningScholar,yes', 'required', 'string', 'max:150'],
+            'camMember' => ['exclude_unless:cheveningScholar,yes', 'required', Rule::in(['yes', 'no'])],
+
             // §12 — PDPA acknowledgement is not optional.
             'pdpaAccepted' => ['accepted'],
 
@@ -59,6 +67,10 @@ class StoreRegistrationRequest extends FormRequest
             'organisation.required' => 'Enter your organisation.',
             'designation.required' => 'Enter your designation.',
             'pdpaAccepted.accepted' => 'Tick the box to continue.',
+            'cheveningScholar.required' => 'Choose yes or no.',
+            'cheveningCohort.required' => 'Enter your Chevening cohort.',
+            'cheveningUniversity.required' => 'Enter your university.',
+            'camMember.required' => 'Choose yes or no.',
         ];
     }
 
@@ -74,8 +86,24 @@ class StoreRegistrationRequest extends FormRequest
             'organisation' => trim($this->string('organisation')),
             'designation' => trim($this->string('designation')),
             'dietary' => $this->filled('dietary') ? trim($this->string('dietary')) : null,
+            'answers' => $this->answers(),
             'pdpa_accepted' => true,
             'pdpa_accepted_at' => now(),
+        ];
+    }
+
+    /** Stored as the organising team's Google Form words them: "Yes" / "No". */
+    private function answers(): array
+    {
+        if ($this->input('cheveningScholar') !== 'yes') {
+            return ['chevening_scholar' => 'No'];
+        }
+
+        return [
+            'chevening_scholar' => 'Yes',
+            'chevening_cohort' => trim($this->string('cheveningCohort')),
+            'chevening_university' => trim($this->string('cheveningUniversity')),
+            'cam_member' => $this->input('camMember') === 'yes' ? 'Yes' : 'No',
         ];
     }
 }

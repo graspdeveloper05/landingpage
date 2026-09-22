@@ -124,7 +124,6 @@
     "note": "席位有限，敬请报名以确认出席。",
     "cta": "报名",
     "formCta": "立即报名",
-    "formNote": "报名通过 Google 表单进行，将在新分页中开启。",
     "capacity": "尚余 {{remaining}} 个席位，共 {{total}} 个",
     "capacityLabel": "尚余席位",
     "fields": {
@@ -137,7 +136,14 @@
       "dietaryHint": "如无，请留空。",
       "optional": "选填",
       "pdpa": "我已阅读 PDPA 声明，并同意为本活动处理我的个人资料。",
-      "pdpaLink": "阅读隐私声明"
+      "pdpaLink": "阅读隐私声明",
+      "yes": "是",
+      "no": "否",
+      "cheveningScholar": "您是 Chevening 奖学金得主吗？",
+      "cheveningCohort": "您的 Chevening 届别",
+      "cheveningCohortHint": "例如：2019/20。",
+      "cheveningUniversity": "您的大学（Chevening 奖学金期间）",
+      "camMember": "您是 CAM 会员吗？"
     },
     "submit": "提交报名",
     "submitting": "提交中…",
@@ -148,6 +154,9 @@
       "organisation": "请填写您的机构。",
       "designation": "请填写您的职衔。",
       "pdpa": "请勾选此项以继续。",
+      "choose": "请选择是或否。",
+      "cheveningCohort": "请填写您的 Chevening 届别。",
+      "cheveningUniversity": "请填写您的大学。",
       "generic": "报名未能完成，请再试一次。"
     },
     "success": {
@@ -190,6 +199,7 @@
     "body": [
       "您在报名时提供的资料，由斯里尼加拉对话筹委会收集，仅用于一个目的：管理 2026 年 10 月 8 日活动的出席事宜。",
       "这些资料用于确认席位、安排座位与餐饮，以及就本活动与您联络。资料不会被出售，除场地进出所需外，亦不会与第三方共享。",
+      "您的报名资料副本亦会记录于筹委会自己的报名表格（Google 表单），Chevening Alumni Malaysia 在该处保存出席者名单。",
       "您可随时联络筹委会，要求更正或删除您的资料。"
     ]
   },

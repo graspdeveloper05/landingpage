@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { API_BASE } from '@/services/api'
 import { adminApi, reachable } from './client'
 import { AdminButton, AdminCard, AdminField, Notice } from './ui'
 import { SkeletonRows } from './Loading'
+import { GoogleFormCard } from './GoogleFormCard'
 
 interface Row {
   reference: string
@@ -14,6 +15,8 @@ interface Row {
   dietary: string | null
   submittedAt: string | null
   confirmationSent: boolean
+  /** The Chevening questions, labelled, e.g. { 'Chevening scholar': 'Yes' }. */
+  answers: Record<string, string> | null
 }
 
 interface Edition {
@@ -91,6 +94,8 @@ export function RegistrationsAdmin() {
   const [page, setPage] = useState<Page | null>(null)
   const [search, setSearch] = useState('')
   const [current, setCurrent] = useState(1)
+  // One row open at a time; the reference of the row whose form answers show.
+  const [expanded, setExpanded] = useState<string | null>(null)
   // null until the first response says which edition the server chose. Held
   // separately from meta.edition so the dropdown does not snap back to the
   // old value for the moment a slower response is still in flight.
@@ -166,6 +171,7 @@ export function RegistrationsAdmin() {
 
   return (
     <>
+      <GoogleFormCard />
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           {/*
@@ -298,7 +304,7 @@ export function RegistrationsAdmin() {
               // Staying on page 4 of a narrower result set shows nothing.
               setCurrent(1)
             }}
-            placeholder="Name, email, organisation or reference"
+            placeholder="Name, email, phone, organisation or reference"
           />
         </div>
       </div>
@@ -337,47 +343,78 @@ export function RegistrationsAdmin() {
               </tr>
             </thead>
             <tbody>
-              {page.data.map((row) => (
-                <tr key={row.reference} className="border-b border-hair last:border-0">
-                  <td className="tnum whitespace-nowrap px-3 py-2 font-semibold text-navy-900">
-                    {row.reference}
-                    {!row.confirmationSent && (
-                      <span
-                        title="The confirmation email did not send"
-                        className="ml-1.5 text-red-600"
-                      >
-                        !
-                      </span>
+              {page.data.map((row) => {
+                const answers = Object.entries(row.answers ?? {})
+                const open = expanded === row.reference
+                return (
+                  <Fragment key={row.reference}>
+                    <tr className={open ? 'border-b-0' : 'border-b border-hair last:border-0'}>
+                      <td className="tnum whitespace-nowrap px-3 py-2 font-semibold text-navy-900">
+                        {row.reference}
+                        {!row.confirmationSent && (
+                          <span
+                            title="The confirmation email did not send"
+                            className="ml-1.5 text-red-600"
+                          >
+                            !
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-navy-900">
+                        {row.fullName}
+                        <span className="block text-micro text-slate">{row.designation}</span>
+                        {answers.length > 0 && (
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            onClick={() => setExpanded(open ? null : row.reference)}
+                            className="mt-1 text-micro font-semibold text-gold-700 underline decoration-gold-500/40 underline-offset-2 hover:text-navy-900"
+                          >
+                            {open ? 'Hide answers' : 'Chevening details'}
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-navy-800">
+                        <a href={`mailto:${row.email}`} className="underline decoration-hair">
+                          {row.email}
+                        </a>
+                        <span className="block text-micro text-slate">{row.mobile}</span>
+                      </td>
+                      <td className="px-3 py-2 text-navy-800">{row.organisation}</td>
+                      <td className="px-3 py-2 text-navy-800">{row.dietary ?? '—'}</td>
+                      <td className="whitespace-nowrap px-3 py-2 text-slate">
+                        {row.submittedAt
+                          ? new Date(row.submittedAt).toLocaleDateString('en-GB', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                              // The venue's zone, not the viewer's. Without this a
+                              // registration made at 00:30 in Kuala Lumpur shows
+                              // as the previous day to anyone abroad, while the
+                              // date filter beside it says otherwise.
+                              timeZone: meta?.timezone,
+                            })
+                          : '—'}
+                      </td>
+                    </tr>
+                    {open && (
+                      <tr className="border-b border-hair bg-cream/60 last:border-0">
+                        <td />
+                        <td colSpan={5} className="px-3 pb-4 pt-1">
+                          <dl className="grid max-w-3xl gap-x-6 gap-y-2 sm:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
+                            {answers.map(([question, answer]) => (
+                              <Fragment key={question}>
+                                <dt className="text-micro text-slate">{question}</dt>
+                                <dd className="whitespace-pre-line text-navy-900">{answer}</dd>
+                              </Fragment>
+                            ))}
+                          </dl>
+                        </td>
+                      </tr>
                     )}
-                  </td>
-                  <td className="px-3 py-2 text-navy-900">
-                    {row.fullName}
-                    <span className="block text-micro text-slate">{row.designation}</span>
-                  </td>
-                  <td className="px-3 py-2 text-navy-800">
-                    <a href={`mailto:${row.email}`} className="underline decoration-hair">
-                      {row.email}
-                    </a>
-                    <span className="block text-micro text-slate">{row.mobile}</span>
-                  </td>
-                  <td className="px-3 py-2 text-navy-800">{row.organisation}</td>
-                  <td className="px-3 py-2 text-navy-800">{row.dietary ?? '—'}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-slate">
-                    {row.submittedAt
-                      ? new Date(row.submittedAt).toLocaleDateString('en-GB', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          // The venue's zone, not the viewer's. Without this a
-                          // registration made at 00:30 in Kuala Lumpur shows
-                          // as the previous day to anyone abroad, while the
-                          // date filter beside it says otherwise.
-                          timeZone: meta?.timezone,
-                        })
-                      : '—'}
-                  </td>
-                </tr>
-              ))}
+                  </Fragment>
+                )
+              })}
             </tbody>
           </table>
         </div>

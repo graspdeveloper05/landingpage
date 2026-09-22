@@ -124,7 +124,6 @@
     "note": "Tempat duduk terhad. Sila daftar untuk mengesahkan kehadiran anda.",
     "cta": "Daftar",
     "formCta": "Daftar sekarang",
-    "formNote": "Pendaftaran dibuat melalui Google Forms dan dibuka dalam tab baharu.",
     "capacity": "{{remaining}} daripada {{total}} tempat masih ada",
     "capacityLabel": "Tempat yang masih ada",
     "fields": {
@@ -137,7 +136,14 @@
       "dietaryHint": "Biarkan kosong jika tiada.",
       "optional": "Pilihan",
       "pdpa": "Saya telah membaca notis PDPA dan bersetuju data peribadi saya diproses untuk acara ini.",
-      "pdpaLink": "Baca notis privasi"
+      "pdpaLink": "Baca notis privasi",
+      "yes": "Ya",
+      "no": "Tidak",
+      "cheveningScholar": "Adakah anda penerima biasiswa Chevening?",
+      "cheveningCohort": "Kohort Chevening anda",
+      "cheveningCohortHint": "Contohnya, 2019/20.",
+      "cheveningUniversity": "Universiti anda (di bawah biasiswa Chevening)",
+      "camMember": "Adakah anda ahli CAM?"
     },
     "submit": "Hantar pendaftaran",
     "submitting": "Menghantar…",
@@ -148,6 +154,9 @@
       "organisation": "Masukkan organisasi anda.",
       "designation": "Masukkan jawatan anda.",
       "pdpa": "Tandakan kotak ini untuk meneruskan.",
+      "choose": "Pilih ya atau tidak.",
+      "cheveningCohort": "Masukkan kohort Chevening anda.",
+      "cheveningUniversity": "Masukkan universiti anda.",
       "generic": "Pendaftaran tidak berjaya. Sila cuba lagi."
     },
     "success": {
@@ -190,6 +199,7 @@
     "body": [
       "Maklumat yang anda berikan semasa mendaftar dikumpul oleh pihak penganjur Dialog Seri Negara untuk satu tujuan sahaja: menguruskan kehadiran pada acara 8 Oktober 2026.",
       "Ia digunakan untuk mengesahkan tempat anda, merancang tempat duduk dan jamuan, serta menghubungi anda mengenai acara ini. Maklumat ini tidak dijual dan tidak dikongsi dengan pihak ketiga melebihi keperluan akses di lokasi acara.",
+      "Salinan pendaftaran anda turut direkodkan dalam borang pendaftaran pihak penganjur sendiri (Google Forms), tempat Chevening Alumni Malaysia menyimpan senarai peserta.",
       "Anda boleh meminta maklumat anda dibetulkan atau dipadam pada bila-bila masa dengan menghubungi pihak penganjur."
     ]
   },

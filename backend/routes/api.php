@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\AnalyticsController;
 use App\Http\Controllers\Api\Admin\ChairmanAdminController;
 use App\Http\Controllers\Api\Admin\EventAdminController;
+use App\Http\Controllers\Api\Admin\GoogleFormAdminController;
 use App\Http\Controllers\Api\Admin\HeroImageController;
 use App\Http\Controllers\Api\Admin\PortraitController;
 use App\Http\Controllers\Api\Admin\ProgrammeAdminController;
@@ -99,6 +100,11 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // §9's "participant list", paginated for the panel. The CSV download
     // below is the same data in the form the organising team files it in.
     Route::get('/registrations/list', [RegistrationAdminController::class, 'index']);
+
+    // The Google Form each registration is copied into. Saving reads the
+    // form from Google, so it is throttled like any outbound call.
+    Route::get('/google-form', [GoogleFormAdminController::class, 'show']);
+    Route::put('/google-form', [GoogleFormAdminController::class, 'update'])->middleware('throttle:10,1');
 });
 
 /*

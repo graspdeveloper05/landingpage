@@ -4,6 +4,9 @@ import { Field } from '@/components/ui/Field'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Ornament } from '@/components/ui/Ornament'
+import { cn } from '@/lib/cn'
+import { copyToGoogleForm } from '@/lib/googleForm'
+import { useEvent } from '@/lib/useContent'
 import { createRegistration, RegistrationError } from '@/services/api'
 import type { Registration, RegistrationRecord } from '@/data/types'
 
@@ -16,12 +19,18 @@ const EMPTY: Registration = {
   organisation: '',
   designation: '',
   dietary: '',
+  cheveningScholar: '',
+  cheveningCohort: '',
+  cheveningUniversity: '',
+  camMember: '',
   pdpaAccepted: false,
 }
 
 /**
- * §9 — the fields are exactly those the brief lists, and no more. The brief is
- * explicit that required information stays limited to what is genuinely needed.
+ * §9's fields, plus the Chevening questions the organising team's Google Form
+ * asks: every registration here is copied into that form, and it will not
+ * take one without them. Cohort, university and CAM membership are asked only
+ * of scholars, as on their form.
  */
 export function RsvpForm({
   onRegistered,
@@ -31,6 +40,8 @@ export function RsvpForm({
   onFull: () => void
 }) {
   const { t, tList } = useI18n()
+  // For the Google Form the panel has set; see copyToGoogleForm.
+  const event = useEvent()
   const [values, setValues] = useState<Registration>(EMPTY)
   const [errors, setErrors] = useState<Errors>({})
   const [touched, setTouched] = useState<Partial<Record<keyof Registration, boolean>>>({})
@@ -45,6 +56,12 @@ export function RsvpForm({
     if (!/^\+?[\d\s-]{8,16}$/.test(v.mobile.trim())) next.mobile = t('rsvp.errors.mobile')
     if (!v.organisation.trim()) next.organisation = t('rsvp.errors.organisation')
     if (!v.designation.trim()) next.designation = t('rsvp.errors.designation')
+    if (!v.cheveningScholar) next.cheveningScholar = t('rsvp.errors.choose')
+    if (v.cheveningScholar === 'yes') {
+      if (!v.cheveningCohort.trim()) next.cheveningCohort = t('rsvp.errors.cheveningCohort')
+      if (!v.cheveningUniversity.trim()) next.cheveningUniversity = t('rsvp.errors.cheveningUniversity')
+      if (!v.camMember) next.camMember = t('rsvp.errors.choose')
+    }
     if (!v.pdpaAccepted) next.pdpaAccepted = t('rsvp.errors.pdpa')
     return next
   }
@@ -71,6 +88,10 @@ export function RsvpForm({
       mobile: true,
       organisation: true,
       designation: true,
+      cheveningScholar: true,
+      cheveningCohort: true,
+      cheveningUniversity: true,
+      camMember: true,
       pdpaAccepted: true,
     })
     if (Object.values(found).some(Boolean)) {
@@ -80,7 +101,11 @@ export function RsvpForm({
 
     setSubmitting(true)
     try {
-      onRegistered(await createRegistration(values))
+      const record = await createRegistration(values)
+      // Only after the site has saved it: the site's list is the one that
+      // must be complete; the Google Form's is a copy.
+      copyToGoogleForm(values, event.googleForm)
+      onRegistered(record)
     } catch (err) {
       if (err instanceof RegistrationError && err.kind === 'full') {
         onFull()
@@ -181,6 +206,49 @@ export function RsvpForm({
           hint={t('rsvp.fields.dietaryHint')}
           optionalLabel={t('rsvp.fields.optional')}
         />
+
+        <YesNo
+          className="sm:col-span-2"
+          name="cheveningScholar"
+          label={t('rsvp.fields.cheveningScholar')}
+          value={values.cheveningScholar}
+          onChange={(v) => set('cheveningScholar', v)}
+          error={err('cheveningScholar')}
+          yes={t('rsvp.fields.yes')}
+          no={t('rsvp.fields.no')}
+        />
+
+        {values.cheveningScholar === 'yes' && (
+          <>
+            <Field
+              label={t('rsvp.fields.cheveningCohort')}
+              value={values.cheveningCohort}
+              onChange={(e) => set('cheveningCohort', e.target.value)}
+              onBlur={() => blur('cheveningCohort')}
+              error={err('cheveningCohort')}
+              hint={t('rsvp.fields.cheveningCohortHint')}
+              required
+            />
+            <Field
+              label={t('rsvp.fields.cheveningUniversity')}
+              value={values.cheveningUniversity}
+              onChange={(e) => set('cheveningUniversity', e.target.value)}
+              onBlur={() => blur('cheveningUniversity')}
+              error={err('cheveningUniversity')}
+              required
+            />
+            <YesNo
+              className="sm:col-span-2"
+              name="camMember"
+              label={t('rsvp.fields.camMember')}
+              value={values.camMember}
+              onChange={(v) => set('camMember', v)}
+              error={err('camMember')}
+              yes={t('rsvp.fields.yes')}
+              no={t('rsvp.fields.no')}
+            />
+          </>
+        )}
       </div>
 
       {/* §9 and §12 — privacy/PDPA acknowledgement. */}
@@ -225,5 +293,67 @@ export function RsvpForm({
         </div>
       </Modal>
     </form>
+  )
+}
+
+/** A required yes/no question, styled to sit with the text fields. */
+function YesNo({
+  name,
+  label,
+  value,
+  onChange,
+  error,
+  yes,
+  no,
+  className,
+}: {
+  name: string
+  label: string
+  value: '' | 'yes' | 'no'
+  onChange: (value: 'yes' | 'no') => void
+  error?: string
+  yes: string
+  no: string
+  className?: string
+}) {
+  const errorId = `${name}-error`
+
+  return (
+    <fieldset className={className} aria-describedby={error ? errorId : undefined}>
+      <legend className="text-micro font-medium uppercase tracking-[0.08em] text-cream/70">{label}</legend>
+      <div className="mt-2 flex gap-3">
+        {(['yes', 'no'] as const).map((option, i) => (
+          <label
+            key={option}
+            className={cn(
+              'flex min-h-[48px] min-w-[7rem] cursor-pointer items-center gap-3 rounded-sm border px-4 text-body transition-colors',
+              value === option
+                ? 'border-gold-500 bg-gold-500/15 text-cream'
+                : 'border-cream/25 text-cream/85 hover:border-gold-300',
+              error && 'border-red-400',
+            )}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={option}
+              checked={value === option}
+              onChange={() => onChange(option)}
+              // On the first option only, so the form's jump-to-first-error
+              // lands on this question once, not on each of its answers.
+              aria-invalid={error && i === 0 ? true : undefined}
+              className="h-4 w-4 accent-[#C9A227]"
+            />
+            {option === 'yes' ? yes : no}
+          </label>
+        ))}
+      </div>
+      {error && (
+        <p id={errorId} className="mt-1.5 flex items-center gap-1.5 text-micro text-gold-300">
+          <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-gold-400" />
+          {error}
+        </p>
+      )}
+    </fieldset>
   )
 }
