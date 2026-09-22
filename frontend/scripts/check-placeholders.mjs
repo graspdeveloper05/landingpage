@@ -22,12 +22,15 @@ const walk = (dir) => {
 walk('src')
 
 let records = 0
+let unconfirmedPhotos = 0
 const machineTranslated = []
 
 for (const file of files) {
   const text = fs.readFileSync(file, 'utf8')
   const hits = text.match(/placeholder:\s*true/g)
   if (hits) records += hits.length
+  // A photograph matched to its name by inference, not yet by the client.
+  unconfirmedPhotos += (text.match(/"photoConfirmed":\s*false/g) ?? []).length
   if (/"_status":\s*"machine-translated/.test(text)) machineTranslated.push(file)
 }
 
@@ -52,6 +55,7 @@ const deadSocial = (social.match(/url:\s*'(#)?'/g) ?? []).length
 console.log('Placeholder audit')
 console.log('  invented people (placeholder: true)  ', records - deadSocial)
 console.log('  social links pointing nowhere        ', deadSocial)
+console.log('  speaker photos not yet confirmed     ', unconfirmedPhotos)
 console.log('  locales pending human review         ', machineTranslated.length)
 console.log('  generated stand-in images            ', generatedImages)
 
@@ -67,7 +71,10 @@ console.log(
   crawlBlocked ? 'yes (pre-launch)' : 'NO — site is indexable',
 )
 
-const blocking = records > 0 || machineTranslated.length > 0 || deadSocial > 0
+// A real person shown with someone else's face is the worst thing this
+// list can catch, so an unconfirmed photograph blocks like the rest.
+const blocking =
+  records > 0 || machineTranslated.length > 0 || deadSocial > 0 || unconfirmedPhotos > 0
 
 if (blocking) {
   console.log('\nNOT READY FOR PRODUCTION — see docs/PLACEHOLDERS.md')

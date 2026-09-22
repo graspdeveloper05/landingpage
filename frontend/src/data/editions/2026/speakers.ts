@@ -20,14 +20,15 @@ export const speakers: Speaker[] = [
       "ta": "தேசிய ஒற்றுமை அமைச்சர்"
     },
     "organisation": "Ministry of National Unity",
-    "portrait": "",
+    "portrait": "/portraits/aaron-ago-dagang.jpg",
     "bio": {
       "en": "",
       "ms": "",
       "zh": "",
       "ta": ""
     },
-    "role": "keynote"
+    "role": "keynote",
+    "photoConfirmed": false
   },
   {
     "id": "nazir-razak",
@@ -39,14 +40,15 @@ export const speakers: Speaker[] = [
       "ta": "தலைவர்"
     },
     "organisation": "Yayasan Tun Razak",
-    "portrait": "",
+    "portrait": "/portraits/nazir-razak.jpg",
     "bio": {
       "en": "",
       "ms": "",
       "zh": "",
       "ta": ""
     },
-    "role": "speaker"
+    "role": "speaker",
+    "photoConfirmed": false
   },
   {
     "id": "ruzina-hasan",
@@ -58,14 +60,15 @@ export const speakers: Speaker[] = [
       "ta": "மலேசியாவுக்கான பிரிட்டிஷ் பதில் துணை உயர் ஸ்தானிகர்"
     },
     "organisation": "British High Commission Kuala Lumpur",
-    "portrait": "",
+    "portrait": "/portraits/ruzina-hasan.jpg",
     "bio": {
       "en": "",
       "ms": "",
       "zh": "",
       "ta": ""
     },
-    "role": "speaker"
+    "role": "speaker",
+    "photoConfirmed": false
   },
   {
     "id": "syahredzan-johan",
@@ -77,14 +80,15 @@ export const speakers: Speaker[] = [
       "ta": "பாங்கி நாடாளுமன்ற உறுப்பினர்"
     },
     "organisation": "Parliament of Malaysia",
-    "portrait": "",
+    "portrait": "/portraits/syahredzan-johan.jpg",
     "bio": {
       "en": "",
       "ms": "",
       "zh": "",
       "ta": ""
     },
-    "role": "speaker"
+    "role": "speaker",
+    "photoConfirmed": false
   },
   {
     "id": "aira-azhari",
@@ -96,14 +100,15 @@ export const speakers: Speaker[] = [
       "ta": "தலைமை நிர்வாக அதிகாரி"
     },
     "organisation": "IDEAS",
-    "portrait": "",
+    "portrait": "/portraits/aira-azhari.jpg",
     "bio": {
       "en": "",
       "ms": "",
       "zh": "",
       "ta": ""
     },
-    "role": "speaker"
+    "role": "speaker",
+    "photoConfirmed": false
   },
   {
     "id": "jason-wee",
@@ -115,14 +120,15 @@ export const speakers: Speaker[] = [
       "ta": "இணை நிறுவனர்"
     },
     "organisation": "Architects of Diversity",
-    "portrait": "",
+    "portrait": "/portraits/jason-wee.jpg",
     "bio": {
       "en": "",
       "ms": "",
       "zh": "",
       "ta": ""
     },
-    "role": "moderator"
+    "role": "moderator",
+    "photoConfirmed": false
   },
   {
     "id": "nurfarahanim-che-mansor",

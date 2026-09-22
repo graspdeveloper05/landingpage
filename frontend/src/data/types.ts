@@ -27,6 +27,12 @@ export interface Speaker {
   role: SpeakerRole
   /** Content not yet supplied by the organising team. */
   placeholder?: boolean
+  /**
+   * False while the photograph is matched to this person by inference rather
+   * than by the client -- see backend/config/speakers.php. The placeholder
+   * audit refuses a launch while any is false.
+   */
+  photoConfirmed?: boolean
 }
 
 export interface Chairman {

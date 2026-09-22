@@ -82,6 +82,9 @@ export const speakers: Speaker[] = ${ts(
       portrait: s.portrait,
       bio: s.bio,
       role: s.role,
+      // Carried through so the placeholder audit can hold launch until the
+      // client confirms each photograph is of the right person.
+      ...(s.photo_confirmed === false ? { photoConfirmed: false } : {}),
     })),
   )}
 

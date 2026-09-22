@@ -15,11 +15,14 @@
 |   moderator  the moderator
 |   mc         the Master of Ceremonies
 |
-| PHOTOGRAPHS: only the MC's is set. The client supplied seven photographs
-| with no names attached, and only hers carries a printed name. The other six
-| are left on the stand-in until the organising team confirms which photo is
-| whom -- a Minister shown with someone else's face is not a mistake worth
-| risking to save a day. Upload each one from the Speakers screen.
+| PHOTOGRAPHS: the client's seven arrived as an unlabelled collage; only the
+| MC's carries a printed name. The other six are matched by the order they
+| were added to the client's deck -- Picture 4, 8, 10, 12, 14, 16, then the
+| MC as 18 -- which is the order of the names on the slide before it, the MC
+| last in both. That is evidence from how the file was built, not from
+| anyone's face, and it is strong; it is still not the client saying so.
+| `photo_confirmed => false` marks each until they do, and the placeholder
+| audit refuses a launch while any remains. Set it to true once confirmed.
 |
 | BIOGRAPHIES: none were supplied, and none are invented for real people.
 | An empty biography hides "View profile" rather than showing a stub.
@@ -35,7 +38,8 @@ return [
             'name' => 'YB Datuk Aaron Ago Dagang',
             'designation' => ['en' => 'Minister of National Unity', 'ms' => 'Menteri Perpaduan Negara', 'zh' => '国家团结部长', 'ta' => 'தேசிய ஒற்றுமை அமைச்சர்'],
             'organisation' => 'Ministry of National Unity',
-            'portrait' => '',
+            'portrait' => '/portraits/aaron-ago-dagang.jpg',
+            'photo_confirmed' => false,
             'bio' => $none,
             'role' => 'keynote',
         ],
@@ -44,7 +48,8 @@ return [
             'name' => 'Tan Sri Nazir Razak',
             'designation' => ['en' => 'Chairman', 'ms' => 'Pengerusi', 'zh' => '主席', 'ta' => 'தலைவர்'],
             'organisation' => 'Yayasan Tun Razak',
-            'portrait' => '',
+            'portrait' => '/portraits/nazir-razak.jpg',
+            'photo_confirmed' => false,
             'bio' => $none,
             'role' => 'speaker',
         ],
@@ -53,7 +58,8 @@ return [
             'name' => 'H.E. Ruzina Hasan',
             'designation' => ['en' => 'Acting Deputy British High Commissioner to Malaysia', 'ms' => 'Pemangku Timbalan Pesuruhjaya Tinggi British ke Malaysia', 'zh' => '英国驻马来西亚代理副高级专员', 'ta' => 'மலேசியாவுக்கான பிரிட்டிஷ் பதில் துணை உயர் ஸ்தானிகர்'],
             'organisation' => 'British High Commission Kuala Lumpur',
-            'portrait' => '',
+            'portrait' => '/portraits/ruzina-hasan.jpg',
+            'photo_confirmed' => false,
             'bio' => $none,
             'role' => 'speaker',
         ],
@@ -64,7 +70,8 @@ return [
             // The client gave the constituency only. "Parliament of Malaysia"
             // is where a Member for Bangi sits, not a claim about anything else.
             'organisation' => 'Parliament of Malaysia',
-            'portrait' => '',
+            'portrait' => '/portraits/syahredzan-johan.jpg',
+            'photo_confirmed' => false,
             'bio' => $none,
             'role' => 'speaker',
         ],
@@ -73,7 +80,8 @@ return [
             'name' => 'Ms Aira Azhari',
             'designation' => ['en' => 'Chief Executive Officer', 'ms' => 'Ketua Pegawai Eksekutif', 'zh' => '首席执行官', 'ta' => 'தலைமை நிர்வாக அதிகாரி'],
             'organisation' => 'IDEAS',
-            'portrait' => '',
+            'portrait' => '/portraits/aira-azhari.jpg',
+            'photo_confirmed' => false,
             'bio' => $none,
             'role' => 'speaker',
         ],
@@ -82,7 +90,8 @@ return [
             'name' => 'Jason Wee',
             'designation' => ['en' => 'Co-Founder', 'ms' => 'Pengasas Bersama', 'zh' => '联合创办人', 'ta' => 'இணை நிறுவனர்'],
             'organisation' => 'Architects of Diversity',
-            'portrait' => '',
+            'portrait' => '/portraits/jason-wee.jpg',
+            'photo_confirmed' => false,
             'bio' => $none,
             'role' => 'moderator',
         ],
