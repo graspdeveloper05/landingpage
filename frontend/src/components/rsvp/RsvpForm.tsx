@@ -46,6 +46,8 @@ export function RsvpForm({
   const [errors, setErrors] = useState<Errors>({})
   const [touched, setTouched] = useState<Partial<Record<keyof Registration, boolean>>>({})
   const [submitting, setSubmitting] = useState(false)
+  // Once Submit has been pressed, empty required boxes are errors too.
+  const [submitted, setSubmitted] = useState(false)
   const [privacyOpen, setPrivacyOpen] = useState(false)
 
   function validate(v: Registration): Errors {
@@ -75,11 +77,17 @@ export function RsvpForm({
 
   function blur(key: keyof Registration) {
     setTouched((s) => ({ ...s, [key]: true }))
-    setErrors((e) => ({ ...e, [key]: validate(values)[key] }))
+    // Leaving a box empty is not a mistake yet -- people click through, or
+    // the browser fills some in -- so "enter your name" waits for Submit.
+    // Something typed wrong, like half an email address, is said at once.
+    const value = values[key]
+    const filled = typeof value === 'string' ? value.trim() !== '' : Boolean(value)
+    setErrors((e) => ({ ...e, [key]: submitted || filled ? validate(values)[key] : undefined }))
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
+    setSubmitted(true)
     const found = validate(values)
     setErrors(found)
     setTouched({
