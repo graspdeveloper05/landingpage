@@ -33,28 +33,65 @@ export const FutureIcon = ({ className }: P) => (
   </svg>
 )
 /*
- * The three conversations, after the client's design: a sailing ship for the
- * histories that arrived by sea, a domed civic building for the nation as it
- * stands, and a sun rising over the horizon for what comes next.
+ * The three conversations, drawn after the client's design: a junk under sail
+ * for the histories that arrived by sea, a domed civic building for the
+ * nation as it stands, and a sun rising over worked fields for what comes
+ * next. Drawn on a 64 grid, finer than the 24-grid UI icons, because these
+ * are illustrations shown at 44px inside a medallion rather than glyphs.
  */
+const F = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+
 export const ShipIcon = ({ className }: P) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden {...S}>
-    <path d="M12 3v13" /><path d="M12 4.5 18 13h-6z" /><path d="M11 6.5 6.5 13H11" />
-    <path d="M3.5 16h17l-2.2 3.4a1.5 1.5 0 0 1-1.3.6H7a1.5 1.5 0 0 1-1.3-.6z" />
+  <svg viewBox="0 0 64 64" className={className} aria-hidden {...F}>
+    {/* masts and pennant */}
+    <path d="M27 9v34M41 16v27M27 9l5 2-5 2" />
+    {/* battened junk sails */}
+    <path d="M27 11c-6 5-10 14-11 30h11" />
+    <path d="M20 19h7M18 25h9M17 31h10M16.4 37h10.6" />
+    <path d="M41 17c5 4 8 12 9 24H41" />
+    <path d="M41 23h5M41 29h7.4M41 35h8.6" />
+    {/* hull, raised stern */}
+    <path d="M9 43h45l-3 7c-.5 1.2-1.6 2-2.9 2H17c-1.6 0-3-.9-3.6-2.3z" />
+    <path d="M9 43l-2-4M54 43l3-6" />
+    {/* water */}
+    <path d="M6 57c3-2 6-2 9 0s6 2 9 0 6-2 9 0 6 2 9 0 6-2 9 0 6 2 9 0" />
   </svg>
 )
+
 export const CapitolIcon = ({ className }: P) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden {...S}>
-    <path d="M12 3.2v1.6" /><path d="M8 10a4 4 0 0 1 8 0" /><path d="M6 10h12" />
-    <path d="M7.5 10v8M10.5 10v8M13.5 10v8M16.5 10v8" /><path d="M4.5 18h15M3.5 20.5h17" />
+  <svg viewBox="0 0 64 64" className={className} aria-hidden {...F}>
+    {/* finial and lantern */}
+    <path d="M32 5v4M29.5 9h5v4h-5z" />
+    {/* dome with ribs */}
+    <path d="M19 25a13 13 0 0 1 26 0" />
+    <path d="M32 13v12M25.5 15.5c-2 3-2.8 6-2.8 9.5M38.5 15.5c2 3 2.8 6 2.8 9.5" />
+    {/* drum */}
+    <path d="M17 25h30M18 25v4h28v-4" />
+    <path d="M22 26.5v1.5M27 26.5v1.5M32 26.5v1.5M37 26.5v1.5M42 26.5v1.5" />
+    {/* entablature */}
+    <path d="M13 29h38M14 32h36" />
+    {/* colonnade */}
+    <path d="M18 32v14M23.5 32v14M29 32v14M35 32v14M40.5 32v14M46 32v14" />
+    {/* stylobate and steps */}
+    <path d="M12 46h40M10 50h44M8 54h48" />
   </svg>
 )
+
 export const SunriseIcon = ({ className }: P) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden {...S}>
-    <path d="M6.5 16a5.5 5.5 0 0 1 11 0" /><path d="M3 16h18M6 19h12" />
-    <path d="M12 5.5v2.5M5.3 8.3l1.8 1.8M18.7 8.3l-1.8 1.8M2.8 12.6h2.4M18.8 12.6h2.4" />
+  <svg viewBox="0 0 64 64" className={className} aria-hidden {...F}>
+    {/* sun on the horizon */}
+    <path d="M21 33a11 11 0 0 1 22 0" />
+    {/* rays */}
+    <path d="M32 9v7M20 14l3.5 5.5M44 14l-3.5 5.5M11.5 22.5l6 3.5M52.5 22.5l-6 3.5M8 33h6M50 33h6" />
+    <path d="M6 33h52" />
+    {/* worked fields running to the horizon */}
+    <path d="M6 39c9-4 20-5 28-3s16 2 24-1" />
+    <path d="M6 46c10-5 22-6 30-3s15 2 22-1" />
+    <path d="M6 54c11-6 24-7 32-3s14 2 20-1" />
+    <path d="M24 37c-3 5-5 11-6 19M40 37c2 6 4 12 5 18M32 36v20" />
   </svg>
 )
+
 export const ShareIcon = ({ className }: P) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden {...S}>
     <circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" />

@@ -6,16 +6,23 @@ import { useScrollSpy, useScrolledPast } from '@/lib/animation'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { Wordmark } from './Wordmark'
 
+/*
+ * `section` is the home-page section each item corresponds to, which the
+ * scrollspy lights as the reader passes it. Sponsors is the one item that is
+ * a section and not a page: §5 fixes the site at five pages, so it links to
+ * the Partners & Sponsors band on the home page rather than to a sixth.
+ */
 const ROUTES = [
-  { to: '/', key: 'nav.home' },
-  { to: '/about', key: 'nav.about' },
-  { to: '/speakers', key: 'nav.speakers' },
-  { to: '/programme', key: 'nav.programme' },
-  { to: '/rsvp', key: 'nav.rsvp' },
+  { to: '/', key: 'nav.home', section: null },
+  { to: '/about', key: 'nav.about', section: 'about' },
+  { to: '/speakers', key: 'nav.speakers', section: 'speakers' },
+  { to: '/programme', key: 'nav.programme', section: 'programme' },
+  { to: '/rsvp', key: 'nav.rsvp', section: 'rsvp' },
+  { to: '/#partners', key: 'nav.sponsors', section: 'partners' },
 ] as const
 
 /** Homepage section ids, in the order they appear, for the scrollspy. */
-const HOME_SECTIONS = ['about', 'speakers', 'programme', 'rsvp']
+const HOME_SECTIONS = ['about', 'speakers', 'programme', 'rsvp', 'partners']
 
 export function SiteHeader() {
   const { t } = useI18n()
@@ -35,6 +42,23 @@ export function SiteHeader() {
    * so it is done here.
    */
   const returnToTop = (to: string) => (event: { preventDefault: () => void }) => {
+    /*
+     * A link to a section of the page already showing. Clicked a second
+     * time the hash does not change, so the router does nothing and the
+     * page would not move -- the same dead click Home had. Scroll to it here.
+     */
+    const [path, hash] = to.split('#')
+    if (hash && (path || '/') === pathname) {
+      const el = document.getElementById(hash)
+      if (el) {
+        event.preventDefault()
+        setOpen(false)
+        el.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        })
+        return
+      }
+    }
     if (to !== pathname) return
     event.preventDefault()
     setOpen(false)
@@ -79,16 +103,16 @@ export function SiteHeader() {
 
         <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
           {ROUTES.map(({ to, key }) => {
-            const section = to.slice(1)
+            const section = ROUTES.find((r) => r.to === to)?.section ?? null
             const spied =
               pathname === '/' &&
-              (section === '' ? activeSection === null : activeSection === section)
+              (section === null ? activeSection === null : activeSection === section)
 
             return (
               <NavLink
                 key={to}
                 to={to}
-                end={to === '/'}
+                end={to === '/' || to.startsWith('/#')}
                 onClick={returnToTop(to)}
                 className={({ isActive }) => {
                   // On the homepage the scrollspy decides; elsewhere the route does.
@@ -136,12 +160,14 @@ export function SiteHeader() {
               <NavLink
                 key={to}
                 to={to}
-                end={to === '/'}
+                end={to === '/' || to.startsWith('/#')}
                 onClick={returnToTop(to)}
                 className={({ isActive }) =>
                   cn(
                     'flex min-h-[54px] items-center border-b border-cream/12 text-body last:border-0',
-                    isActive ? 'text-gold-400' : 'text-cream/85',
+                    // A section link is never "the page you are on" -- on the
+                    // home page it would otherwise light up beside Home.
+                    isActive && !to.includes('#') ? 'text-gold-400' : 'text-cream/85',
                   )
                 }
               >

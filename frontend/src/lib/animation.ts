@@ -288,6 +288,18 @@ export function useScrollSpy(ids: string[], offset = 120) {
         if (!el) continue
         if (el.getBoundingClientRect().top - offset <= 0) current = id
       }
+      /*
+       * At the foot of the page the last section cannot scroll up to the
+       * line, however far the reader goes -- on a tall screen the Partners
+       * band sits 300px down with nowhere left to scroll, and the menu kept
+       * lighting RSVP. Reaching the bottom means reading the last section.
+       */
+      const atBottom =
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4
+      if (atBottom && window.scrollY > 0) {
+        const last = [...ids].reverse().find((id) => document.getElementById(id))
+        if (last) current = last
+      }
       setActive(current)
     })
   }, [ids, offset])

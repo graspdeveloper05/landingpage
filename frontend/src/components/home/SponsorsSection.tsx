@@ -69,29 +69,47 @@ export function SponsorsSection() {
           support look like the smallest.
         */}
         <div className="mx-auto mt-12 flex max-w-6xl flex-wrap items-start justify-center gap-x-14 gap-y-12">
-          {tiers.map((tier, i) => (
-            <Reveal key={tier.key} delay={i * 90}>
-              <h3 className="text-center text-micro font-semibold uppercase tracking-[0.18em] text-gold-700">
-                {t(`sponsors.${tier.key}`)}
-              </h3>
+          {tiers.map((tier, ti) => (
+            <div key={tier.key}>
+              <Reveal delay={ti * 120}>
+                <h3 className="text-center text-micro font-semibold uppercase tracking-[0.18em] text-gold-700">
+                  {t(`sponsors.${tier.key}`)}
+                </h3>
+              </Reveal>
               <ul className="mt-4 flex flex-wrap justify-center gap-3 sm:gap-4">
-                {tier.logos.map((logo) => (
-                  <li
-                    key={logo.src}
-                    className="flex h-28 w-36 items-center justify-center rounded-sm border border-hair bg-white p-3 shadow-card sm:h-36 sm:w-44 sm:p-4"
-                  >
-                    <img
-                      src={logo.src}
-                      alt={logo.name}
-                      width={logo.width}
-                      height={logo.height}
-                      loading="lazy"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </li>
-                ))}
+                {tier.logos.map((logo) => {
+                  // One running count across every tier, so the logos arrive
+                  // one after another left to right rather than all at once.
+                  const order = TIERS.flatMap((x) => x.logos).indexOf(logo)
+                  return (
+                    <Reveal as="li" key={logo.src} variant="scale" delay={200 + order * 150}>
+                      <div
+                        style={{ ['--shine-delay' as string]: `${0.55 + order * 0.15}s` }}
+                        className="lift group relative flex h-28 w-36 items-center justify-center overflow-hidden rounded-sm border border-hair bg-white p-3 shadow-card transition-colors duration-300 hover:border-gold-500/60 sm:h-36 sm:w-44 sm:p-4"
+                      >
+                        <img
+                          src={logo.src}
+                          alt={logo.name}
+                          width={logo.width}
+                          height={logo.height}
+                          loading="lazy"
+                          className="relative max-h-full max-w-full object-contain transition-transform duration-500 ease-gentle group-hover:scale-[1.06]"
+                        />
+                        {/* A band of gold light that crosses the tile once, as
+                            it lands. Once, not on a loop: a logo that keeps
+                            glinting reads as an advertisement. */}
+                        <span aria-hidden className="logo-shine" />
+                        {/* A gold rule that draws in along the foot on hover. */}
+                        <span
+                          aria-hidden
+                          className="absolute inset-x-0 bottom-0 h-[2px] origin-left scale-x-0 bg-gold-500 transition-transform duration-500 ease-gentle group-hover:scale-x-100"
+                        />
+                      </div>
+                    </Reveal>
+                  )
+                })}
               </ul>
-            </Reveal>
+            </div>
           ))}
         </div>
       </div>

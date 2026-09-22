@@ -25,6 +25,7 @@ const src = {
     speakers: L('Speakers', 'Pembentang', '讲者', 'உரையாளர்கள்'),
     programme: L('Programme', 'Atur Cara', '议程', 'நிகழ்ச்சி நிரல்'),
     rsvp: L('RSVP', 'RSVP', '报名', 'பதிவு'),
+    sponsors: L('Sponsors', 'Penaja', '赞助商', 'ஆதரவாளர்கள்'),
     menu: L('Menu', 'Menu', '选单', 'பட்டி'),
     close: L('Close', 'Tutup', '关闭', 'மூடு'),
     language: L('Language', 'Bahasa', '语言', 'மொழி'),
