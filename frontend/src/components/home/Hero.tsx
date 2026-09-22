@@ -61,14 +61,16 @@ export function Hero() {
           needs. A flat gradient strong enough to fix those milks out the whole
           picture, which is the opposite of what the photograph is for.
 
-          So: an ellipse centred on the copy column, fully clear by 60% across.
-          The mansion, skyline, flag and people keep their full strength.
+          So: an ellipse held to the copy column, fully clear by 54% across. It
+          was 97% white and reached 62% across, which milked out the tree and
+          the lawn the client's photograph opens with; it is now lighter and
+          tighter, and the museum, visitors and sky keep their full strength.
         */}
         <div
           className="pointer-events-none absolute inset-0 hidden lg:block"
           style={{
             backgroundImage:
-              'radial-gradient(115% 90% at 4% 62%, rgba(252,252,251,0.97) 0%, rgba(252,252,251,0.88) 22%, rgba(252,252,251,0.45) 42%, rgba(252,252,251,0) 62%)',
+              'radial-gradient(95% 100% at 0% 50%, rgba(252,252,251,0.86) 0%, rgba(252,252,251,0.74) 24%, rgba(252,252,251,0.36) 40%, rgba(252,252,251,0) 54%)',
           }}
         />
         {/* No bottom fade. It bleached the last 112px of the scene -- the
@@ -78,12 +80,23 @@ export function Hero() {
 
       <div className="shell relative order-2 pb-12 pt-8 sm:pb-14 sm:pt-10 lg:absolute lg:inset-0 lg:order-none lg:flex lg:flex-col lg:justify-center lg:py-0">
         <div ref={copyRef} className="max-w-2xl">
+          {/*
+            A soft cream halo around the headline letters. The client's photograph
+            puts a tree canopy directly behind the headline -- dark leaves with
+            bright sky between them -- and no single veil strength suits both:
+            the navy line fell to 1.5:1 over the darkest leaves, and the gold
+            matched the sunlit ones almost exactly. The halo lightens only the
+            few pixels around each stroke, so the photograph is left unveiled.
+          */}
           <RevealLines
             as="h1"
-            className="font-display text-hero font-bold uppercase"
+            className="font-display text-hero font-bold uppercase [text-shadow:0_0_34px_rgba(252,252,251,1),0_0_16px_rgba(252,252,251,1),0_0_6px_rgba(252,252,251,1),0_0_2px_rgba(252,252,251,1)]"
             lines={[
               { text: t('hero.line1'), className: 'block text-navy-900' },
-              { text: t('hero.line2'), className: 'block text-gold-600' },
+              // A deeper gold than gold-600, which measures only 3.3:1 even on solid
+              // cream -- too little headroom over a photograph. Still read as
+              // gold; it takes the halo to over 4:1.
+              { text: t('hero.line2'), className: 'block text-[#8A6912]' },
             ]}
           />
 
