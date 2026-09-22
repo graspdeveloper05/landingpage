@@ -5,6 +5,12 @@ export interface SocialLink {
   /** Accessible name — announced as "Seri Negara Dialogue on LinkedIn". */
   network: string
   url: string
+  /**
+   * Whose account it is, when it is not the Dialogue's own -- announced in
+   * place of "Seri Negara Dialogue", so the label does not promise one
+   * account and open another.
+   */
+  owner?: string
   placeholder?: boolean
 }
 
@@ -12,13 +18,14 @@ export interface SocialLink {
  * Instagram only, per the client's feedback of September 2026: LinkedIn,
  * Facebook and YouTube are removed.
  *
- * NO URL YET — the client asked for Instagram without giving the address.
- * Paste the profile link into `url` and drop the flag. Until then the footer
- * leaves the icon out entirely rather than publishing a link to nowhere, and
- * `npm run check:placeholders` still reports it.
+ * The address is Chevening Alumni Malaysia's, the Dialogue's convenor. The
+ * client asked for Instagram without giving one; their own promotional
+ * graphic for the MC carries the handle @cheveningMY across its social icons,
+ * and the profile was checked to exist under that name. The Dialogue has no
+ * account of its own, so the convenor's is the one to follow.
  * ==========================================================================*/
 export const socialLinks: SocialLink[] = [
-  { id: 'so-instagram', icon: 'instagram', network: 'Instagram', url: '', placeholder: true },
+  { id: 'so-instagram', icon: 'instagram', network: 'Instagram', url: 'https://www.instagram.com/cheveningmy/', owner: 'Chevening Alumni Malaysia' },
 ]
 
 /**

@@ -86,7 +86,7 @@ export function SiteFooter() {
             <ul className="flex gap-2.5 lg:justify-end">
               {/* Only networks with a real address. An icon linking to "#"
                   looks exactly like a working one until somebody taps it. */}
-              {socialLinks.filter((l) => l.url && l.url !== '#').map(({ id, icon, network, url }) => {
+              {socialLinks.filter((l) => l.url && l.url !== '#').map(({ id, icon, network, url, owner }) => {
                 const Icon = SOCIAL_ICONS[icon]
                 return (
                   <li key={id}>
@@ -97,7 +97,11 @@ export function SiteFooter() {
                       className="flex h-11 w-11 items-center justify-center border border-cream/20 text-cream/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-500 hover:text-gold-500"
                     >
                       <Icon className="h-[18px] w-[18px]" />
-                      <span className="sr-only">{t('footer.socialOn', { network })}</span>
+                      <span className="sr-only">
+                        {owner
+                          ? t('footer.socialOf', { owner, network })
+                          : t('footer.socialOn', { network })}
+                      </span>
                     </a>
                   </li>
                 )

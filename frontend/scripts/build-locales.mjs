@@ -474,6 +474,12 @@ const src = {
       '{{network}} 上的斯里尼加拉对话',
       '{{network}} இல் சேரி நெகாரா உரையாடல்',
     ),
+    socialOf: L(
+      '{{owner}} on {{network}}',
+      '{{owner}} di {{network}}',
+      '{{network}} 上的{{owner}}',
+      '{{network}} இல் {{owner}}',
+    ),
     terms: L('Terms of Use', 'Terma Penggunaan', '使用条款', 'பயன்பாட்டு விதிமுறைகள்'),
     contact: L('Contact', 'Hubungi', '联络我们', 'தொடர்பு'),
     copyright: L(
