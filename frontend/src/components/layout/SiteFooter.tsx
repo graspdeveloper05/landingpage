@@ -41,11 +41,11 @@ export function SiteFooter() {
 
             <div className="mt-7 flex items-start gap-3">
               <img
-                src="/brand/emblem.webp"
+                src="/brand/emblem-gold.webp"
                 alt=""
-                width={320}
-                height={166}
-                className="mt-0.5 h-6 w-auto shrink-0 rounded-sm bg-cream/95 px-1 ring-1 ring-gold-500/30"
+                width={236}
+                height={176}
+                className="mt-0.5 h-7 w-auto shrink-0"
               />
               <div>
                 <p className="text-micro font-medium uppercase tracking-[0.16em] text-cream/65">

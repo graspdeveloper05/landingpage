@@ -77,7 +77,7 @@ export function RsvpSection({
           ) : (
             <div className="grid items-center gap-12 lg:grid-cols-12">
               <Reveal variant="left" className="lg:col-span-5">
-                <dl className="space-y-5">
+                <dl className="divide-y divide-cream/10 border-y border-cream/10 [&>div]:py-5">
                   <Detail icon={<CalendarIcon className="h-full w-full" />} label={t('eventInfo.dateLabel')} value={date} />
                   <Detail icon={<ClockIcon className="h-full w-full" />} label={t('eventInfo.timeLabel')} value={time} />
                   <Detail
@@ -125,14 +125,16 @@ function Detail({
   // values to the opposite edge left the venue address wrapping ragged against
   // a right margin on a phone, and misaligned label from value at every width.
   return (
-    <div className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-x-3.5 gap-y-1">
+    // The icon spans both rows and sits centred on the label-and-value block,
+    // so it lines up with the whole entry rather than floating by the label.
+    <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-4 gap-y-1">
       <span
         aria-hidden
-        className="row-span-2 mt-0.5 flex h-9 w-9 items-center justify-center rounded-full border border-gold-500/45 p-2 text-gold-500"
+        className="row-span-2 flex h-11 w-11 items-center justify-center self-center rounded-full border border-gold-500/45 p-2.5 text-gold-500"
       >
         {icon}
       </span>
-      <dt className="text-micro font-medium uppercase tracking-[0.13em] text-cream/65">{label}</dt>
+      <dt className="self-end text-micro font-medium uppercase tracking-[0.13em] text-cream/65">{label}</dt>
       <dd className="text-pretty text-body leading-snug text-cream">
         {value}
         {extra && <span className="mt-0.5 block text-small leading-snug text-cream/70">{extra}</span>}

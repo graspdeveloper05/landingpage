@@ -13,7 +13,7 @@ export function AdminSplash({ message }: { message: string }) {
     <div className="admin-ui grid min-h-screen place-items-center bg-[#F1F1EF] px-4 font-sans">
       <div className="w-full max-w-[14rem] text-center">
         <span className="admin-breathe mx-auto grid h-14 w-14 place-items-center rounded-full border border-gold-500/45 bg-white">
-          <img src="/brand/emblem.webp" alt="" width={320} height={166} className="h-7 w-auto" />
+          <img src="/brand/emblem-gold.webp" alt="" width={236} height={176} className="h-8 w-auto" />
         </span>
 
         <p className="mt-4 text-[0.78rem] text-slate">{message}</p>

@@ -164,7 +164,7 @@ function LoginScreen({ onSignedIn }: { onSignedIn: (u: AdminUser) => void }) {
             note for the door to an organising team's tools.
           */}
           <span className="admin-rise mx-auto grid h-14 w-14 place-items-center rounded-full border border-gold-500/45 bg-white">
-            <img src="/brand/emblem.webp" alt="" width={320} height={166} className="h-7 w-auto" />
+            <img src="/brand/emblem-gold.webp" alt="" width={236} height={176} className="h-8 w-auto" />
           </span>
 
           <p

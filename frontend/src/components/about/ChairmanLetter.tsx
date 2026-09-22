@@ -28,9 +28,15 @@ export function ChairmanLetter() {
 
   return (
     <section id="welcome" className="scroll-mt-24 border-t border-hair bg-cream py-section">
-      <div className="shell grid items-start gap-x-12 gap-y-10 lg:grid-cols-12">
-        <Reveal variant="left" className="lg:col-span-4">
-          <figure className="relative mx-auto max-w-[220px] lg:mx-0">
+      {/*
+        One centred block, sized to the letter: a fixed portrait column beside
+        a text column no wider than the reading measure. Twelve grid columns
+        left the portrait stranded at the far edge of a wide screen, with the
+        signature rule running past the end of the text.
+      */}
+      <div className="shell grid items-start gap-x-14 gap-y-10 md:mx-auto md:max-w-[62rem] md:grid-cols-[15rem_minmax(0,1fr)]">
+        <Reveal variant="left" className="md:sticky md:top-28">
+          <figure className="relative mx-auto max-w-[15rem]">
             <span aria-hidden className="absolute -inset-1.5 rounded-sm border border-gold-500/35" />
             <img
               src={portraitSrc(chairman.portrait)}
@@ -43,7 +49,7 @@ export function ChairmanLetter() {
           </figure>
         </Reveal>
 
-        <Reveal delay={100} className="lg:col-span-8">
+        <Reveal delay={100} className="max-w-measure">
           <h2 className="text-section font-semibold uppercase tracking-[0.06em] text-navy-900">
             {t('chairman.title')}
           </h2>

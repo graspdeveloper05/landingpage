@@ -4,9 +4,7 @@ import { cn } from '@/lib/cn'
  * Crest plus stacked wordmark, as in the concept's header and footer.
  *
  * `tone` names the ground it sits on: "light" is the navy band (footer),
- * "dark" is the ivory bar (header). The crest carries a filled ground plate so
- * the line art reads at 40px instead of dissolving into whichever colour is
- * behind it.
+ * "dark" is the ivory bar (header).
  */
 export function Wordmark({ tone = 'light', className }: { tone?: 'light' | 'dark'; className?: string }) {
   const onNavy = tone === 'light'
@@ -17,26 +15,17 @@ export function Wordmark({ tone = 'light', className }: { tone?: 'light' | 'dark
   return (
     <span className={cn('flex items-center gap-3', className)}>
       {/*
-        The emblem is cut from the supplied logo, which ships on a cream card
-        with no alpha channel. `mix-blend-multiply` disposes of that ground on
-        the ivory header — cream over ivory multiplies to ivory — while the
-        gold line art stays. On the navy footer multiply would erase the whole
-        mark, so there it keeps a light plate to sit on.
+        The client's gold emblem, cut out onto a transparent ground so it sits
+        straight on navy or ivory with no card behind it -- the same mark as
+        the browser-tab icon.
       */}
-      <span
-        className={cn(
-          'grid h-10 shrink-0 place-items-center rounded-sm px-1.5 transition-colors sm:h-11',
-          onNavy && 'bg-cream/95 ring-1 ring-gold-500/35',
-        )}
-      >
-        <img
-          src="/brand/emblem.webp"
-          alt=""
-          width={320}
-          height={166}
-          className={cn('h-7 w-auto sm:h-8', !onNavy && 'mix-blend-multiply')}
-        />
-      </span>
+      <img
+        src="/brand/emblem-gold.webp"
+        alt=""
+        width={236}
+        height={176}
+        className="h-10 w-auto shrink-0 sm:h-11"
+      />
 
       <span className="leading-none">
         <span
