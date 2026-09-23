@@ -42,6 +42,9 @@ class GoogleFormHandoff
             $response = Http::timeout(30)->asJson()->post($url, [
                 'key' => $key,
                 'registration' => [
+                    // The script names the sheet row after it, so a resend
+                    // is recognisably the same registration.
+                    'reference' => $registration->reference,
                     'email' => $registration->email,
                     'fullName' => $registration->full_name,
                     'mobile' => $registration->mobile,

@@ -3,7 +3,7 @@
      edit it. Keep it plain: the person pasting it is not a developer. --}}
 /**
  * Connects this form to the Seri Negara Dialogue website, both ways:
- *   - registrations made on the website are added to this form, and
+ *   - registrations made on the website are added to its responses sheet, and
  *   - this form's responses are sent to the website's admin panel.
  *
  * Set up once:
@@ -14,20 +14,26 @@
  *      because the script is your own and not published by Google.
  *   4. The log says "Ready". Every response so far has been sent to the
  *      website, and each new one follows as it arrives.
- *   5. Click Deploy -> New deployment -> the gear icon -> Web app.
+ *   5. Choose "authorise" in the function list and click Run, allowing access
+ *      to the responses sheet.
+ *   6. Click Deploy -> New deployment -> the gear icon -> Web app.
  *      Execute as: Me. Who has access: Anyone. Click Deploy, allow again if
  *      asked, and copy the "Web app URL" it shows.
- *   6. Paste that URL into the website's admin: Registrations -> Google
+ *   7. Paste that URL into the website's admin: Registrations -> Google
  *      Form -> "Web app link", and click Save. From then on, registrations
- *      made on the website appear in this form's responses.
+ *      made on the website appear in this form's responses sheet.
+ *
+ * Updating this script later: paste, Save, run "authorise", then Deploy ->
+ * Manage deployments -> the pencil -> Version: New version -> Deploy. The
+ * web app keeps its link, so nothing changes on the website.
  *
  * If a response ever fails to send, Google emails the form's owner. Once the
  * cause is fixed, run "sendAll" to send everything again -- responses the
  * website already has are updated, never duplicated.
  *
  * The script reads this form's responses and sends them to the website, and
- * adds the website's registrations as responses. It changes nothing else on
- * the form -- no questions, no settings.
+ * adds the website's registrations to the responses sheet. It changes nothing
+ * on the form -- no questions, no settings.
  */
 
 var WEBSITE = '{{ $endpoint }}';
@@ -53,9 +59,14 @@ function onResponse(e) {
 }
 
 /**
- * The website hands each registration made there to this, and it is added to
- * the form as a response -- the way Google allows a form in a Workspace to be
- * filled in from outside it. Answers the id of the new response.
+ * The website hands each registration made there to this, and it is written
+ * into this form's responses sheet, each answer under its question's column.
+ *
+ * Into the sheet rather than the form: Google refuses a response submitted by
+ * a script to a form that collects email addresses ("Invalid data updating
+ * form"). The sheet is the list the team works from, and it takes the email
+ * too. These rows are in the sheet, not in the form's own Responses summary.
+ * Answers an id for the row, so the website knows it arrived.
  */
 function doPost(e) {
   var body = JSON.parse(e.postData.contents);
@@ -64,12 +75,17 @@ function doPost(e) {
   }
 
   var r = body.registration;
-  var form = FormApp.getActiveForm();
-  var response = form.createResponse();
+  var sheet = responsesSheet();
+  if (!sheet) {
+    return reply({ error: 'This form has no responses sheet. In the form: Responses -> Link to Sheets.' });
+  }
 
-  // Each answer goes to the question that asks for it, found by its wording,
-  // so renaming a question slightly does not break this.
+  // The sheet's own headings are the form's questions, as worded on the form.
+  var lastColumn = sheet.getLastColumn();
+  var headings = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
   var wanted = [
+    [/^timestamp$/i, new Date()],
+    [/\be-?mail\b/i, r.email],
     [/\bname\b/i, r.fullName],
     [/\b(mobile|phone|contact)\b/i, r.mobile],
     [/\b(affiliation|organi[sz]ation|company|employer)\b/i, r.organisation],
@@ -82,32 +98,47 @@ function doPost(e) {
   ];
   var used = {};
 
-  form.getItems().forEach(function (item) {
-    var title = item.getTitle();
+  var row = headings.map(function (heading) {
+    var title = String(heading);
     for (var i = 0; i < wanted.length; i++) {
-      if (used[i] || !wanted[i][1] || !wanted[i][0].test(title)) continue;
-      var answer = String(wanted[i][1]);
-      var type = item.getType();
-      if (type === FormApp.ItemType.TEXT) {
-        response.withItemResponse(item.asTextItem().createResponse(answer));
-      } else if (type === FormApp.ItemType.PARAGRAPH_TEXT) {
-        response.withItemResponse(item.asParagraphTextItem().createResponse(answer));
-      } else if (type === FormApp.ItemType.MULTIPLE_CHOICE) {
-        response.withItemResponse(item.asMultipleChoiceItem().createResponse(answer));
-      } else {
-        continue;
-      }
+      if (used[i] || !wanted[i][0].test(title)) continue;
       used[i] = true;
-      break;
+      return wanted[i][1] == null ? '' : wanted[i][1];
     }
+    return '';
   });
 
-  var saved = response.submit();
-  // Remembered, so the trigger below does not send it back to the website
-  // as if somebody had filled in the form.
-  PropertiesService.getScriptProperties().setProperty('site:' + saved.getId(), '1');
+  // One at a time, so two registrations arriving together do not land on
+  // the same row.
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    sheet.appendRow(row);
+  } finally {
+    lock.releaseLock();
+  }
 
-  return reply({ id: saved.getId() });
+  return reply({ id: 'sheet:' + (r.reference || new Date().getTime()) });
+}
+
+/** The tab the form writes its responses to. */
+function responsesSheet() {
+  var id = FormApp.getActiveForm().getDestinationId();
+  if (!id) return null;
+  var sheets = SpreadsheetApp.openById(id).getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].getFormUrl()) return sheets[i];
+  }
+  return null;
+}
+
+/**
+ * Run once after pasting a new version, to grant the permission to write to
+ * the responses sheet. Reads the headings and changes nothing.
+ */
+function authorise() {
+  var sheet = responsesSheet();
+  Logger.log(sheet ? 'Ready. Writing to "' + sheet.getName() + '".' : 'This form has no responses sheet.');
 }
 
 function reply(value) {
