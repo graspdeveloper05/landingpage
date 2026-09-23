@@ -81,4 +81,18 @@ class RegistrationAnswersTest extends TestCase
         $this->assertSame('2019/20', $row['Chevening cohort']);
         $this->assertSame('No', $row['CAM member']);
     }
+
+    public function test_a_deleted_registration_does_not_make_the_next_reference_collide(): void
+    {
+        foreach (['a', 'b', 'c'] as $who) {
+            $this->register(['email' => "{$who}@example.com"])->assertCreated();
+        }
+        // References SND26-0001..0003. Deleting the first leaves two rows, so
+        // "count + 1" would hand out SND26-0003 again.
+        Registration::where('reference', 'SND26-0001')->delete();
+
+        $this->register(['email' => 'd@example.com'])
+            ->assertCreated()
+            ->assertJson(['reference' => 'SND26-0004']);
+    }
 }
