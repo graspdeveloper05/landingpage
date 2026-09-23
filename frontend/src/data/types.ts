@@ -111,8 +111,9 @@ export interface EventDetails {
 /** A Google Form, as the server read it: its id, field numbers and pages. */
 export interface GoogleFormTarget {
   id: string
-  entries: Record<GoogleFormField, number>
-  pages: Record<GoogleFormField, number>
+  /** Dietary is absent once the team removes that question from their form. */
+  entries: Partial<Record<GoogleFormField, number>>
+  pages: Partial<Record<GoogleFormField, number>>
 }
 
 export type GoogleFormField =
@@ -138,7 +139,6 @@ export interface Registration {
   mobile: string
   organisation: string
   designation: string
-  dietary: string
   /**
    * Asked because the organising team's Google Form asks them, and each
    * registration is copied there. Cohort, university and CAM membership only

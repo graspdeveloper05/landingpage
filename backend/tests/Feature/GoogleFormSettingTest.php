@@ -106,6 +106,16 @@ class GoogleFormSettingTest extends TestCase
         $this->assertSame(0, EventSetting::find(2026)->google_form ? 1 : 0);
     }
 
+    public function test_a_form_without_the_dietary_question_is_still_accepted(): void
+    {
+        // The site stopped asking for dietary requirements, so their form is
+        // free to drop the question; everything else it must still have.
+        $items = array_values(array_filter($this->teamForm(), fn ($i) => ($i[1] ?? '') !== 'Dietary Restriction'));
+
+        $this->save($this->page($items))->assertOk()->assertJson(['matched' => 8]);
+        $this->assertArrayNotHasKey('dietary', $this->getJson('/api/event')->json('googleForm.entries'));
+    }
+
     public function test_a_missing_question_is_named(): void
     {
         $items = array_values(array_filter($this->teamForm(), fn ($i) => ($i[1] ?? '') !== 'Position'));

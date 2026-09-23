@@ -89,8 +89,13 @@ export function copyToGoogleForm(r: Registration, configured: GoogleFormTarget |
     mobile: r.mobile.trim(),
     organisation: r.organisation.trim(),
     designation: r.designation.trim(),
-    // Required on their form, optional on ours.
-    dietary: r.dietary.trim() || 'None',
+    /*
+     * Their form still asks this and will not take a submission without it,
+     * but the site no longer asks -- the client had it removed. Sent as
+     * "Not provided" rather than "None", which would tell a caterer that
+     * everyone eats anything. Drops out if they remove the question too.
+     */
+    ...(form.entries.dietary !== undefined && { dietary: 'Not provided' }),
     cheveningScholar: yesNo(r.cheveningScholar),
     // The alumni questions only for scholars, as their form asks them.
     ...(scholar && {

@@ -18,7 +18,6 @@ const EMPTY: Registration = {
   mobile: '',
   organisation: '',
   designation: '',
-  dietary: '',
   cheveningScholar: '',
   cheveningCohort: '',
   cheveningUniversity: '',
@@ -206,15 +205,6 @@ export function RsvpForm({
           autoComplete="organization-title"
           required
         />
-        <Field
-          className="sm:col-span-2"
-          label={t('rsvp.fields.dietary')}
-          value={values.dietary}
-          onChange={(e) => set('dietary', e.target.value)}
-          hint={t('rsvp.fields.dietaryHint')}
-          optionalLabel={t('rsvp.fields.optional')}
-        />
-
         <YesNo
           className="sm:col-span-2"
           name="cheveningScholar"

@@ -41,6 +41,13 @@ class GoogleFormReader
     private const YES_NO = ['cheveningScholar', 'camMember'];
 
     /**
+     * Answered only if the form asks. The site stopped asking for dietary
+     * requirements at the client's request, so it sends "Not provided" while
+     * their form still has the question, and nothing once it does not.
+     */
+    private const OPTIONAL = ['dietary'];
+
+    /**
      * @return array{id: string, entries: array<string, int>, pages: array<string, int>}
      *
      * @throws ValidationException naming what is wrong, against the `url` field
@@ -107,7 +114,7 @@ class GoogleFormReader
             $pages[$key] = $page;
         }
 
-        $missing = array_diff(array_keys(self::QUESTIONS), array_keys($entries));
+        $missing = array_diff(array_keys(self::QUESTIONS), array_keys($entries), self::OPTIONAL);
         if ($missing) {
             $names = array_map(fn ($k) => self::QUESTIONS[$k][1], $missing);
             $this->fail('The form has no question for: '.implode(', ', $names).'.');

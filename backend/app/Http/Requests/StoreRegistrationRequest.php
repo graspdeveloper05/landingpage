@@ -36,6 +36,8 @@ class StoreRegistrationRequest extends FormRequest
 
             'organisation' => ['required', 'string', 'max:150'],
             'designation' => ['required', 'string', 'max:150'],
+            // The site stopped asking at the client's request; older
+            // clients may still send it, and a value is kept if they do.
             'dietary' => ['nullable', 'string', 'max:255'],
 
             // The organising team's Google Form asks these, and every site

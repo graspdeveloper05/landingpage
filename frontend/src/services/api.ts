@@ -237,7 +237,6 @@ const CSV_COLUMNS = [
   'mobile',
   'organisation',
   'designation',
-  'dietary',
 ] as const
 
 function escapeCsv(value: string) {
