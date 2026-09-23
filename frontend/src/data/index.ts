@@ -6,6 +6,7 @@
 import { event as event2026 } from './editions/2026/event'
 import { speakers as speakers2026, chairman as chairman2026 } from './editions/2026/speakers'
 import { programme as programme2026 } from './editions/2026/programme'
+import { sponsors as sponsors2026 } from './editions/2026/sponsors'
 
 export const CURRENT_EDITION = 2026
 
@@ -15,12 +16,13 @@ const editions = {
     speakers: speakers2026,
     chairman: chairman2026,
     programme: programme2026,
+    sponsors: sponsors2026,
   },
 } as const
 
 export const currentEdition = editions[CURRENT_EDITION]
 
-export const { event, speakers, chairman, programme } = currentEdition
+export const { event, speakers, chairman, programme, sponsors } = currentEdition
 
 
 export { quickLinks } from './quickLinks'

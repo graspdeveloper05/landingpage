@@ -11,12 +11,14 @@ use App\Http\Controllers\Api\Admin\RegistrationAdminController;
 use App\Http\Controllers\Api\Admin\RegistrationExportController;
 use App\Http\Controllers\Api\Admin\SessionController;
 use App\Http\Controllers\Api\Admin\SpeakerAdminController;
+use App\Http\Controllers\Api\Admin\SponsorAdminController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\GoogleFormIntakeController;
 use App\Http\Controllers\Api\PageViewController;
 use App\Http\Controllers\Api\ProgrammeController;
 use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Controllers\Api\SpeakerController;
+use App\Http\Controllers\Api\SponsorController;
 use App\Http\Middleware\EnsureAdminToken;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +36,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/event', [EventController::class, 'show']);
 Route::get('/speakers', [SpeakerController::class, 'index']);
 Route::get('/programme', [ProgrammeController::class, 'index']);
+Route::get('/sponsors', [SponsorController::class, 'index']);
 
 /*
 | §12 — spam protection. Six attempts per minute per IP is generous for a
@@ -92,6 +95,14 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/programme/reorder', [ProgrammeAdminController::class, 'reorder']);
     Route::put('/programme/{programme_item}', [ProgrammeAdminController::class, 'update']);
     Route::delete('/programme/{programme_item}', [ProgrammeAdminController::class, 'destroy']);
+
+    // §10 — the partners and sponsors band.
+    Route::get('/sponsors', [SponsorAdminController::class, 'index']);
+    Route::post('/sponsors', [SponsorAdminController::class, 'store']);
+    Route::post('/sponsors/reorder', [SponsorAdminController::class, 'reorder']);
+    Route::post('/sponsors/logo', [SponsorAdminController::class, 'logo']);
+    Route::put('/sponsors/{sponsor}', [SponsorAdminController::class, 'update']);
+    Route::delete('/sponsors/{sponsor}', [SponsorAdminController::class, 'destroy']);
 
     Route::get('/analytics', AnalyticsController::class);
 

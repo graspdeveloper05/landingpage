@@ -134,6 +134,22 @@ export type GoogleFormField =
   | 'cheveningUniversity'
   | 'camMember'
 
+/** §10 — one logo in the partners and sponsors band. */
+export interface Sponsor {
+  id: number
+  name: string
+  tier: SponsorTier
+  logo: string
+  /** The logo's own size, so its tile holds space before it loads. */
+  width?: number | null
+  height?: number | null
+}
+
+/** The client's own billing, in the order the band shows them. */
+export const SPONSOR_TIERS = ['foundingPatron', 'convenedBy', 'gold', 'silver', 'marketing'] as const
+
+export type SponsorTier = (typeof SPONSOR_TIERS)[number]
+
 export interface QuickLink {
   id: string
   label: string

@@ -19,6 +19,7 @@ const NAV = [
   { to: '/admin/chairman', label: 'Chairman', icon: PersonIcon, hint: 'Photograph and welcome' },
   { to: '/admin/speakers', label: 'Speakers', icon: PeopleIcon, hint: 'Line-up and portraits' },
   { to: '/admin/programme', label: 'Programme', icon: ListIcon, hint: 'Running order' },
+  { to: '/admin/sponsors', label: 'Sponsors', icon: BadgeIcon, hint: 'Partner logos' },
   { to: '/admin/registrations', label: 'Registrations', icon: TicketIcon, hint: 'Attendees and export' },
   { to: '/admin/analytics', label: 'Analytics', icon: ChartIcon, hint: 'Visitors and pages' },
 ]
@@ -306,6 +307,16 @@ function TicketIcon({ className }: { className?: string }) {
         strokeWidth="1.4"
       />
       <path d="M9.5 4v8" stroke="currentColor" strokeWidth="1.4" strokeDasharray="1.5 1.5" />
+    </svg>
+  )
+}
+
+/** A rosette: the partners band, and nothing else in the menu. */
+function BadgeIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden>
+      <circle cx="10" cy="8" r="5" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M7 12.5 6 18l4-2 4 2-1-5.5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
     </svg>
   )
 }

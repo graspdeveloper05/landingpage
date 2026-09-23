@@ -8,6 +8,7 @@ import { AnalyticsAdmin } from './AnalyticsAdmin'
 import { ChairmanAdmin } from './ChairmanAdmin'
 import { EventAdmin } from './EventAdmin'
 import { SpeakersAdmin } from './SpeakersAdmin'
+import { SponsorsAdmin } from './SponsorsAdmin'
 import { ProgrammeAdmin } from './ProgrammeAdmin'
 import { RegistrationsAdmin } from './RegistrationsAdmin'
 import { Shell } from './Shell'
@@ -64,6 +65,7 @@ export default function AdminApp() {
           <Route path="event" element={<EventAdmin />} />
           <Route path="chairman" element={<ChairmanAdmin />} />
           <Route path="speakers" element={<SpeakersAdmin />} />
+          <Route path="sponsors" element={<SponsorsAdmin />} />
           <Route path="programme" element={<ProgrammeAdmin />} />
           <Route path="registrations" element={<RegistrationsAdmin />} />
           <Route path="*" element={<Navigate to="/admin/event" replace />} />

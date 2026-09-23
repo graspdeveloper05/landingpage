@@ -1,10 +1,11 @@
-import { event, programme, speakers } from '@/data'
+import { event, programme, speakers, sponsors } from '@/data'
 import type {
   EventDetails,
   ProgrammeItem,
   Registration,
   RegistrationRecord,
   Speaker,
+  Sponsor,
 } from '@/data/types'
 
 /**
@@ -173,6 +174,10 @@ async function fetchOrFallback<T>(path: string, fallback: T): Promise<T> {
   } catch {
     return fallback
   }
+}
+
+export async function getSponsors(): Promise<Sponsor[]> {
+  return fetchOrFallback('/api/sponsors', sponsors)
 }
 
 export async function getSpeakers(): Promise<Speaker[]> {

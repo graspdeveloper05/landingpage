@@ -4,10 +4,11 @@ import {
   event as bundledEvent,
   programme as bundledProgramme,
   speakers as bundledSpeakers,
+  sponsors as bundledSponsors,
 } from '@/data'
-import { getEvent, getProgramme, getSpeakers } from '@/services/api'
+import { getEvent, getProgramme, getSpeakers, getSponsors } from '@/services/api'
 import { useI18n } from '@/i18n'
-import { SPEAKER_ROLES, type Chairman, type EventDetails, type ProgrammeItem, type Speaker } from '@/data/types'
+import { SPEAKER_ROLES, type Chairman, type EventDetails, type ProgrammeItem, type Speaker, type Sponsor } from '@/data/types'
 
 /*
  * Speakers and the programme, as edited by the organising team.
@@ -96,6 +97,32 @@ export function useSpeakerGroups() {
  * `useEventLabels` below drops through to the locale files, which is exactly
  * how the site behaved before any of this was editable.
  */
+/**
+ * The partners and sponsors band, as the team arranged it in the panel.
+ *
+ * Starts from the bundled copy so the band is never briefly empty, then
+ * takes whatever the server sends -- the same rule the speakers follow.
+ */
+export function useSponsors(): Sponsor[] {
+  const [list, setList] = useState<Sponsor[]>(bundledSponsors)
+
+  useEffect(() => {
+    let live = true
+    getSponsors()
+      .then((data) => {
+        if (live) setList(data)
+      })
+      .catch(() => {
+        // Keep the bundled band rather than showing none.
+      })
+    return () => {
+      live = false
+    }
+  }, [])
+
+  return list
+}
+
 export function useEvent(): EventDetails {
   const [details, setDetails] = useState<EventDetails>(bundledEvent)
 
