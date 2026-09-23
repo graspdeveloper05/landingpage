@@ -146,6 +146,8 @@ export interface Sponsor {
   name: string
   tier: SponsorTier
   logo: string
+  /** Their website, when the team has entered one: the logo opens it. */
+  link?: string | null
   /** The logo's own size, so its tile holds space before it loads. */
   width?: number | null
   height?: number | null

@@ -92,12 +92,16 @@ class SponsorAdminController extends Controller
             'tier' => ['required', Rule::in(Sponsor::TIERS)],
             // Either an upload or one of the logos shipped with the site.
             'logo' => ['required', 'string', 'max:200', 'regex:#^/(storage/sponsors|partners)/[A-Za-z0-9._-]+$#'],
+            // Their website. https or http only: this becomes a link on the
+            // public site, and anything else (javascript:, data:) must not.
+            'link' => ['nullable', 'string', 'max:300', 'url:http,https'],
             'width' => ['nullable', 'integer', 'min:1', 'max:20000'],
             'height' => ['nullable', 'integer', 'min:1', 'max:20000'],
         ], [
             'name.required' => 'Enter the sponsor’s name.',
             'logo.required' => 'Upload a logo.',
             'logo.regex' => 'Upload a logo.',
+            'link.url' => 'Enter the full web address, starting with https://',
         ]);
     }
 }

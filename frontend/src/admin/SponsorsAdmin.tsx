@@ -11,6 +11,8 @@ interface Sponsor {
   name: string
   tier: Tier
   logo: string
+  /** Their website; the logo on the site opens it. */
+  link?: string | null
   width?: number | null
   height?: number | null
 }
@@ -141,6 +143,18 @@ export function SponsorsAdmin() {
                       <p className="mt-3 text-[0.85rem] font-semibold leading-snug text-navy-950">
                         {sponsor.name}
                       </p>
+                      {sponsor.link ? (
+                        <a
+                          href={sponsor.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-0.5 block truncate text-[0.76rem] text-gold-700 underline decoration-gold-500/40 underline-offset-2 hover:text-navy-900"
+                        >
+                          {sponsor.link.replace(/^https?:\/\//, '')}
+                        </a>
+                      ) : (
+                        <p className="mt-0.5 text-[0.76rem] text-slate">No website link</p>
+                      )}
 
                       <div className="mt-3 flex flex-wrap items-center gap-1 pt-1">
                         <ArrowButton label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>
@@ -183,7 +197,7 @@ function SponsorForm({
   const toast = useToast()
   const isNew = sponsor === null
   const [form, setForm] = useState<Omit<Sponsor, 'id'>>(
-    () => sponsor ?? { name: '', tier: 'gold', logo: '', width: null, height: null },
+    () => sponsor ?? { name: '', tier: 'gold', logo: '', link: null, width: null, height: null },
   )
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
@@ -225,7 +239,7 @@ function SponsorForm({
     setError(null)
     setFieldErrors({})
     try {
-      const body = { ...form, name: form.name.trim() }
+      const body = { ...form, name: form.name.trim(), link: form.link?.trim() || null }
       if (isNew) await adminApi.post('/admin/sponsors', body)
       else await adminApi.put(`/admin/sponsors/${sponsor.id}`, body)
       onSaved(body.name)
@@ -300,6 +314,15 @@ function SponsorForm({
             onChange={(v) => set('name', v)}
             error={fieldErrors.name}
             hint="As it should be read aloud. Shown to screen readers, not printed under the logo."
+          />
+
+          <AdminField
+            label="Website link"
+            value={form.link ?? ''}
+            onChange={(v) => set('link', v)}
+            error={fieldErrors.link}
+            placeholder="https://www.example.com"
+            hint="Optional. When set, clicking the logo on the site opens this page in a new tab."
           />
 
           <label className="block">

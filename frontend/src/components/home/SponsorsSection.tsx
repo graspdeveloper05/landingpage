@@ -1,3 +1,4 @@
+import type { CSSProperties, ReactNode } from 'react'
 import { useI18n } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { SectionHeading } from '@/components/ui/SectionHeading'
@@ -52,7 +53,12 @@ export function SponsorsSection() {
                   const i = order.indexOf(logo)
                   return (
                     <Reveal as="li" key={logo.id} variant="scale" delay={200 + i * 150}>
-                      <div
+                      {/* A link only where the team has given one: a tile that
+                          looks clickable and goes nowhere is worse than one
+                          that is plainly a logo. */}
+                      <Tile
+                        href={logo.link}
+                        label={logo.name}
                         style={{ ['--shine-delay' as string]: `${0.55 + i * 0.15}s` }}
                         className="lift group relative flex h-28 w-36 items-center justify-center overflow-hidden rounded-sm border border-hair bg-white p-3 shadow-card transition-colors duration-300 hover:border-gold-500/60 sm:h-36 sm:w-44 sm:p-4"
                       >
@@ -73,7 +79,7 @@ export function SponsorsSection() {
                           aria-hidden
                           className="absolute inset-x-0 bottom-0 h-[2px] origin-left scale-x-0 bg-gold-500 transition-transform duration-500 ease-gentle group-hover:scale-x-100"
                         />
-                      </div>
+                      </Tile>
                     </Reveal>
                   )
                 })}
@@ -83,5 +89,43 @@ export function SponsorsSection() {
         </div>
       </div>
     </section>
+  )
+}
+
+/** A sponsor's tile: their website in a new tab when there is one, else a box. */
+function Tile({
+  href,
+  label,
+  className,
+  style,
+  children,
+}: {
+  href?: string | null
+  label: string
+  className: string
+  style: CSSProperties
+  children: ReactNode
+}) {
+  const { t } = useI18n()
+
+  if (!href) {
+    return (
+      <div className={className} style={style}>
+        {children}
+      </div>
+    )
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${label} (${t('common.newTab')})`}
+      className={className + ' focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500'}
+      style={style}
+    >
+      {children}
+    </a>
   )
 }
