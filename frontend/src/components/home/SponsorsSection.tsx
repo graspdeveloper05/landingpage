@@ -37,6 +37,7 @@ const TIERS: Tier[] = [
     logos: [
       { name: 'Koperasi Serbaguna Kebangsaan Berhad (NCMSP)', src: '/partners/ncmsp.png', width: 480, height: 414 },
       { name: 'Perintis Akal', src: '/partners/perintis-akal.png', width: 383, height: 368 },
+      { name: 'Intramiles', src: '/partners/intramiles.png', width: 560, height: 558 },
     ],
   },
   { key: 'silver', logos: [] },
