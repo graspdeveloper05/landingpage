@@ -67,8 +67,7 @@ export const speakers: Speaker[] = [
       "zh": "",
       "ta": ""
     },
-    "role": "speaker",
-    "photoConfirmed": false
+    "role": "speaker"
   },
   {
     "id": "syahredzan-johan",

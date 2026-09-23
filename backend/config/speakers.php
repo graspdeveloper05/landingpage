@@ -58,8 +58,8 @@ return [
             'name' => 'H.E. Ruzina Hasan',
             'designation' => ['en' => 'Acting Deputy British High Commissioner to Malaysia', 'ms' => 'Pemangku Timbalan Pesuruhjaya Tinggi British ke Malaysia', 'zh' => '英国驻马来西亚代理副高级专员', 'ta' => 'மலேசியாவுக்கான பிரிட்டிஷ் பதில் துணை உயர் ஸ்தானிகர்'],
             'organisation' => 'British High Commission Kuala Lumpur',
+            // Sent by the client on 23 Sept 2026, named, so not a guess.
             'portrait' => '/portraits/ruzina-hasan.jpg',
-            'photo_confirmed' => false,
             'bio' => $none,
             'role' => 'speaker',
         ],
@@ -101,7 +101,7 @@ return [
             // "Committee Member" is printed on the photograph the client sent.
             'designation' => ['en' => 'Committee Member', 'ms' => 'Ahli Jawatankuasa', 'zh' => '委员会成员', 'ta' => 'குழு உறுப்பினர்'],
             'organisation' => 'Chevening Alumni Malaysia',
-            // Cropped from the promotional graphic, the only one with a name on it.
+            // Sent by the client on 23 Sept 2026 as the Emcee's photograph.
             'portrait' => '/portraits/nurfarahanim-che-mansor.jpg',
             'bio' => $none,
             'role' => 'mc',
