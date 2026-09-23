@@ -125,13 +125,6 @@ class GoogleFormSettingTest extends TestCase
             ->assertJsonValidationErrors(['url' => 'position']);
     }
 
-    public function test_a_form_without_email_is_refused(): void
-    {
-        $this->save($this->page($this->teamForm(), email: false))
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors(['url' => 'email']);
-    }
-
     public function test_an_edit_link_or_other_site_is_refused_without_fetching(): void
     {
         Http::fake();

@@ -17,7 +17,7 @@ use Throwable;
  *
  * Refuses, with the reason, anything the copy would fail on: a question the
  * site answers that the form lacks, a required question the site cannot
- * answer, no email box, or Yes/No questions without "Yes" and "No".
+ * answer, or Yes/No questions without "Yes" and "No".
  */
 class GoogleFormReader
 {
@@ -69,9 +69,10 @@ class GoogleFormReader
             $this->fail('The form\'s questions could not be read.');
         }
 
-        if (! str_contains($html, 'name="emailAddress"') && ! str_contains($html, 'Your email')) {
-            $this->fail('The form does not collect email addresses. In the form: Settings → Responses → Collect email addresses → Responder input.');
-        }
+        // No check for an email question here. It was a guess at the page's
+        // markup, and Google served the live server a page that failed it for
+        // a form that does collect addresses. Registrations now reach the form
+        // through its script, which does not depend on it.
 
         $entries = [];
         $pages = [];

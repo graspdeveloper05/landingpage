@@ -39,6 +39,7 @@ interface Page {
     total: number
     page: number
     lastPage: number
+    perPage: number
     capacity: number
     edition: number
     editions: Edition[]
@@ -89,6 +90,98 @@ function DateBound({
   )
 }
 
+/**
+ * The page numbers to show: always the first and last, the current page with
+ * one either side, and a gap (null) wherever a run is skipped. A gap that
+ * would hide a single page shows that page instead, since "…" in its place
+ * takes the same room and says less.
+ */
+function pageWindow(page: number, lastPage: number): (number | null)[] {
+  const wanted = new Set([1, lastPage, page - 1, page, page + 1])
+  const pages = [...wanted].filter((p) => p >= 1 && p <= lastPage).sort((a, b) => a - b)
+  const out: (number | null)[] = []
+  for (const p of pages) {
+    const prev = out[out.length - 1]
+    if (typeof prev === 'number') {
+      if (p - prev === 2) out.push(prev + 1)
+      else if (p - prev > 2) out.push(null)
+    }
+    out.push(p)
+  }
+  return out
+}
+
+function Pagination({
+  page,
+  lastPage,
+  perPage,
+  total,
+  onChange,
+}: {
+  page: number
+  lastPage: number
+  perPage: number
+  total: number
+  onChange: (page: number) => void
+}) {
+  const first = (page - 1) * perPage + 1
+  const last = Math.min(page * perPage, total)
+  const step =
+    'inline-flex min-h-[34px] min-w-[34px] items-center justify-center rounded-sm border px-2.5 text-[0.8rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40'
+  const idle = 'border-hair bg-white text-navy-900 hover:border-gold-500 hover:text-gold-700'
+
+  return (
+    <nav
+      aria-label="Registrations pages"
+      className="mt-4 flex flex-wrap items-center justify-between gap-3"
+    >
+      <p className="tnum text-small text-slate">
+        Showing <strong className="text-navy-900">{first}–{last}</strong> of {total}
+      </p>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          className={`${step} ${idle}`}
+          disabled={page <= 1}
+          onClick={() => onChange(page - 1)}
+          aria-label="Previous page"
+        >
+          ‹ Previous
+        </button>
+        {pageWindow(page, lastPage).map((p, i) =>
+          p === null ? (
+            <span key={`gap-${i}`} className="px-1 text-slate" aria-hidden="true">
+              …
+            </span>
+          ) : (
+            <button
+              key={p}
+              type="button"
+              aria-label={`Page ${p}`}
+              aria-current={p === page ? 'page' : undefined}
+              onClick={() => p !== page && onChange(p)}
+              className={`tnum ${step} ${
+                p === page ? 'border-navy-900 bg-navy-900 text-cream' : idle
+              }`}
+            >
+              {p}
+            </button>
+          ),
+        )}
+        <button
+          type="button"
+          className={`${step} ${idle}`}
+          disabled={page >= lastPage}
+          onClick={() => onChange(page + 1)}
+          aria-label="Next page"
+        >
+          Next ›
+        </button>
+      </div>
+    </nav>
+  )
+}
+
 function editionLabel(e: Edition): string {
   const when = e.date
     ? new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -133,6 +226,8 @@ export function RegistrationsAdmin() {
   const [error, setError] = useState<string | null>(null)
   // Sequence number for in-flight requests; see the note in the effect.
   const latest = useRef(0)
+  // Where a page change scrolls back to: the top of the list, not the page.
+  const listTop = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Debounced: typing a name would otherwise fire a query per keystroke.
@@ -169,6 +264,7 @@ export function RegistrationsAdmin() {
               total: 0,
               page: 1,
               lastPage: 1,
+              perPage: prev?.meta.perPage ?? 25,
               capacity: 0,
               edition: edition ?? 0,
               editions: prev?.meta.editions ?? [],
@@ -334,6 +430,7 @@ export function RegistrationsAdmin() {
         </div>
       </div>
 
+      <div ref={listTop} className="scroll-mt-20" />
       {!page && <SkeletonRows count={5} />}
 
       {page && page.data.length === 0 && !error && (
@@ -468,21 +565,19 @@ export function RegistrationsAdmin() {
       )}
 
       {meta && meta.lastPage > 1 && (
-        <div className="mt-4 flex items-center gap-3">
-          <AdminButton variant="quiet" disabled={current <= 1} onClick={() => setCurrent(current - 1)}>
-            Previous
-          </AdminButton>
-          <span className="text-small text-slate">
-            Page {meta.page} of {meta.lastPage}
-          </span>
-          <AdminButton
-            variant="quiet"
-            disabled={current >= meta.lastPage}
-            onClick={() => setCurrent(current + 1)}
-          >
-            Next
-          </AdminButton>
-        </div>
+        <Pagination
+          page={meta.page}
+          lastPage={meta.lastPage}
+          perPage={meta.perPage}
+          total={meta.total}
+          onChange={(p) => {
+            setCurrent(p)
+            setExpanded(null)
+            // The controls sit under a long table; without this the next page
+            // opens at its last row.
+            listTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }}
+        />
       )}
 
       <p className="mt-6 text-micro text-slate">

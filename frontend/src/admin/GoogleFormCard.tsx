@@ -39,9 +39,9 @@ export function GoogleFormCard() {
     setWebappBusy(true)
     setWebappError(null)
     try {
+      // The web app link alone: sending the form's link too would re-read the
+      // form from Google, which has nothing to do with this and can fail.
       const s = await adminApi.put<Setting>('/admin/google-form', {
-        url: url.trim() || null,
-        mode,
         webapp: webapp.trim() || null,
       })
       setSaved(s)

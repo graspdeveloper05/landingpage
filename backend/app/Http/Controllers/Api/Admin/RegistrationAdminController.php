@@ -93,6 +93,7 @@ class RegistrationAdminController extends Controller
                 'total' => $page->total(),
                 'page' => $page->currentPage(),
                 'lastPage' => $page->lastPage(),
+                'perPage' => $page->perPage(),
                 'capacity' => $this->capacityFor($edition),
                 'edition' => $edition,
                 // The years the panel offers in its filter. Sent with every
