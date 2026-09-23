@@ -118,6 +118,44 @@ class RegistrationAdminController extends Controller
         ]);
     }
 
+    /** Everything recorded for one registration, for the panel's View. */
+    public function show(Registration $registration): JsonResponse
+    {
+        $answers = $registration->answers ?? [];
+
+        return response()->json([
+            'reference' => $registration->reference,
+            'source' => $registration->source,
+            'fullName' => $registration->full_name,
+            'email' => $registration->email,
+            'mobile' => $registration->mobile,
+            'organisation' => $registration->organisation,
+            'designation' => $registration->designation,
+            'dietary' => $registration->dietary,
+            'submittedAt' => $registration->created_at?->toIso8601String(),
+            'confirmationSent' => $registration->confirmation_sent_at !== null,
+            'pdpaAccepted' => $registration->pdpa_accepted,
+            'inGoogleForm' => $registration->external_id !== null,
+            // The site's own questions under their labels; a Google Form
+            // response's other answers under the question as their form asks it.
+            'answers' => $this->labelled($answers) ?? ($answers ?: null),
+        ]);
+    }
+
+    /**
+     * Removes a registration from the list.
+     *
+     * Only here: a response that came from the Google Form stays in the form,
+     * and would come back if the form's script were told to send everything
+     * again. The panel says so before it deletes one.
+     */
+    public function destroy(Registration $registration): JsonResponse
+    {
+        $registration->delete();
+
+        return response()->json(null, 204);
+    }
+
     /** Hands one site registration to the Google Form again. */
     public function sendToGoogle(Registration $registration, GoogleFormHandoff $handoff): JsonResponse
     {

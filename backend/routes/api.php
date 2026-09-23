@@ -120,6 +120,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // §9's "participant list", paginated for the panel. The CSV download
     // below is the same data in the form the organising team files it in.
     Route::get('/registrations/list', [RegistrationAdminController::class, 'index']);
+    Route::get('/registrations/{registration:reference}', [RegistrationAdminController::class, 'show']);
+    Route::delete('/registrations/{registration:reference}', [RegistrationAdminController::class, 'destroy']);
     Route::post('/registrations/{registration:reference}/google', [RegistrationAdminController::class, 'sendToGoogle'])
         ->middleware('throttle:20,1');
 

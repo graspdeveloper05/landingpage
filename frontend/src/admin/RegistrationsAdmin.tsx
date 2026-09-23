@@ -200,6 +200,30 @@ export function RegistrationsAdmin() {
   // The reference being sent to the Google Form again, so its button waits.
   const [resending, setResending] = useState<string | null>(null)
   const toast = useToast()
+  // The reference whose full record is open, and the one being deleted.
+  const [viewing, setViewing] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  async function remove(row: Row) {
+    const fromForm = row.source === 'google_form'
+    const ok = window.confirm(
+      `Delete ${row.fullName} (${row.reference}) from this list?` +
+        (fromForm
+          ? '\n\nThis only removes it here. It stays in the Google Form, and would come back if the form were told to send everything again — delete it there too to remove it for good.'
+          : ''),
+    )
+    if (!ok) return
+    setDeleting(row.reference)
+    try {
+      await adminApi.del(`/admin/registrations/${encodeURIComponent(row.reference)}`)
+      toast.success(`${row.reference} deleted.`)
+      setReloads((n) => n + 1)
+    } catch (e) {
+      toast.error(reachable(e))
+    } finally {
+      setDeleting(null)
+    }
+  }
 
   async function resend(reference: string) {
     setResending(reference)
@@ -453,7 +477,7 @@ export function RegistrationsAdmin() {
 
       {page && page.data.length > 0 && (
         <div className="overflow-x-auto rounded-sm border border-hair bg-white">
-          <table className="w-full min-w-[46rem] text-left text-small">
+          <table className="w-full min-w-[54rem] text-left text-small">
             <thead className="border-b border-hair bg-cream-deep">
               <tr className="text-micro uppercase tracking-[0.1em] text-slate">
                 <th className="px-3 py-2 font-semibold">Reference</th>
@@ -462,6 +486,9 @@ export function RegistrationsAdmin() {
                 <th className="px-3 py-2 font-semibold">Organisation</th>
                 <th className="px-3 py-2 font-semibold">Dietary</th>
                 <th className="px-3 py-2 font-semibold">Registered</th>
+                <th className="px-3 py-2 font-semibold">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -540,11 +567,25 @@ export function RegistrationsAdmin() {
                             })
                           : '—'}
                       </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-right">
+                        <div className="inline-flex gap-1">
+                          <AdminButton variant="quiet" onClick={() => setViewing(row.reference)}>
+                            View
+                          </AdminButton>
+                          <AdminButton
+                            variant="danger"
+                            disabled={deleting === row.reference}
+                            onClick={() => remove(row)}
+                          >
+                            {deleting === row.reference ? 'Deleting…' : 'Delete'}
+                          </AdminButton>
+                        </div>
+                      </td>
                     </tr>
                     {open && (
                       <tr className="border-b border-hair bg-cream/60 last:border-0">
                         <td />
-                        <td colSpan={5} className="px-3 pb-4 pt-1">
+                        <td colSpan={6} className="px-3 pb-4 pt-1">
                           <dl className="grid max-w-3xl gap-x-6 gap-y-2 sm:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
                             {answers.map(([question, answer]) => (
                               <Fragment key={question}>
@@ -584,6 +625,125 @@ export function RegistrationsAdmin() {
         This list is personal data under the PDPA. Export it only when you need to, and delete
         copies once the event is over.
       </p>
+      {viewing && (
+        <RegistrationView
+          reference={viewing}
+          timezone={meta?.timezone}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </>
+  )
+}
+
+interface Detail {
+  reference: string
+  source: 'website' | 'google_form'
+  fullName: string
+  email: string | null
+  mobile: string
+  organisation: string
+  designation: string
+  dietary: string | null
+  submittedAt: string | null
+  confirmationSent: boolean
+  pdpaAccepted: boolean | null
+  inGoogleForm: boolean
+  answers: Record<string, string> | null
+}
+
+/** One registration in full, over the list. Escape or the backdrop closes it. */
+function RegistrationView({
+  reference,
+  timezone,
+  onClose,
+}: {
+  reference: string
+  timezone?: string
+  onClose: () => void
+}) {
+  const [detail, setDetail] = useState<Detail | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    adminApi
+      .get<Detail>(`/admin/registrations/${encodeURIComponent(reference)}`)
+      .then(setDetail)
+      .catch((e) => setError(reachable(e)))
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [reference, onClose])
+
+  const rows: [string, string][] = detail
+    ? [
+        ['Reference', detail.reference],
+        ['Registered through', detail.source === 'google_form' ? 'Google Form' : 'This website'],
+        [
+          'Registered on',
+          detail.submittedAt
+            ? new Date(detail.submittedAt).toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                timeZone: timezone,
+              })
+            : '—',
+        ],
+        ['Full name', detail.fullName || '—'],
+        ['Email', detail.email || '—'],
+        ['Mobile', detail.mobile || '—'],
+        ['Organisation', detail.organisation || '—'],
+        ['Designation', detail.designation || '—'],
+        ['Dietary', detail.dietary || '—'],
+        ...(detail.source === 'website'
+          ? ([
+              ['Confirmation email', detail.confirmationSent ? 'Sent' : 'Not sent'],
+              ['PDPA consent', detail.pdpaAccepted ? 'Given' : '—'],
+              ['In the Google Form', detail.inGoogleForm ? 'Yes' : 'No'],
+            ] as [string, string][])
+          : []),
+        ...Object.entries(detail.answers ?? {}),
+      ]
+    : []
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Registration ${reference}`}
+      className="fixed inset-0 z-50 grid place-items-center bg-navy-950/50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-sm bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="text-[1rem] font-semibold text-navy-950">
+            {detail?.fullName || reference}
+          </h2>
+          <AdminButton variant="quiet" onClick={onClose}>
+            Close
+          </AdminButton>
+        </div>
+
+        {error && <p className="mt-4 text-small text-red-700">{error}</p>}
+        {!detail && !error && <p className="mt-4 text-small text-slate">Loading…</p>}
+
+        {detail && (
+          <dl className="mt-4 grid gap-x-6 gap-y-2.5 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)]">
+            {rows.map(([label, value]) => (
+              <Fragment key={label}>
+                <dt className="text-[0.78rem] text-slate">{label}</dt>
+                <dd className="whitespace-pre-line break-words text-[0.88rem] text-navy-950">{value}</dd>
+              </Fragment>
+            ))}
+          </dl>
+        )}
+      </div>
+    </div>
   )
 }
