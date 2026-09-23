@@ -50,21 +50,21 @@ export function SpeakerGrid({
       >
         {speakers.map((speaker, i) => {
           /*
-           * A card opens a profile only when there is something to show in
-           * it. The confirmed speakers arrived without biographies, and a
-           * "View profile" that opens onto a name and an empty page reads as
-           * a broken site rather than an unfinished one.
+           * Every card opens a profile, at the client's request: they are
+           * writing the biographies in the panel, and the link has to be
+           * there for them to fill. Until one is written the profile shows
+           * the photograph and the person's title, which is what the card
+           * shows too -- see the note in the modal below.
            */
-          const hasProfile = Boolean(bioOf(speaker).trim()) || Boolean(speaker.link)
-          const Card = hasProfile ? 'button' : 'div'
+          const Card = 'button'
 
           return (
           <Reveal as="li" key={speaker.id} variant="scale" delay={(i % columns) * 90} className="h-full">
             <Card
-              {...(hasProfile ? { type: 'button' as const, onClick: () => setActive(speaker) } : {})}
+              type="button"
+              onClick={() => setActive(speaker)}
               className={cn(
-                'group flex h-full w-full flex-col overflow-hidden rounded-sm border border-hair bg-white text-left shadow-card',
-                hasProfile && 'lift',
+                'group flex h-full w-full flex-col overflow-hidden rounded-sm border border-hair bg-white text-left shadow-card lift',
               )}
             >
               <span className="relative block overflow-hidden">
@@ -97,12 +97,10 @@ export function SpeakerGrid({
                 <span className="text-pretty text-micro leading-snug text-slate/80 sm:text-small">
                   {speaker.organisation}
                 </span>
-                {hasProfile && (
-                  <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-micro font-semibold uppercase tracking-[0.12em] text-gold-600 transition-colors group-hover:text-navy-900">
-                    {t('speakers.viewProfile')}
-                    <ExternalIcon className="h-2.5 w-2.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-                  </span>
-                )}
+                <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-micro font-semibold uppercase tracking-[0.12em] text-gold-600 transition-colors group-hover:text-navy-900">
+                  {t('speakers.viewProfile')}
+                  <ExternalIcon className="h-2.5 w-2.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </span>
               </span>
             </Card>
           </Reveal>
