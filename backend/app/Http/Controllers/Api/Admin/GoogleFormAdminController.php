@@ -7,6 +7,7 @@ use App\Models\EventSetting;
 use App\Support\GoogleFormReader;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -55,6 +56,33 @@ class GoogleFormAdminController extends Controller
         ]);
 
         return response()->json($this->shape($setting->fresh()));
+    }
+
+    /**
+     * Issues (or re-issues) the key the form's script sends with every
+     * response, and returns the script itself with the key and the site's
+     * address already in it -- so setting it up is copy, paste, run.
+     */
+    public function script(Request $request): JsonResponse
+    {
+        $setting = EventSetting::current();
+
+        if (! $setting) {
+            return response()->json(['message' => 'Save the event details first.'], 409);
+        }
+
+        if (blank($setting->google_sync_secret) || $request->boolean('reissue')) {
+            // Re-issuing stops an old copy of the script working, which is
+            // the way to shut one off if it ends up somewhere it should not.
+            $setting->forceFill(['google_sync_secret' => Str::random(48)])->save();
+        }
+
+        return response()->json([
+            'script' => view('google-form-script', [
+                'endpoint' => rtrim(config('app.url'), '/').'/api/integrations/google-form',
+                'key' => $setting->google_sync_secret,
+            ])->render(),
+        ]);
     }
 
     private function shape(?EventSetting $setting): array

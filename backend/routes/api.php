@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\RegistrationExportController;
 use App\Http\Controllers\Api\Admin\SessionController;
 use App\Http\Controllers\Api\Admin\SpeakerAdminController;
 use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\GoogleFormIntakeController;
 use App\Http\Controllers\Api\PageViewController;
 use App\Http\Controllers\Api\ProgrammeController;
 use App\Http\Controllers\Api\RegistrationController;
@@ -49,6 +50,14 @@ Route::post('/registrations', [RegistrationController::class, 'store'])
 */
 Route::post('/analytics/pageview', [PageViewController::class, 'store'])
     ->middleware('throttle:60,1');
+
+/*
+| Responses arriving from the organising team's Google Form, posted by the
+| script on that form and checked against the key the panel issued. One call
+| per response as they come in; the catch-up sends up to 200 at a time.
+*/
+Route::post('/integrations/google-form', [GoogleFormIntakeController::class, 'store'])
+    ->middleware('throttle:30,1');
 
 /*
 |--------------------------------------------------------------------------
@@ -105,6 +114,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // form from Google, so it is throttled like any outbound call.
     Route::get('/google-form', [GoogleFormAdminController::class, 'show']);
     Route::put('/google-form', [GoogleFormAdminController::class, 'update'])->middleware('throttle:10,1');
+    // The script the team pastes into their form, with its key filled in.
+    Route::get('/google-form/script', [GoogleFormAdminController::class, 'script']);
 });
 
 /*

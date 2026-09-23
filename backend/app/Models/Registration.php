@@ -22,6 +22,8 @@ class Registration extends Model
         'pdpa_accepted',
         'pdpa_accepted_at',
         'edition',
+        'source',
+        'external_id',
         'ip_address',
         'user_agent',
         'confirmation_sent_at',

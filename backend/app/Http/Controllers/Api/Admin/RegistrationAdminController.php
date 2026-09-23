@@ -80,6 +80,10 @@ class RegistrationAdminController extends Controller
                 'confirmationSent' => $r->confirmation_sent_at !== null,
                 // The Chevening questions, labelled for display.
                 'answers' => $this->labelled($r->answers),
+                // 'website' or 'google_form'. A row that came from the team's
+                // form was never sent one of this site's confirmations, so
+                // the panel does not flag it as a failed send.
+                'source' => $r->source,
             ]),
             'meta' => [
                 'total' => $page->total(),

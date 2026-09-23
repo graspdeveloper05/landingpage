@@ -28,6 +28,29 @@ export function GoogleFormCard() {
   const [mode, setMode] = useState<Mode>('site')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [script, setScript] = useState<string | null>(null)
+  const [scriptBusy, setScriptBusy] = useState(false)
+
+  async function showScript(reissue = false) {
+    if (script && !reissue) {
+      setScript(null)
+
+      return
+    }
+
+    setScriptBusy(true)
+    try {
+      const { script } = await adminApi.get<{ script: string }>(
+        `/admin/google-form/script${reissue ? '?reissue=1' : ''}`,
+      )
+      setScript(script)
+      if (reissue) toast.success('New key issued. The old script stops working.')
+    } catch (e) {
+      toast.error(reachable(e))
+    } finally {
+      setScriptBusy(false)
+    }
+  }
 
   useEffect(() => {
     adminApi
@@ -119,6 +142,62 @@ export function GoogleFormCard() {
           )}
         </p>
       )}
+      <div className="mt-5 border-t border-[#DDDCD8] pt-4">
+        <p className="text-[0.78rem] font-semibold text-navy-900">
+          Bring the form's own responses into this panel
+        </p>
+        <p className="mt-1 max-w-[46rem] text-[0.76rem] leading-snug text-slate">
+          People who fill in the Google Form directly do not appear here. A short script on the
+          form sends them over — the responses it already holds, and each new one as it arrives.
+          Someone who can edit the form pastes it in once.
+        </p>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <AdminButton variant="quiet" onClick={() => showScript()} disabled={scriptBusy}>
+            {scriptBusy ? 'Preparing…' : script ? 'Hide the script' : 'Show the script'}
+          </AdminButton>
+          {script && (
+            <>
+              <AdminButton
+                variant="quiet"
+                onClick={() => {
+                  navigator.clipboard?.writeText(script)
+                  toast.success('Script copied. Send it to whoever edits the form.')
+                }}
+              >
+                Copy
+              </AdminButton>
+              <AdminButton variant="danger" onClick={() => showScript(true)} disabled={scriptBusy}>
+                Issue a new key
+              </AdminButton>
+            </>
+          )}
+        </div>
+
+        {script && (
+          <>
+            <ol className="mt-3 max-w-[46rem] list-decimal space-y-1 pl-5 text-[0.76rem] leading-snug text-slate">
+              <li>Open the Google Form for editing, then ⋮ (top right) → Apps Script.</li>
+              <li>Delete anything in the editor, paste this script, and click Save.</li>
+              <li>
+                Choose <strong>setup</strong> in the function list and click Run, then allow the
+                permissions Google asks for.
+              </li>
+              <li>The log says “Ready”. Responses appear in this list within seconds.</li>
+            </ol>
+            <textarea
+              readOnly
+              value={script}
+              onFocus={(e) => e.currentTarget.select()}
+              className="mt-3 h-52 w-full rounded-sm border border-[#DDDCD8] bg-[#FBFAF8] p-3 font-mono text-[0.72rem] leading-snug text-navy-950"
+            />
+            <p className="mt-1 text-[0.72rem] text-slate">
+              The key in this script lets the form add registrations here, so send it to the form's
+              owner rather than posting it publicly. “Issue a new key” stops an old copy working.
+            </p>
+          </>
+        )}
+      </div>
     </AdminCard>
   )
 }

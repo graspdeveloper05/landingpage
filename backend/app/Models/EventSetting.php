@@ -20,7 +20,7 @@ class EventSetting extends Model
         'chairman_name', 'chairman_organisation', 'chairman_designation',
         'chairman_message', 'chairman_quote', 'chairman_letter', 'chairman_portrait',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
-        'registration_open', 'google_form_url', 'google_form', 'registration_mode',
+        'registration_open', 'google_form_url', 'google_form', 'registration_mode', 'google_sync_secret',
     ];
 
     protected $casts = [

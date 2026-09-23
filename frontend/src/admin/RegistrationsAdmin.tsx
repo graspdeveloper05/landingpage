@@ -8,7 +8,8 @@ import { GoogleFormCard } from './GoogleFormCard'
 interface Row {
   reference: string
   fullName: string
-  email: string
+  /** Null only if the Google Form ever stops collecting addresses. */
+  email: string | null
   mobile: string
   organisation: string
   designation: string
@@ -17,6 +18,8 @@ interface Row {
   confirmationSent: boolean
   /** The Chevening questions, labelled, e.g. { 'Chevening scholar': 'Yes' }. */
   answers: Record<string, string> | null
+  /** Where it came from: the site's own form, or the Google Form. */
+  source: 'website' | 'google_form'
 }
 
 interface Edition {
@@ -351,12 +354,17 @@ export function RegistrationsAdmin() {
                     <tr className={open ? 'border-b-0' : 'border-b border-hair last:border-0'}>
                       <td className="tnum whitespace-nowrap px-3 py-2 font-semibold text-navy-900">
                         {row.reference}
-                        {!row.confirmationSent && (
+                        {row.source === 'website' && !row.confirmationSent && (
                           <span
                             title="The confirmation email did not send"
                             className="ml-1.5 text-red-600"
                           >
                             !
+                          </span>
+                        )}
+                        {row.source === 'google_form' && (
+                          <span className="mt-0.5 block text-micro font-normal text-slate">
+                            Google Form
                           </span>
                         )}
                       </td>
@@ -375,9 +383,13 @@ export function RegistrationsAdmin() {
                         )}
                       </td>
                       <td className="px-3 py-2 text-navy-800">
-                        <a href={`mailto:${row.email}`} className="underline decoration-hair">
-                          {row.email}
-                        </a>
+                        {row.email ? (
+                          <a href={`mailto:${row.email}`} className="underline decoration-hair">
+                            {row.email}
+                          </a>
+                        ) : (
+                          <span className="text-slate">No email</span>
+                        )}
                         <span className="block text-micro text-slate">{row.mobile}</span>
                       </td>
                       <td className="px-3 py-2 text-navy-800">{row.organisation}</td>
