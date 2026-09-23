@@ -122,8 +122,11 @@ export function SponsorsAdmin() {
         {list?.map((sponsor, i) => (
           <AdminCard interactive key={sponsor.id}>
             <div className="flex flex-wrap items-center gap-4">
-              <span className="grid h-16 w-24 shrink-0 place-items-center rounded-sm border border-hair bg-white p-1.5">
-                <img src={sponsor.logo} alt="" className="max-h-full max-w-full object-contain" />
+              {/* Fixed tile, the logo fitted inside it: object-contain on a
+                  sized image rather than max-height on an intrinsic one,
+                  which let a tall logo spill out of the row. */}
+              <span className="block h-16 w-24 shrink-0 overflow-hidden rounded-sm border border-hair bg-white p-1.5">
+                <img src={sponsor.logo} alt="" className="h-full w-full object-contain" />
               </span>
 
               <div className="min-w-[12rem] flex-1">
@@ -244,11 +247,13 @@ function SponsorForm({
       <div className="grid items-start gap-4 lg:grid-cols-12">
         <AdminCard className="lg:col-span-4">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">Logo</p>
-          <div className="mt-3 grid h-32 place-items-center rounded-sm border border-hair bg-white p-3">
+          <div className="mt-3 grid h-32 overflow-hidden rounded-sm border border-hair bg-white p-3">
             {form.logo ? (
-              <img src={form.logo} alt="" className="max-h-full max-w-full object-contain" />
+              <img src={form.logo} alt="" className="h-full w-full object-contain" />
             ) : (
-              <span className="text-[0.78rem] text-slate">No logo yet</span>
+              <span className="grid h-full place-items-center text-[0.78rem] text-slate">
+                No logo yet
+              </span>
             )}
           </div>
           <input
