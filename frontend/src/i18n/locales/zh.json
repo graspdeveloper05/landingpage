@@ -95,7 +95,8 @@
       "keynote": "主题演讲",
       "speaker": "座谈嘉宾",
       "moderator": "主持人",
-      "mc": "司仪"
+      "mc": "司仪",
+      "hosting": "主持当天议程"
     },
     "moderatorBadge": "主持人",
     "viewProfile": "查看简介",

@@ -249,6 +249,14 @@ const src = {
       speaker: L('Panellists', 'Ahli Panel', '座谈嘉宾', 'குழு உறுப்பினர்கள்'),
       moderator: L('Moderator', 'Moderator', '主持人', 'நெறியாளர்'),
       mc: L('Master of Ceremonies', 'Pengacara Majlis', '司仪', 'நிகழ்ச்சித் தொகுப்பாளர்'),
+      // The moderator and the MC share one band on the Speakers page: each is
+      // one person, and together they are who carry the afternoon.
+      hosting: L(
+        'Leading the Afternoon',
+        'Mengemudi Sesi Petang',
+        '主持当天议程',
+        'பிற்பகல் நிகழ்வை வழிநடத்துபவர்கள்',
+      ),
     },
     moderatorBadge: L('Moderator', 'Moderator', '主持人', 'நெறியாளர்'),
     viewProfile: L('View profile', 'Lihat profil', '查看简介', 'சுயவிவரம் காண்க'),
