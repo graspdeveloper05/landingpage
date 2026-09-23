@@ -74,6 +74,11 @@ function doPost(e) {
     return reply({ error: 'Not authorised.' });
   }
 
+  // "Sync now" in the website's admin.
+  if (body.action === 'sync') {
+    return reply(startSync());
+  }
+
   var r = body.registration;
   var sheet = responsesSheet();
   if (!sheet) {
@@ -171,12 +176,49 @@ function reply(value) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function sendAll() {
+function sendAll(markLast) {
   var responses = FormApp.getActiveForm().getResponses();
   for (var i = 0; i < responses.length; i += BATCH) {
-    post(responses.slice(i, i + BATCH).map(toPayload));
+    var last = i + BATCH >= responses.length;
+    post(responses.slice(i, i + BATCH).map(toPayload), markLast && last);
   }
+  // A form with no responses still tells the website the sync is done.
+  if (markLast && responses.length === 0) post([], true);
   return responses.length;
+}
+
+/**
+ * Starts a sync for the website's "Sync now", in the background: sending
+ * everything takes minutes, longer than the website waits for an answer.
+ * A second press while one is running starts nothing -- the website would
+ * only receive the same responses twice, which it does not duplicate, but
+ * there is no point doing the work.
+ */
+function startSync() {
+  var props = PropertiesService.getScriptProperties();
+  var since = Number(props.getProperty('syncing') || 0);
+  if (since && Date.now() - since < 10 * 60 * 1000) {
+    return { started: false, already: true };
+  }
+  props.setProperty('syncing', String(Date.now()));
+  clearSyncTriggers();
+  ScriptApp.newTrigger('runSync').timeBased().after(1000).create();
+  return { started: true };
+}
+
+function runSync() {
+  try {
+    sendAll(true);
+  } finally {
+    PropertiesService.getScriptProperties().deleteProperty('syncing');
+    clearSyncTriggers();
+  }
+}
+
+function clearSyncTriggers() {
+  ScriptApp.getProjectTriggers()
+    .filter(function (t) { return t.getHandlerFunction() === 'runSync'; })
+    .forEach(function (t) { ScriptApp.deleteTrigger(t); });
 }
 
 function toPayload(response) {
@@ -198,12 +240,12 @@ function asText(value) {
   return value == null ? '' : String(value);
 }
 
-function post(responses) {
+function post(responses, last) {
   var result = UrlFetchApp.fetch(WEBSITE, {
     method: 'post',
     contentType: 'application/json',
     headers: { 'X-Form-Key': KEY, Accept: 'application/json' },
-    payload: JSON.stringify({ responses: responses }),
+    payload: JSON.stringify({ responses: responses, final: !!last }),
     muteHttpExceptions: true,
   });
 

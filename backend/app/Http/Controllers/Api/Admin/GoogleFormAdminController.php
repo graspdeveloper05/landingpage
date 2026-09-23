@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\EventSetting;
 use App\Support\GoogleFormReader;
+use App\Support\GoogleFormSync;
+use Illuminate\Support\Facades\Http;
+use Throwable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -96,6 +99,56 @@ class GoogleFormAdminController extends Controller
                 'key' => $setting->google_sync_secret,
             ])->render(),
         ]);
+    }
+
+    /**
+     * Asks the script on the team's form to send every response again.
+     *
+     * Safe to press more than once: while a sync is under way this only
+     * reports on it, and each response arriving twice updates its row
+     * rather than adding one, because the key is Google's own response id.
+     */
+    public function sync(): JsonResponse
+    {
+        $setting = EventSetting::current();
+
+        if (blank($setting?->google_webapp_url) || blank($setting?->google_sync_secret)) {
+            return response()->json([
+                'message' => 'Set up the script on the Google Form first, with its web app link.',
+            ], 409);
+        }
+
+        if (GoogleFormSync::busy()) {
+            return response()->json(GoogleFormSync::status());
+        }
+
+        GoogleFormSync::start();
+
+        try {
+            $reply = Http::timeout(30)->asJson()->post($setting->google_webapp_url, [
+                'key' => $setting->google_sync_secret,
+                'action' => 'sync',
+            ]);
+        } catch (Throwable) {
+            GoogleFormSync::forget();
+
+            return response()->json(['message' => 'The Google Form script could not be reached. Try again.'], 502);
+        }
+
+        if (! $reply->successful() || $reply->json('started') === null) {
+            GoogleFormSync::forget();
+
+            return response()->json([
+                'message' => 'The Google Form script did not start the sync. Paste its latest version, deploy a new version, and try again.',
+            ], 502);
+        }
+
+        return response()->json(GoogleFormSync::status());
+    }
+
+    public function syncStatus(): JsonResponse
+    {
+        return response()->json(GoogleFormSync::status());
     }
 
     private function shape(?EventSetting $setting): array

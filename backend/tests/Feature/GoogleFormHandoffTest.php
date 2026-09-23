@@ -115,4 +115,65 @@ class GoogleFormHandoffTest extends TestCase
             ->assertOk()
             ->assertJson(['webapp' => self::WEBAPP]);
     }
+
+    private function batch(array $ids, bool $final = false)
+    {
+        return $this->postJson('/api/integrations/google-form', [
+            'final' => $final,
+            'responses' => array_map(fn ($id) => [
+                'id' => $id,
+                'submittedAt' => '2026-09-20T03:15:00Z',
+                'email' => "{$id}@example.com",
+                'items' => [['question' => 'Your Full Name (As Per I.C)', 'answer' => "Person {$id}"]],
+            ], $ids),
+        ], ['X-Form-Key' => 'the-key'])->assertOk();
+    }
+
+    public function test_sync_now_can_be_pressed_repeatedly_without_duplicates(): void
+    {
+        Http::fake([self::WEBAPP => Http::response(['started' => true])]);
+        $this->actingAs(User::factory()->create());
+
+        $this->postJson('/api/admin/google-form/sync')->assertOk()->assertJson(['state' => 'starting']);
+        // Pressed again while it runs: reported on, not started twice.
+        $this->postJson('/api/admin/google-form/sync')->assertOk()->assertJson(['state' => 'starting']);
+        Http::assertSentCount(1);
+
+        // The script's batches arrive; the panel sees them come in.
+        $this->batch(['r1', 'r2']);
+        $this->getJson('/api/admin/google-form/sync')
+            ->assertJson(['state' => 'running', 'received' => 2, 'created' => 2]);
+
+        // The same responses again, as a second sync would send them: updated,
+        // never added twice.
+        $this->batch(['r1', 'r2', 'r3'], final: true);
+        $this->getJson('/api/admin/google-form/sync')
+            ->assertJson(['state' => 'done', 'received' => 5, 'created' => 3]);
+        $this->assertSame(3, Registration::count());
+
+        // Finished, so the next press starts a fresh sync.
+        $this->postJson('/api/admin/google-form/sync')->assertOk()->assertJson(['state' => 'starting']);
+        Http::assertSentCount(2);
+    }
+
+    public function test_sync_needs_the_script_set_up(): void
+    {
+        EventSetting::find(2026)->forceFill(['google_webapp_url' => null])->save();
+        Http::fake();
+        $this->actingAs(User::factory()->create());
+
+        $this->postJson('/api/admin/google-form/sync')->assertStatus(409);
+        Http::assertNothingSent();
+    }
+
+    public function test_an_old_script_that_cannot_sync_says_so(): void
+    {
+        // The version pasted before "Sync now" existed answers a registration
+        // shape, not { started }.
+        Http::fake([self::WEBAPP => Http::response(['error' => 'Not authorised.'])]);
+        $this->actingAs(User::factory()->create());
+
+        $this->postJson('/api/admin/google-form/sync')->assertStatus(502);
+        $this->getJson('/api/admin/google-form/sync')->assertJson(['state' => 'idle']);
+    }
 }

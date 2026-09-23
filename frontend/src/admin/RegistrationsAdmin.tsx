@@ -1,10 +1,11 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { API_BASE } from '@/services/api'
 import { adminApi, reachable } from './client'
 import { useToast } from './Toast'
 import { AdminButton, AdminCard, AdminField, Notice } from './ui'
 import { SkeletonRows } from './Loading'
 import { GoogleFormCard } from './GoogleFormCard'
+import { SyncNow } from './SyncNow'
 
 interface Row {
   reference: string
@@ -247,6 +248,8 @@ export function RegistrationsAdmin() {
   const [to, setTo] = useState('')
   // Bumped by "Try again" to re-run the effect without changing the query.
   const [reloads, setReloads] = useState(0)
+  // Stable, so the sync's polling effect is not restarted on every render.
+  const refresh = useCallback(() => setReloads((n) => n + 1), [])
   const [error, setError] = useState<string | null>(null)
   // Sequence number for in-flight requests; see the note in the effect.
   const latest = useRef(0)
@@ -359,15 +362,19 @@ export function RegistrationsAdmin() {
         {/* The export follows the filter. A dropdown that changes the list on
             screen but not the file that downloads from beside it is how the
             wrong year's attendee list gets emailed to a caterer. */}
-        <a
-          href={`${API_BASE}/api/admin/registrations?${exportQuery}`}
-          // Styled to match AdminButton rather than reusing it: this has to
-          // stay an <a> so the browser performs the download itself.
-          className="inline-flex min-h-[34px] items-center rounded-sm bg-navy-900 px-3 text-[0.78rem] font-semibold text-cream transition-colors hover:bg-navy-800"
-        >
-          Download CSV{edition !== null && ` (${edition})`}
-          {filtered && <span className="ml-1 font-normal opacity-80">· filtered</span>}
-        </a>
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {/* Only once the form's script is set up to send responses. */}
+          {meta?.handoff && <SyncNow onProgress={refresh} />}
+          <a
+            href={`${API_BASE}/api/admin/registrations?${exportQuery}`}
+            // Styled to match AdminButton rather than reusing it: this has to
+            // stay an <a> so the browser performs the download itself.
+            className="inline-flex min-h-[34px] items-center rounded-sm bg-navy-900 px-3 text-[0.78rem] font-semibold text-cream transition-colors hover:bg-navy-800"
+          >
+            Download CSV{edition !== null && ` (${edition})`}
+            {filtered && <span className="ml-1 font-normal opacity-80">· filtered</span>}
+          </a>
+        </div>
       </div>
 
       {error && (

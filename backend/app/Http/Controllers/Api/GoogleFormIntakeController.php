@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\EventSetting;
 use App\Models\Registration;
+use App\Support\GoogleFormSync;
 use App\Support\Reference;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -58,7 +59,9 @@ class GoogleFormIntakeController extends Controller
         }
 
         $data = $request->validate([
-            'responses' => ['required', 'array', 'min:1', 'max:200'],
+            // Empty only as the last batch of a sync, which says it is done.
+            'responses' => ['present', 'array', 'max:200'],
+            'final' => ['sometimes', 'boolean'],
             'responses.*.id' => ['required', 'string', 'max:100'],
             'responses.*.submittedAt' => ['required', 'date'],
             'responses.*.email' => ['nullable', 'string', 'max:255'],
@@ -141,6 +144,8 @@ class GoogleFormIntakeController extends Controller
                 $created++;
             });
         }
+
+        GoogleFormSync::record($created, $updated, (bool) ($data['final'] ?? false));
 
         return response()->json(['created' => $created, 'updated' => $updated]);
     }

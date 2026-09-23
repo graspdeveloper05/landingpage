@@ -131,6 +131,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/google-form', [GoogleFormAdminController::class, 'update'])->middleware('throttle:10,1');
     // The script the team pastes into their form, with its key filled in.
     Route::get('/google-form/script', [GoogleFormAdminController::class, 'script']);
+    // "Sync now": the script sends every response again; the panel watches.
+    Route::post('/google-form/sync', [GoogleFormAdminController::class, 'sync'])->middleware('throttle:10,1');
+    Route::get('/google-form/sync', [GoogleFormAdminController::class, 'syncStatus']);
 });
 
 /*
