@@ -134,8 +134,8 @@ export function SponsorsAdmin() {
                   const i = list.indexOf(sponsor)
                   return (
                     <AdminCard interactive key={sponsor.id} className="flex flex-col">
-                      <span className="block h-24 overflow-hidden rounded-sm border border-hair bg-white p-3">
-                        <img src={sponsor.logo} alt="" className="h-full w-full object-contain" />
+                      <span className="flex h-24 items-center justify-center overflow-hidden rounded-sm border border-hair bg-white p-3">
+                        <img src={sponsor.logo} alt="" className="max-h-full max-w-full object-contain" />
                       </span>
 
                       <p className="mt-3 text-[0.85rem] font-semibold leading-snug text-navy-950">
@@ -258,13 +258,13 @@ function SponsorForm({
       <div className="grid items-start gap-4 lg:grid-cols-12">
         <AdminCard className="lg:col-span-4">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">Logo</p>
-          <div className="mt-3 grid h-32 overflow-hidden rounded-sm border border-hair bg-white p-3">
+          {/* Flex with max-height, not a grid child at h-full: a tall crest
+              overflowed the box and sat over the button below it. */}
+          <div className="mt-3 flex h-32 items-center justify-center overflow-hidden rounded-sm border border-hair bg-white p-3">
             {form.logo ? (
-              <img src={form.logo} alt="" className="h-full w-full object-contain" />
+              <img src={form.logo} alt="" className="max-h-full max-w-full object-contain" />
             ) : (
-              <span className="grid h-full place-items-center text-[0.78rem] text-slate">
-                No logo yet
-              </span>
+              <span className="text-[0.78rem] text-slate">No logo yet</span>
             )}
           </div>
           <input
