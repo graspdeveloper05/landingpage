@@ -103,7 +103,7 @@ function doPost(e) {
     for (var i = 0; i < wanted.length; i++) {
       if (used[i] || !wanted[i][0].test(title)) continue;
       used[i] = true;
-      return wanted[i][1] == null ? '' : wanted[i][1];
+      return asCell(wanted[i][1]);
     }
     return '';
   });
@@ -113,12 +113,37 @@ function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    sheet.appendRow(row);
+    // Directly under the last response. appendRow goes past the empty rows a
+    // Sheets table keeps at its foot, which left a gap and put the row
+    // outside the table.
+    var next = lastFilledRow(sheet) + 1;
+    sheet.getRange(next, 1, 1, row.length).setValues([row]);
   } finally {
     lock.releaseLock();
   }
 
   return reply({ id: 'sheet:' + (r.reference || new Date().getTime()) });
+}
+
+/**
+ * A value as the sheet should show it. Text starting with + = - or @ is
+ * read by Sheets as a formula -- "+60 12 345 6789" became #ERROR! -- so it
+ * is marked as text with a leading apostrophe, which Sheets does not show.
+ */
+function asCell(value) {
+  if (value == null) return '';
+  if (value instanceof Date) return value;
+  var text = String(value);
+  return /^[=+\-@]/.test(text) ? "'" + text : text;
+}
+
+/** The last row with a timestamp in it: the foot of the responses. */
+function lastFilledRow(sheet) {
+  var column = sheet.getRange(1, 1, sheet.getMaxRows(), 1).getValues();
+  for (var i = column.length - 1; i >= 0; i--) {
+    if (column[i][0] !== '' && column[i][0] !== null) return i + 1;
+  }
+  return 1;
 }
 
 /** The tab the form writes its responses to. */
