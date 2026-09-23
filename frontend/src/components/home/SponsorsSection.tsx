@@ -41,7 +41,10 @@ const TIERS: Tier[] = [
     ],
   },
   { key: 'silver', logos: [] },
-  { key: 'marketing', logos: [] },
+  {
+    key: 'marketing',
+    logos: [{ name: 'HEYA Inc.', src: '/partners/heya-inc.png', width: 560, height: 352 }],
+  },
 ]
 
 /**
