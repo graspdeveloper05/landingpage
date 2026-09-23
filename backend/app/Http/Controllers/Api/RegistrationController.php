@@ -7,12 +7,15 @@ use App\Http\Requests\StoreRegistrationRequest;
 use App\Mail\RegistrationConfirmed;
 use App\Models\EventSetting;
 use App\Models\Registration;
+use App\Services\GoogleFormHandoff;
 use App\Support\Reference;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
+
+use function Illuminate\Support\defer;
 
 class RegistrationController extends Controller
 {
@@ -94,6 +97,10 @@ class RegistrationController extends Controller
         }
 
         $this->sendConfirmation($registration);
+
+        // To the script on the organising team's form, after the response
+        // has gone, so the attendee never waits on Google.
+        defer(fn () => app(GoogleFormHandoff::class)->send($registration));
 
         return response()->json([
             'reference' => $registration->reference,

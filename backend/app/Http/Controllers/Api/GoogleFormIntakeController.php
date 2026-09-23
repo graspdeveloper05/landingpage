@@ -86,6 +86,17 @@ class GoogleFormIntakeController extends Controller
                     ->lockForUpdate()
                     ->first();
 
+                // A registration this site handed to the form comes back here
+                // too, under the id the form gave it. It is the site's row, so
+                // the form's copy may fill gaps but never overwrite it -- the
+                // form's copy has no email, for one.
+                if ($sameResponse && $sameResponse->source === 'website') {
+                    $this->fillBlanks($sameResponse, $fields);
+                    $updated++;
+
+                    return;
+                }
+
                 if ($sameResponse) {
                     $sameResponse->fill($fields)->save();
                     $updated++;
@@ -109,13 +120,7 @@ class GoogleFormIntakeController extends Controller
                     ->first();
 
                 if ($byEmail) {
-                    foreach ($fields as $column => $value) {
-                        if (blank($value) || filled($byEmail->{$column})) {
-                            continue;
-                        }
-                        $byEmail->{$column} = $value;
-                    }
-                    $byEmail->save();
+                    $this->fillBlanks($byEmail, $fields);
                     $updated++;
 
                     return;
@@ -138,6 +143,18 @@ class GoogleFormIntakeController extends Controller
         }
 
         return response()->json(['created' => $created, 'updated' => $updated]);
+    }
+
+    /** Fills what is empty on a row and overwrites nothing. */
+    private function fillBlanks(Registration $row, array $fields): void
+    {
+        foreach ($fields as $column => $value) {
+            if (blank($value) || filled($row->{$column})) {
+                continue;
+            }
+            $row->{$column} = $value;
+        }
+        $row->save();
     }
 
     /** One response as registration columns, plus every other answer. */

@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { API_BASE } from '@/services/api'
 import { adminApi, reachable } from './client'
+import { useToast } from './Toast'
 import { AdminButton, AdminCard, AdminField, Notice } from './ui'
 import { SkeletonRows } from './Loading'
 import { GoogleFormCard } from './GoogleFormCard'
@@ -20,6 +21,8 @@ interface Row {
   answers: Record<string, string> | null
   /** Where it came from: the site's own form, or the Google Form. */
   source: 'website' | 'google_form'
+  /** Whether the Google Form has it. */
+  inGoogleForm: boolean
 }
 
 interface Edition {
@@ -41,6 +44,8 @@ interface Page {
     editions: Edition[]
     editionTotal: number
     timezone: string
+    /** True when site registrations are handed to the Google Form. */
+    handoff: boolean
   }
 }
 
@@ -99,6 +104,22 @@ export function RegistrationsAdmin() {
   const [current, setCurrent] = useState(1)
   // One row open at a time; the reference of the row whose form answers show.
   const [expanded, setExpanded] = useState<string | null>(null)
+  // The reference being sent to the Google Form again, so its button waits.
+  const [resending, setResending] = useState<string | null>(null)
+  const toast = useToast()
+
+  async function resend(reference: string) {
+    setResending(reference)
+    try {
+      await adminApi.post(`/admin/registrations/${encodeURIComponent(reference)}/google`)
+      toast.success(`${reference} is now in the Google Form.`)
+    } catch (e) {
+      toast.error(reachable(e))
+    } finally {
+      setResending(null)
+      setReloads((n) => n + 1)
+    }
+  }
   // null until the first response says which edition the server chose. Held
   // separately from meta.edition so the dropdown does not snap back to the
   // old value for the moment a slower response is still in flight.
@@ -153,6 +174,7 @@ export function RegistrationsAdmin() {
               editions: prev?.meta.editions ?? [],
               editionTotal: 0,
               timezone: prev?.meta.timezone ?? 'UTC',
+              handoff: prev?.meta.handoff ?? false,
             },
           }))
           setError(reachable(e))
@@ -365,6 +387,19 @@ export function RegistrationsAdmin() {
                         {row.source === 'google_form' && (
                           <span className="mt-0.5 block text-micro font-normal text-slate">
                             Google Form
+                          </span>
+                        )}
+                        {meta?.handoff && row.source === 'website' && !row.inGoogleForm && (
+                          <span className="mt-1 block font-normal">
+                            <span className="block text-micro text-red-700">Not in Google Form</span>
+                            <button
+                              type="button"
+                              disabled={resending === row.reference}
+                              onClick={() => resend(row.reference)}
+                              className="text-micro font-semibold text-gold-700 underline decoration-gold-500/40 underline-offset-2 hover:text-navy-900 disabled:opacity-50"
+                            >
+                              {resending === row.reference ? 'Sending…' : 'Send again'}
+                            </button>
                           </span>
                         )}
                       </td>

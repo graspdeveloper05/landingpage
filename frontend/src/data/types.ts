@@ -113,6 +113,12 @@ export interface EventDetails {
   registrationMode?: 'site' | 'google'
   /** The team's form, for when registrationMode is 'google'. */
   googleFormUrl?: string | null
+  /**
+   * True when the server hands each registration to the script on the team's
+   * form. The browser then does not try: the team's form refuses a
+   * submission sent to it from another website.
+   */
+  googleHandoff?: boolean
 }
 
 /** A Google Form, as the server read it: its id, field numbers and pages. */

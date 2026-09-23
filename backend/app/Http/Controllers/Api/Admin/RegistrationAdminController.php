@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\EventSetting;
 use App\Models\Registration;
+use App\Services\GoogleFormHandoff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -84,6 +85,9 @@ class RegistrationAdminController extends Controller
                 // form was never sent one of this site's confirmations, so
                 // the panel does not flag it as a failed send.
                 'source' => $r->source,
+                // Whether the form has it: a response id is recorded when the
+                // script on the form accepts a site registration.
+                'inGoogleForm' => $r->external_id !== null,
             ]),
             'meta' => [
                 'total' => $page->total(),
@@ -106,8 +110,23 @@ class RegistrationAdminController extends Controller
                 // filter correctly counted it as this one -- the column and
                 // the filter contradicting each other on screen.
                 'timezone' => config('event.timezone'),
+                // Whether site registrations are being handed to the form, so
+                // the panel only flags "not in the Google Form" when they are.
+                'handoff' => filled(EventSetting::current()?->google_webapp_url),
             ],
         ]);
+    }
+
+    /** Hands one site registration to the Google Form again. */
+    public function sendToGoogle(Registration $registration, GoogleFormHandoff $handoff): JsonResponse
+    {
+        if (! $handoff->send($registration)) {
+            return response()->json([
+                'message' => 'The Google Form did not take it. Check the web app link, then try again.',
+            ], 502);
+        }
+
+        return response()->json(['inGoogleForm' => true]);
     }
 
     /** @return array<string, string>|null */

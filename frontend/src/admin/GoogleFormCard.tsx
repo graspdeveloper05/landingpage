@@ -11,6 +11,8 @@ interface Setting {
   mode: Mode
   /** How many of the site's answers the server matched on the form. */
   matched: number
+  /** The script's web app, which adds site registrations to the form. */
+  webapp: string | null
 }
 
 /**
@@ -29,6 +31,32 @@ export function GoogleFormCard() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [script, setScript] = useState<string | null>(null)
+  const [webapp, setWebapp] = useState('')
+  const [webappError, setWebappError] = useState<string | null>(null)
+  const [webappBusy, setWebappBusy] = useState(false)
+
+  async function saveWebapp() {
+    setWebappBusy(true)
+    setWebappError(null)
+    try {
+      const s = await adminApi.put<Setting>('/admin/google-form', {
+        url: url.trim() || null,
+        mode,
+        webapp: webapp.trim() || null,
+      })
+      setSaved(s)
+      setWebapp(s.webapp ?? '')
+      toast.success(
+        s.webapp
+          ? 'Saved. Registrations made here are now added to the Google Form.'
+          : 'Saved. Registrations are no longer handed to the Google Form.',
+      )
+    } catch (e) {
+      setWebappError(e instanceof AdminError && e.fields.webapp ? e.fields.webapp : reachable(e))
+    } finally {
+      setWebappBusy(false)
+    }
+  }
   const [scriptBusy, setScriptBusy] = useState(false)
 
   async function showScript(reissue = false) {
@@ -59,6 +87,7 @@ export function GoogleFormCard() {
         setSaved(s)
         setUrl(s.url ?? '')
         setMode(s.mode)
+        setWebapp(s.webapp ?? '')
       })
       .catch((e) => setError(reachable(e)))
   }, [])
@@ -196,6 +225,32 @@ export function GoogleFormCard() {
               owner rather than posting it publicly. “Issue a new key” stops an old copy working.
             </p>
           </>
+        )}
+
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <div className="min-w-[16rem] flex-1">
+            <AdminField
+              label="Web app link"
+              value={webapp}
+              onChange={setWebapp}
+              error={webappError ?? undefined}
+              placeholder="https://script.google.com/macros/s/…/exec"
+              hint="From the script: Deploy → New deployment → Web app (Execute as: Me, Access: Anyone). With it, registrations made on this website are added to the Google Form."
+              disabled={saved === null}
+            />
+          </div>
+          <AdminButton
+            onClick={saveWebapp}
+            disabled={webappBusy || saved === null || webapp.trim() === (saved?.webapp ?? '')}
+          >
+            {webappBusy ? 'Saving…' : 'Save'}
+          </AdminButton>
+        </div>
+        {saved?.webapp && webapp.trim() === saved.webapp && !webappError && (
+          <p className="mt-2 text-[0.78rem] text-slate">
+            <span className="font-semibold text-green-700">Connected</span> · registrations made here are
+            added to the Google Form
+          </p>
         )}
       </div>
     </AdminCard>

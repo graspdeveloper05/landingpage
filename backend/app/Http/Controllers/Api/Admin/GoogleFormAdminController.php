@@ -36,9 +36,19 @@ class GoogleFormAdminController extends Controller
         $data = $request->validate([
             'url' => ['nullable', 'string', 'max:300', 'url'],
             'mode' => ['nullable', Rule::in(['site', 'google'])],
+            // The script's web app, which adds site registrations to the
+            // form. Only Google's own address: the server posts every
+            // registration to it, so it must not be pointed anywhere else.
+            'webapp' => ['nullable', 'string', 'max:300', 'regex:#^https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec$#'],
+        ], [
+            'webapp.regex' => 'Paste the "Web app URL" from Deploy → New deployment. It starts with https://script.google.com/macros/s/ and ends with /exec.',
         ]);
 
-        $url = trim((string) ($data['url'] ?? ''));
+        // A request that does not mention the form keeps the one saved --
+        // saving only the web app link must not disconnect the form.
+        $url = $request->has('url')
+            ? trim((string) ($data['url'] ?? ''))
+            : (string) ($setting->google_form_url ?? '');
         $mode = $data['mode'] ?? $setting->registration_mode ?? 'site';
 
         // Sending people to a form nobody has named would send them nowhere.
@@ -50,9 +60,12 @@ class GoogleFormAdminController extends Controller
 
         $setting->update([
             'registration_mode' => $mode,
-            ...($url === ''
+            ...($request->has('webapp') ? ['google_webapp_url' => $data['webapp'] ?: null] : []),
+            // Re-read from Google only when the link was sent; the form's
+            // questions are read afresh each time it is.
+            ...(! $request->has('url') ? [] : ($url === ''
                 ? ['google_form_url' => null, 'google_form' => null]
-                : ['google_form_url' => $url, 'google_form' => $reader->read($url)]),
+                : ['google_form_url' => $url, 'google_form' => $reader->read($url)])),
         ]);
 
         return response()->json($this->shape($setting->fresh()));
@@ -94,6 +107,7 @@ class GoogleFormAdminController extends Controller
             // How many of the site's answers were matched, for the panel's
             // "connected" line. The numbers themselves mean nothing to anyone.
             'matched' => count($setting?->google_form['entries'] ?? []),
+            'webapp' => $setting?->google_webapp_url,
         ];
     }
 }

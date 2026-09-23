@@ -20,7 +20,7 @@ class EventSetting extends Model
         'chairman_name', 'chairman_organisation', 'chairman_designation',
         'chairman_message', 'chairman_quote', 'chairman_letter', 'chairman_portrait',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
-        'registration_open', 'google_form_url', 'google_form', 'registration_mode', 'google_sync_secret',
+        'registration_open', 'google_form_url', 'google_form', 'registration_mode', 'google_sync_secret', 'google_webapp_url',
     ];
 
     protected $casts = [
@@ -78,6 +78,10 @@ class EventSetting extends Model
             // opens the team's form instead). The URL is public either way.
             'registrationMode' => $this->registration_mode ?? 'site',
             'googleFormUrl' => $this->google_form_url,
+            // True when the script on the team's form takes registrations
+            // from the server, so the visitor's browser need not try: their
+            // form refuses a submission from another site.
+            'googleHandoff' => filled($this->google_webapp_url),
         ];
     }
 

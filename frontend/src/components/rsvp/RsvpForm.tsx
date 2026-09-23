@@ -111,7 +111,9 @@ export function RsvpForm({
       const record = await createRegistration(values)
       // Only after the site has saved it: the site's list is the one that
       // must be complete; the Google Form's is a copy.
-      copyToGoogleForm(values, event.googleForm)
+      // Unless the server is handing it to the script on their form, which
+      // is the route that works for a form inside a Google Workspace.
+      if (!event.googleHandoff) copyToGoogleForm(values, event.googleForm)
       onRegistered(record)
     } catch (err) {
       if (err instanceof RegistrationError && err.kind === 'full') {
