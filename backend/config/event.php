@@ -76,9 +76,11 @@ return [
     'reference_prefix' => env('EVENT_REFERENCE_PREFIX', 'SND26'),
 
     /*
-    | Where registration enquiries go. Also the reply-to on confirmations.
+    | Where registration enquiries go. Also the reply-to on confirmations, so
+    | a reply reaches the organising team rather than the no-reply mailbox.
+    | The Organising Chairman's address, given by the client 23 Sept 2026.
     */
-    'contact_email' => env('EVENT_CONTACT_EMAIL', 'hello@serinegaradialogue.org'),
+    'contact_email' => env('EVENT_CONTACT_EMAIL', 'vighnes@cheveningmalaysia.org'),
 
     /*
     | Bearer token guarding the participant export. Generate with:

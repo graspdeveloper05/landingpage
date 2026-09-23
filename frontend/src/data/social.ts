@@ -29,8 +29,11 @@ export const socialLinks: SocialLink[] = [
 ]
 
 /**
- * PLACEHOLDER — confirm the address the organising team wants published.
+ * The Organising Chairman's address, given by the client on 23 Sept 2026.
+ * It replaces hello@serinegaradialogue.org, which was never created.
+ *
  * §12 asks for spam protection; a mailto: is the simplest and is fine for a
- * one-off event, but it will be scraped.
+ * one-off event, but it will be scraped. If that becomes a nuisance, create
+ * hello@serinegaradialogue.org in cPanel and forward it here instead.
  */
-export const contactEmail = 'hello@serinegaradialogue.org'
+export const contactEmail = 'vighnes@cheveningmalaysia.org'
