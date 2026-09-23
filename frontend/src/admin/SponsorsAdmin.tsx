@@ -24,8 +24,6 @@ const TIERS: { value: Tier; label: string }[] = [
   { value: 'marketing', label: 'Marketing Partner' },
 ]
 
-const tierLabel = (tier: Tier) => TIERS.find((t) => t.value === tier)?.label ?? tier
-
 /**
  * §10 — the partners and sponsors band.
  *
@@ -118,42 +116,55 @@ export function SponsorsAdmin() {
         </AdminCard>
       )}
 
-      <div className="space-y-3">
-        {list?.map((sponsor, i) => (
-          <AdminCard interactive key={sponsor.id}>
-            <div className="flex flex-wrap items-center gap-4">
-              {/* Fixed tile, the logo fitted inside it: object-contain on a
-                  sized image rather than max-height on an intrinsic one,
-                  which let a tall logo spill out of the row. */}
-              <span className="block h-16 w-24 shrink-0 overflow-hidden rounded-sm border border-hair bg-white p-1.5">
-                <img src={sponsor.logo} alt="" className="h-full w-full object-contain" />
-              </span>
+      {/* A grid of cards rather than a list of rows: these are logos, and a
+          band of them is what the site shows. Grouped under their tier, in
+          the order the site reads them. */}
+      <div className="space-y-6">
+        {TIERS.filter((tier) => list?.some((s) => s.tier === tier.value)).map((tier) => (
+          <section key={tier.value}>
+            <h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-slate">
+              {tier.label}
+            </h2>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {list
+                ?.filter((sponsor) => sponsor.tier === tier.value)
+                .map((sponsor) => {
+                  // Position in the whole band, not within the tier: the
+                  // arrows move a logo through the order the site shows.
+                  const i = list.indexOf(sponsor)
+                  return (
+                    <AdminCard interactive key={sponsor.id} className="flex flex-col">
+                      <span className="block h-24 overflow-hidden rounded-sm border border-hair bg-white p-3">
+                        <img src={sponsor.logo} alt="" className="h-full w-full object-contain" />
+                      </span>
 
-              <div className="min-w-[12rem] flex-1">
-                <p className="text-[0.88rem] font-semibold text-navy-950">{sponsor.name}</p>
-                <p className="text-small text-slate">{tierLabel(sponsor.tier)}</p>
-              </div>
+                      <p className="mt-3 text-[0.85rem] font-semibold leading-snug text-navy-950">
+                        {sponsor.name}
+                      </p>
 
-              <div className="flex items-center gap-1">
-                <ArrowButton label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>
-                  ↑
-                </ArrowButton>
-                <ArrowButton
-                  label="Move down"
-                  disabled={i === list.length - 1}
-                  onClick={() => move(i, 1)}
-                >
-                  ↓
-                </ArrowButton>
-                <AdminButton variant="quiet" onClick={() => setEditing(sponsor)}>
-                  Edit
-                </AdminButton>
-                <AdminButton variant="danger" onClick={() => remove(sponsor)}>
-                  Remove
-                </AdminButton>
-              </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-1 pt-1">
+                        <ArrowButton label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>
+                          ↑
+                        </ArrowButton>
+                        <ArrowButton
+                          label="Move down"
+                          disabled={i === list.length - 1}
+                          onClick={() => move(i, 1)}
+                        >
+                          ↓
+                        </ArrowButton>
+                        <AdminButton variant="quiet" onClick={() => setEditing(sponsor)}>
+                          Edit
+                        </AdminButton>
+                        <AdminButton variant="danger" onClick={() => remove(sponsor)}>
+                          Remove
+                        </AdminButton>
+                      </div>
+                    </AdminCard>
+                  )
+                })}
             </div>
-          </AdminCard>
+          </section>
         ))}
       </div>
     </>
