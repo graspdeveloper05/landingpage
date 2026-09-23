@@ -16,6 +16,7 @@ import { DEFAULT_PORTRAIT, isPlaceholderPortrait, portraitSrc } from '@/lib/port
 export function SpeakersAdmin() {
   const [list, setList] = useState<AdminSpeaker[] | null>(null)
   const [editing, setEditing] = useState<AdminSpeaker | 'new' | null>(null)
+  const [search, setSearch] = useState('')
   const [error, setError] = useState<string | null>(null)
   const toast = useToast()
 
@@ -83,15 +84,45 @@ export function SpeakersAdmin() {
     )
   }
 
+  // Filtered here rather than on the server: the line-up is a handful of
+  // people, already loaded, and a round trip per keystroke would be slower
+  // than the typing.
+  const query = search.trim().toLowerCase()
+  const searching = query !== ''
+  const shown = (list ?? []).filter(
+    (s) =>
+      !searching ||
+      [s.name, s.organisation, ...Object.values(s.designation)]
+        .join(' ')
+        .toLowerCase()
+        .includes(query),
+  )
+
   return (
     <>
       {/* No page title here: the shell's top bar already names the page,
           and repeating it costs a whole row of a working screen. */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[0.78rem] text-slate">
-          {list ? `${list.length} in the line-up` : ' '}
+          {list
+            ? searching
+              ? `${shown.length} of ${list.length} shown`
+              : `${list.length} in the line-up`
+            : ' '}
         </p>
-        <AdminButton onClick={() => setEditing('new')}>Add speaker</AdminButton>
+        <div className="flex items-center gap-3">
+          <label className="relative">
+            <span className="sr-only">Search the line-up</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, title or organisation"
+              className="min-w-[16rem] rounded-sm border border-[#DDDCD8] bg-white px-3 py-1.5 text-[0.85rem] text-navy-950 placeholder:text-slate/70 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/35"
+            />
+          </label>
+          <AdminButton onClick={() => setEditing('new')}>Add speaker</AdminButton>
+        </div>
       </div>
 
       {error && (
@@ -112,8 +143,21 @@ export function SpeakersAdmin() {
         </AdminCard>
       )}
 
+      {/* A search that matches nobody is a result, not a broken page. */}
+      {list && list.length > 0 && shown.length === 0 && (
+        <AdminCard>
+          <p className="text-small text-slate">
+            Nobody matches “{search.trim()}”. Clear the search to see the whole line-up.
+          </p>
+        </AdminCard>
+      )}
+
       <div className="space-y-3">
-        {list?.map((speaker, i) => (
+        {shown.map((speaker) => {
+          // The position in the full line-up, not in the filtered view: the
+          // arrows move a speaker within the running order.
+          const i = list!.indexOf(speaker)
+          return (
           <AdminCard interactive key={speaker.id}>
             <div className="flex flex-wrap items-center gap-4">
               <img
@@ -145,16 +189,22 @@ export function SpeakersAdmin() {
               </div>
 
               <div className="flex items-center gap-1">
-                <ArrowButton label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>
-                  ↑
-                </ArrowButton>
-                <ArrowButton
-                  label="Move down"
-                  disabled={i === list.length - 1}
-                  onClick={() => move(i, 1)}
-                >
-                  ↓
-                </ArrowButton>
+                {/* Hidden while searching: "move up" within a filtered list
+                    would move a speaker past someone who is not on screen. */}
+                {!searching && (
+                  <>
+                    <ArrowButton label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>
+                      ↑
+                    </ArrowButton>
+                    <ArrowButton
+                      label="Move down"
+                      disabled={i === list!.length - 1}
+                      onClick={() => move(i, 1)}
+                    >
+                      ↓
+                    </ArrowButton>
+                  </>
+                )}
                 <AdminButton variant="quiet" onClick={() => setEditing(speaker)}>
                   Edit
                 </AdminButton>
@@ -164,7 +214,8 @@ export function SpeakersAdmin() {
               </div>
             </div>
           </AdminCard>
-        ))}
+          )
+        })}
       </div>
     </>
   )
