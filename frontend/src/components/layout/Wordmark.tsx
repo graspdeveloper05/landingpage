@@ -1,16 +1,15 @@
 import { cn } from '@/lib/cn'
-import { useEvent } from '@/lib/useContent'
 
 /**
  * Crest plus stacked wordmark, as in the concept's header and footer.
  *
  * `tone` names the ground it sits on: "light" is the navy band (footer),
  * "dark" is the ivory bar (header).
+ *
+ * No year: the client's mark carries none, and the date is on the page itself.
  */
 export function Wordmark({ tone = 'light', className }: { tone?: 'light' | 'dark'; className?: string }) {
   const onNavy = tone === 'light'
-  // The year follows the edition set in the admin panel, like the hero title.
-  const { edition } = useEvent()
   const name = onNavy ? 'text-cream' : 'text-navy-900'
   const sub = onNavy ? 'text-gold-400' : 'text-gold-700'
   const rule = onNavy ? 'bg-gold-500/45' : 'bg-gold-600/40'
@@ -46,7 +45,6 @@ export function Wordmark({ tone = 'light', className }: { tone?: 'light' | 'dark
             Dialogue
           </span>
           <span className={cn('h-px w-3 sm:w-4', rule)} aria-hidden />
-          <span className={cn('font-display text-[0.66rem] tracking-[0.18em] sm:text-[0.72rem]', sub)}>{edition}</span>
         </span>
       </span>
     </span>
