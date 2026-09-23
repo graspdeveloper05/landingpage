@@ -115,6 +115,41 @@ class GoogleFormIntakeTest extends TestCase
         // Still theirs: the reference and confirmation belong to this row.
         $this->assertSame('website', $r->source);
         $this->assertTrue((bool) $r->pdpa_accepted);
+        // Filled in what the site did not ask; left everything else alone.
+        $this->assertSame('Vegetarian', $r->dietary);
+        $this->assertSame('Universiti Malaya', $r->organisation);
+    }
+
+    public function test_an_address_someone_else_typed_cannot_overwrite_a_registration(): void
+    {
+        // Their form is public and its email question is typed, not verified.
+        $this->postJson('/api/registrations', [
+            'fullName' => 'Aisyah Rahman',
+            'email' => 'aisyah@example.com',
+            'mobile' => '+60 12 345 6789',
+            'organisation' => 'Universiti Malaya',
+            'designation' => 'Lecturer',
+            'cheveningScholar' => 'no',
+            'pdpaAccepted' => true,
+        ])->assertCreated();
+
+        $this->send([[
+            'id' => 'g-impostor',
+            'submittedAt' => '2026-09-21T02:00:00Z',
+            'email' => 'aisyah@example.com',
+            'items' => [
+                ['question' => 'Your Full Name (As Per I.C) ', 'answer' => 'Somebody Else'],
+                ['question' => 'Your Mobile Contact', 'answer' => '+60 19 000 0000'],
+                ['question' => 'Current Affiliation', 'answer' => 'Elsewhere'],
+            ],
+        ]])->assertOk();
+
+        $r = Registration::firstOrFail();
+        $this->assertSame('Aisyah Rahman', $r->full_name);
+        $this->assertSame('+60 12 345 6789', $r->mobile);
+        $this->assertSame('Universiti Malaya', $r->organisation);
+        $this->assertSame('website', $r->source);
+        $this->assertNull($r->external_id);
     }
 
     public function test_a_wrong_or_missing_key_is_refused(): void

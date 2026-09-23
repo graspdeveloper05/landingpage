@@ -78,29 +78,44 @@ class GoogleFormIntakeController extends Controller
             // the reference is "count + 1", and two arriving together must
             // not be handed the same number.
             DB::transaction(function () use ($response, $fields, $edition, &$created, &$updated) {
-                $existing = Registration::query()
+                // The same response again -- a re-run of the catch-up, or the
+                // respondent editing their answers. Theirs to change, so it
+                // is rewritten in full.
+                $sameResponse = Registration::query()
                     ->where('external_id', $response['id'])
                     ->lockForUpdate()
-                    ->first()
-                    // One address is one person: (email, edition) is unique,
-                    // so a second insert would fail and stop the batch. This
-                    // also joins up somebody who registered on the site and
-                    // then filled in the team's form as well.
-                    ?? ($fields['email'] === null ? null : Registration::query()
-                        ->where('edition', $edition)
-                        ->where('email', $fields['email'])
-                        ->lockForUpdate()
-                        ->first());
+                    ->first();
 
-                if ($existing) {
-                    $existing->fill($fields);
-                    // Keep 'website' on a row somebody registered here: they
-                    // have a reference and a confirmation to match.
-                    if ($existing->source !== 'website') {
-                        $existing->source = 'google_form';
-                        $existing->external_id = $response['id'];
+                if ($sameResponse) {
+                    $sameResponse->fill($fields)->save();
+                    $updated++;
+
+                    return;
+                }
+
+                /*
+                 * A different response giving an address already on the list.
+                 * Usually one person who registered both ways -- (email,
+                 * edition) is unique, so a second insert would fail and stop
+                 * the batch. But the team's form is public and types its own
+                 * email, unverified: anyone could put someone else's address
+                 * in it. So this fills what is blank and overwrites nothing,
+                 * and never claims the row for the form.
+                 */
+                $byEmail = $fields['email'] === null ? null : Registration::query()
+                    ->where('edition', $edition)
+                    ->where('email', $fields['email'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($byEmail) {
+                    foreach ($fields as $column => $value) {
+                        if (blank($value) || filled($byEmail->{$column})) {
+                            continue;
+                        }
+                        $byEmail->{$column} = $value;
                     }
-                    $existing->save();
+                    $byEmail->save();
                     $updated++;
 
                     return;
