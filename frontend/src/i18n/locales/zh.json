@@ -124,6 +124,7 @@
     "sub": "成为这场对话的一部分。",
     "note": "席位有限，敬请报名以确认出席。",
     "cta": "报名",
+    "formNote": "报名通过 Google 表单进行，将在新分页中开启。",
     "formCta": "立即报名",
     "capacity": "尚余 {{remaining}} 个席位，共 {{total}} 个",
     "capacityLabel": "尚余席位",

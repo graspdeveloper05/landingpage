@@ -124,6 +124,7 @@
     "sub": "Be part of the conversation.",
     "note": "Seats are limited. Kindly register to confirm your attendance.",
     "cta": "Register",
+    "formNote": "Registration is handled through Google Forms and opens in a new tab.",
     "formCta": "Register now",
     "capacity": "{{remaining}} of {{total}} seats remaining",
     "capacityLabel": "Seats remaining",

@@ -20,7 +20,7 @@ class EventSetting extends Model
         'chairman_name', 'chairman_organisation', 'chairman_designation',
         'chairman_message', 'chairman_quote', 'chairman_letter', 'chairman_portrait',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
-        'registration_open', 'google_form_url', 'google_form',
+        'registration_open', 'google_form_url', 'google_form', 'registration_mode',
     ];
 
     protected $casts = [
@@ -74,6 +74,10 @@ class EventSetting extends Model
             // form's id, field numbers and pages, as read by
             // GoogleFormReader. Null when the team has switched copying off.
             'googleForm' => $this->google_form,
+            // 'site' (the site's own form) or 'google' (every Register button
+            // opens the team's form instead). The URL is public either way.
+            'registrationMode' => $this->registration_mode ?? 'site',
+            'googleFormUrl' => $this->google_form_url,
         ];
     }
 

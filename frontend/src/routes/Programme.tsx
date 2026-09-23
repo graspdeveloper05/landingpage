@@ -2,8 +2,7 @@ import { useI18n } from '@/i18n'
 import { PageHero } from '@/components/layout/PageHero'
 import { ProgrammeSection } from '@/components/home/ProgrammeSection'
 import { EventInfoSection } from '@/components/home/EventInfoSection'
-import { ButtonLink } from '@/components/ui/Button'
-import { REGISTRATION_PATH } from '@/lib/registration'
+import { RegisterLink } from '@/components/ui/RegisterLink'
 
 export function Programme() {
   const { t } = useI18n()
@@ -22,9 +21,9 @@ export function Programme() {
       />
       <ProgrammeSection showHeading={false}>
         <div className="mt-10">
-          <ButtonLink to={REGISTRATION_PATH} withArrow>
+          <RegisterLink withArrow>
             {t('hero.cta')}
-          </ButtonLink>
+          </RegisterLink>
         </div>
       </ProgrammeSection>
       <EventInfoSection />

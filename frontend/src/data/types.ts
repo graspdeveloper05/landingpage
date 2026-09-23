@@ -106,6 +106,13 @@ export interface EventDetails {
    * fallback, when the form built into the site is used.
    */
   googleForm?: GoogleFormTarget | null
+  /**
+   * Where the Register buttons lead, as chosen in the panel: 'site' for the
+   * site's own form, 'google' to send people to the team's form instead.
+   */
+  registrationMode?: 'site' | 'google'
+  /** The team's form, for when registrationMode is 'google'. */
+  googleFormUrl?: string | null
 }
 
 /** A Google Form, as the server read it: its id, field numbers and pages. */

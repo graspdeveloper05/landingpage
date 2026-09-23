@@ -3,8 +3,7 @@ import { PageHero } from '@/components/layout/PageHero'
 import { AboutSection } from '@/components/home/AboutSection'
 import { ThemeSection } from '@/components/home/ThemeSection'
 import { ChairmanLetter } from '@/components/about/ChairmanLetter'
-import { REGISTRATION_PATH } from '@/lib/registration'
-import { ButtonLink } from '@/components/ui/Button'
+import { RegisterLink } from '@/components/ui/RegisterLink'
 
 export function About() {
   const { t } = useI18n()
@@ -16,9 +15,9 @@ export function About() {
       <ThemeSection showHeading={false} />
       <ChairmanLetter />
       <div className="border-t border-hair bg-cream py-section text-center">
-        <ButtonLink to={REGISTRATION_PATH} withArrow>
+        <RegisterLink withArrow>
           {t('rsvp.formCta')}
-        </ButtonLink>
+        </RegisterLink>
       </div>
     </>
   )

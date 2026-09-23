@@ -124,6 +124,7 @@
     "sub": "Jadilah sebahagian daripada perbualan ini.",
     "note": "Tempat duduk terhad. Sila daftar untuk mengesahkan kehadiran anda.",
     "cta": "Daftar",
+    "formNote": "Pendaftaran dibuat melalui Google Forms dan dibuka dalam tab baharu.",
     "formCta": "Daftar sekarang",
     "capacity": "{{remaining}} daripada {{total}} tempat masih ada",
     "capacityLabel": "Tempat yang masih ada",

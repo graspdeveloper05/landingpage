@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useI18n } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
+import { ButtonLink } from '@/components/ui/Button'
 import { CalendarIcon, ClockIcon, PinIcon } from '@/components/ui/Icons'
 import { RsvpForm } from '@/components/rsvp/RsvpForm'
 import { SuccessPanel } from '@/components/rsvp/SuccessPanel'
@@ -33,6 +34,7 @@ export function RsvpSection({
 }) {
   const { t } = useI18n()
   const { event, date, time } = useEventLabels()
+  const onGoogleForm = event.registrationMode === 'google' && Boolean(event.googleFormUrl)
   const washRef = useParallax<HTMLImageElement>(0.07, 50)
   const [record, setRecord] = useState<RegistrationRecord | null>(null)
   const [full, setFull] = useState(false)
@@ -99,13 +101,24 @@ export function RsvpSection({
               <Reveal variant="right" delay={140} className="lg:col-span-7">
                 <div className="border border-gold-500/30 bg-navy-950/40 px-6 py-8 backdrop-blur-[2px] sm:px-10 sm:py-10">
                   <p className="mb-7 font-display text-h3 italic leading-snug text-cream">{t('rsvp.note')}</p>
-                  <RsvpForm
-                    onRegistered={(r) => {
-                      setRecord(r)
-                      refresh?.()
-                    }}
-                    onFull={() => setFull(true)}
-                  />
+                  {/* The panel chooses: the site's own form, or the organising
+                      team's Google Form. See RegisterLink. */}
+                  {onGoogleForm ? (
+                    <div className="text-center">
+                      <ButtonLink href={event.googleFormUrl!} withArrow>
+                        {t('rsvp.cta')}
+                      </ButtonLink>
+                      <p className="mt-5 text-small text-cream/60">{t('rsvp.formNote')}</p>
+                    </div>
+                  ) : (
+                    <RsvpForm
+                      onRegistered={(r) => {
+                        setRecord(r)
+                        refresh?.()
+                      }}
+                      onFull={() => setFull(true)}
+                    />
+                  )}
                 </div>
               </Reveal>
             </div>

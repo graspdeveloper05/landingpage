@@ -317,6 +317,12 @@ const src = {
       'இருக்கைகள் வரையறுக்கப்பட்டவை. வருகையை உறுதிப்படுத்த பதிவு செய்யுங்கள்.',
     ),
     cta: L('Register', 'Daftar', '报名', 'பதிவு செய்க'),
+    formNote: L(
+      'Registration is handled through Google Forms and opens in a new tab.',
+      'Pendaftaran dibuat melalui Google Forms dan dibuka dalam tab baharu.',
+      '报名通过 Google 表单进行，将在新分页中开启。',
+      'பதிவு Google Forms மூலம் நடைபெறுகிறது, புதிய தாவலில் திறக்கும்.',
+    ),
     formCta: L('Register now', 'Daftar sekarang', '立即报名', 'இப்போதே பதிவு செய்க'),
     capacity: L(
       '{{remaining}} of {{total}} seats remaining',

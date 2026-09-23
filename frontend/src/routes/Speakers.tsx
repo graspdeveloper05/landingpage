@@ -2,13 +2,12 @@ import { useI18n, useLocalized } from '@/i18n'
 import { PageHero } from '@/components/layout/PageHero'
 import { SpeakerGrid } from '@/components/home/SpeakerGrid'
 import { SectionHeading } from '@/components/ui/SectionHeading'
-import { ButtonLink } from '@/components/ui/Button'
+import { RegisterLink } from '@/components/ui/RegisterLink'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import { ExternalIcon } from '@/components/ui/Icons'
 import { useSpeakerGroups } from '@/lib/useContent'
 import { useParallax } from '@/lib/animation'
-import { REGISTRATION_PATH } from '@/lib/registration'
 import { portraitSrc } from '@/lib/portrait'
 import type { Speaker } from '@/data/types'
 
@@ -60,9 +59,9 @@ export function Speakers() {
       )}
 
       <div className="border-t border-hair bg-cream py-section text-center">
-        <ButtonLink to={REGISTRATION_PATH} withArrow>
+        <RegisterLink withArrow>
           {t('hero.cta')}
-        </ButtonLink>
+        </RegisterLink>
       </div>
     </>
   )
