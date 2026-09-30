@@ -3,7 +3,7 @@
 
 Dear {{ $name }},
 
-Your place at the **Seri Negara Dialogue {{ config('event.edition') }}** is confirmed.
+Your place at the **Seri Negara Dialogue {{ $edition }}** is confirmed.
 
 @component('mail::panel')
 **Your reference: {{ $reference }}**
@@ -14,13 +14,13 @@ Please keep this — you will be asked for it at the door.
 @component('mail::table')
 |             |                                            |
 | :---------- | :----------------------------------------- |
-| **Date**    | {{ \Carbon\Carbon::parse(config('event.date'))->format('j F Y') }} |
-| **Time**    | {{ \Carbon\Carbon::parse(config('event.start_time'))->format('g.i A') }} onwards |
-| **Venue**   | {{ config('event.venue') }} |
-| **Address** | {{ config('event.venue_address') }} |
+| **Date**    | {{ $date }} |
+| **Time**    | {{ $time }} |
+| **Venue**   | {{ $venue }} |
+| **Address** | {{ $address }} |
 @endcomponent
 
-@component('mail::button', ['url' => config('event.maps_url')])
+@component('mail::button', ['url' => $mapsUrl])
 Open in Google Maps
 @endcomponent
 
@@ -31,6 +31,6 @@ We have noted your dietary requirement: **{{ $dietary }}**.
 If you can no longer attend, please reply to this email so the seat can be
 offered to someone else.
 
-Seri Negara Dialogue
+Seri Negara Dialogue<br>
 Convened by Chevening Alumni Malaysia
 @endcomponent
