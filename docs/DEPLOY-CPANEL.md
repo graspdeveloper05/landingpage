@@ -154,11 +154,15 @@ DB_PASSWORD=...
 MAIL_MAILER=smtp
 MAIL_HOST=mail.serinegaradialogue.org
 MAIL_PORT=465
-MAIL_ENCRYPTION=ssl
+MAIL_SCHEME=smtps
 MAIL_USERNAME=no-reply@serinegaradialogue.org
 MAIL_PASSWORD=...
 MAIL_FROM_ADDRESS="no-reply@serinegaradialogue.org"
+MAIL_FROM_NAME="Seri Negara Dialogue"
 ```
+
+   `MAIL_SCHEME=smtps` is what port 465 needs on Laravel 12; the older
+   `MAIL_ENCRYPTION=ssl` is ignored and the connection fails.
 
    Then set up SPF and DKIM under *Email Deliverability*, or confirmations will
    land in spam — which for a 200-seat event means people turning up without a
