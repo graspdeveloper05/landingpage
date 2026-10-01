@@ -23,7 +23,7 @@ const TIERS: { value: Tier; label: string }[] = [
   { value: 'convenedBy', label: 'Convened by' },
   { value: 'gold', label: 'Gold Sponsor' },
   { value: 'silver', label: 'Silver Sponsor' },
-  { value: 'marketing', label: 'Marketing Partner' },
+  { value: 'marketing', label: 'Supporting Partners' },
 ]
 
 /**

@@ -437,7 +437,7 @@ const src = {
     convenedBy: L('Convened By', 'Dianjurkan Oleh', '主办单位', 'ஏற்பாடு செய்பவர்'),
     gold: L('Our Gold Sponsors', 'Penaja Emas Kami', '金级赞助商', 'எங்கள் தங்க ஆதரவாளர்கள்'),
     silver: L('Our Silver Sponsors', 'Penaja Perak Kami', '银级赞助商', 'எங்கள் வெள்ளி ஆதரவாளர்கள்'),
-    marketing: L('Supporting Partner', 'Rakan Sokongan', '支持伙伴', 'ஆதரவு கூட்டாளர்'),
+    marketing: L('Supporting Partners', 'Rakan Sokongan', '支持伙伴', 'ஆதரவு கூட்டாளர்கள்'),
   },
 
   terms: {
