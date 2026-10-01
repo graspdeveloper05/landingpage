@@ -96,7 +96,11 @@ class RegistrationController extends Controller
             ], 409);
         }
 
-        $this->sendConfirmation($registration);
+        // After the response has gone, like the copy to the Google Form below.
+        // The seat is booked; a slow or refusing mail server must not keep
+        // the attendee waiting, nor turn their booking into an error message
+        // that sends them back to register a second time.
+        defer(fn () => $this->sendConfirmation($registration));
 
         // To the script on the organising team's form, after the response
         // has gone, so the attendee never waits on Google.

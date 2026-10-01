@@ -6,6 +6,7 @@ use App\Mail\RegistrationConfirmed;
 use App\Models\EventSetting;
 use App\Models\Registration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /** The confirmation email an attendee receives after registering on the site. */
@@ -39,5 +40,21 @@ class ConfirmationEmailTest extends TestCase
         $this->assertStringContainsString('Auditorium Jabatan Muzium Negara', $html);
         $this->assertStringNotContainsString('The venue the code shipped with', $html);
         $this->assertStringContainsString('https://maps.example/muzium', $html);
+    }
+
+    public function test_a_mail_server_refusing_still_gives_the_visitor_their_reference(): void
+    {
+        config(['event.edition' => 2026, 'event.capacity' => 200]);
+        // As Mailgun's sandbox does for an address it has not approved.
+        Mail::shouldReceive('to')->andThrow(new \RuntimeException('421 not allowed to send'));
+
+        $this->postJson('/api/registrations', [
+            'fullName' => 'Aisyah Rahman', 'email' => 'aisyah@example.com',
+            'mobile' => '+60 12 345 6789', 'organisation' => 'UM', 'designation' => 'Lecturer',
+            'cheveningScholar' => 'no', 'pdpaAccepted' => true,
+        ])->assertCreated()->assertJsonStructure(['reference']);
+
+        $r = Registration::firstOrFail();
+        $this->assertNull($r->confirmation_sent_at);
     }
 }
