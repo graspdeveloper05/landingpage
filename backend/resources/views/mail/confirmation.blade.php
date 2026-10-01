@@ -77,7 +77,7 @@
           <td width="96" valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;border-bottom:1px solid #E3DED3;color:#33445C;font-weight:bold;">Venue</td>
           <td valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;border-bottom:1px solid #E3DED3;font-weight:600;">
             {{ $venue }}<br>
-            <span style="font-size:13px;font-weight:normal;color:#6A7587;">{{ $address }}</span>
+            <span style="font-size:13px;font-weight:600;color:#33445C;">{{ $address }}</span>
           </td>
         </tr>
       </table>
@@ -112,7 +112,7 @@
   <tr>
     <td align="center" style="background:#F3F1EC;border-top:1px solid #E3DED3;padding:26px 40px 28px;">
       <img src="{{ $assets }}/partners/chevening-alumni-malaysia.png" width="48" height="70" alt="Chevening Alumni Malaysia" style="display:block;margin:0 auto;border:0;width:48px;height:70px;">
-      <div style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8A6912;">Convened by</div>
+      <div style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#8A6912;">Convened by</div>
       <div style="margin-top:4px;font-family:Georgia,'Times New Roman',serif;font-size:17px;color:#0B2140;">Chevening Alumni Malaysia</div>
       <div style="margin-top:6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;"><a href="{{ $siteUrl }}" style="color:#33445C;font-weight:bold;">serinegaradialogue.org</a></div>
     </td>
