@@ -39,7 +39,7 @@
     <td style="padding:36px 40px 8px;font-family:Georgia,'Times New Roman',serif;">
       <div style="font-size:30px;line-height:1.2;color:#0B2140;">You have a seat.</div>
       <div style="margin-top:18px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#33445C;">
-        Dear {{ $name }},<br><br>
+        Dear <strong style="color:#0B2140;">{{ $name }}</strong>,<br><br>
         Thank you for registering. Your place at the <strong style="color:#0B2140;">Seri Negara Dialogue {{ $edition }}</strong> is confirmed &mdash; a national conversation on Malaysia&rsquo;s future.
       </div>
     </td>
@@ -66,15 +66,15 @@
       <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;color:#8A6912;text-transform:uppercase;">Event details</div>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#0B2140;">
         <tr>
-          <td width="96" valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;color:#6A7587;">Date</td>
+          <td width="96" valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;color:#6A7587;font-weight:bold;">Date</td>
           <td valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;">{{ $date }}</td>
         </tr>
         <tr>
-          <td width="96" valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;color:#6A7587;">Time</td>
+          <td width="96" valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;color:#6A7587;font-weight:bold;">Time</td>
           <td valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;">{{ $time }}</td>
         </tr>
         <tr>
-          <td width="96" valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;border-bottom:1px solid #E3DED3;color:#6A7587;">Venue</td>
+          <td width="96" valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;border-bottom:1px solid #E3DED3;color:#6A7587;font-weight:bold;">Venue</td>
           <td valign="top" style="padding:11px 0;border-top:1px solid #E3DED3;border-bottom:1px solid #E3DED3;">
             {{ $venue }}<br>
             <span style="font-size:13px;color:#6A7587;">{{ $address }}</span>
@@ -108,21 +108,13 @@
     </td>
   </tr>
 
-  {{-- Footer: who convenes it. --}}
+  {{-- Footer: who convenes it, centred under the letter. --}}
   <tr>
-    <td style="background:#F3F1EC;border-top:1px solid #E3DED3;padding:24px 40px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td width="58" valign="middle">
-            <img src="{{ $assets }}/partners/chevening-alumni-malaysia.png" width="44" height="64" alt="Chevening Alumni Malaysia" style="display:block;border:0;width:44px;height:64px;">
-          </td>
-          <td valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#6A7587;">
-            <span style="letter-spacing:2px;text-transform:uppercase;color:#8A6912;">Convened by</span><br>
-            <span style="font-family:Georgia,'Times New Roman',serif;font-size:16px;color:#0B2140;">Chevening Alumni Malaysia</span><br>
-            <a href="{{ $siteUrl }}" style="color:#6A7587;">serinegaradialogue.org</a>
-          </td>
-        </tr>
-      </table>
+    <td align="center" style="background:#F3F1EC;border-top:1px solid #E3DED3;padding:26px 40px 28px;">
+      <img src="{{ $assets }}/partners/chevening-alumni-malaysia.png" width="48" height="70" alt="Chevening Alumni Malaysia" style="display:block;margin:0 auto;border:0;width:48px;height:70px;">
+      <div style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8A6912;">Convened by</div>
+      <div style="margin-top:4px;font-family:Georgia,'Times New Roman',serif;font-size:17px;color:#0B2140;">Chevening Alumni Malaysia</div>
+      <div style="margin-top:6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;"><a href="{{ $siteUrl }}" style="color:#6A7587;">serinegaradialogue.org</a></div>
     </td>
   </tr>
 </table>
