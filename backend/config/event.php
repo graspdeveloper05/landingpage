@@ -76,6 +76,13 @@ return [
     'reference_prefix' => env('EVENT_REFERENCE_PREFIX', 'SND26'),
 
     /*
+    | Where the confirmation email's logos load from. An email cannot load an
+    | image from a developer's own machine, so set this to the live site
+    | when testing locally: MAIL_ASSET_URL=https://serinegaradialogue.org
+    */
+    'mail_asset_url' => env('MAIL_ASSET_URL', env('APP_URL')),
+
+    /*
     | Where registration enquiries go. Also the reply-to on confirmations, so
     | a reply reaches the organising team rather than the no-reply mailbox.
     | The Organising Chairman's address, given by the client 23 Sept 2026.

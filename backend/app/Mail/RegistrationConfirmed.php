@@ -44,8 +44,14 @@ class RegistrationConfirmed extends Mailable
         $time = Carbon::parse($event?->start_time ?? config('event.start_time'));
 
         return new Content(
-            markdown: 'mail.registration-confirmed',
+            view: 'mail.confirmation',
+            text: 'mail.confirmation-text',
             with: [
+                // Images in an email load from an absolute address. Set apart
+                // from APP_URL so a test sent from a developer's machine still
+                // shows the live site's logos rather than broken images.
+                'assets' => rtrim((string) config('event.mail_asset_url'), '/'),
+                'siteUrl' => rtrim((string) config('app.url'), '/'),
                 'reference' => $this->registration->reference,
                 'name' => $this->registration->full_name,
                 'dietary' => $this->registration->dietary,
