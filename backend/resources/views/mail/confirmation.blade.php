@@ -114,7 +114,7 @@
       <img src="{{ $assets }}/partners/chevening-alumni-malaysia.png" width="48" height="70" alt="Chevening Alumni Malaysia" style="display:block;margin:0 auto;border:0;width:48px;height:70px;">
       <div style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8A6912;">Convened by</div>
       <div style="margin-top:4px;font-family:Georgia,'Times New Roman',serif;font-size:17px;color:#0B2140;">Chevening Alumni Malaysia</div>
-      <div style="margin-top:6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;"><a href="{{ $siteUrl }}" style="color:#6A7587;">serinegaradialogue.org</a></div>
+      <div style="margin-top:6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;"><a href="{{ $siteUrl }}" style="color:#33445C;font-weight:bold;">serinegaradialogue.org</a></div>
     </td>
   </tr>
 </table>
