@@ -24,7 +24,7 @@ $origins = array_filter(array_map('trim', explode(',', (string) env('CORS_ALLOWE
 
 return [
 
-    'paths' => ['api/*'],
+    'paths' => ['api/*', 'sanctum/*'],
 
     'allowed_methods' => ['GET', 'POST', 'OPTIONS'],
 
@@ -37,7 +37,7 @@ return [
 
     // Authorization carries the export token as a bearer credential, and any
     // request sending it triggers a preflight -- so it has to be named here.
-    'allowed_headers' => ['Accept', 'Authorization', 'Content-Type', 'X-Requested-With'],
+    'allowed_headers' => ['Accept', 'Authorization', 'Content-Type', 'X-Requested-With', 'X-XSRF-TOKEN'],
 
     'exposed_headers' => [],
 
@@ -47,6 +47,6 @@ return [
 
     // No cookies or session are used: the admin endpoint authenticates with a
     // token header. Leaving this false keeps a stolen browser session useless.
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
