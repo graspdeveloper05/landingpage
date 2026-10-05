@@ -11,14 +11,17 @@ class Survey extends Model
 {
     public const STATUSES = ['draft', 'open', 'closed'];
 
-    protected $fillable = ['title', 'description', 'status'];
+    /** A survey (live polls and the like) or the participant feedback form. */
+    public const FORM_TYPES = ['survey', 'feedback'];
+
+    protected $fillable = ['form_type', 'title', 'description', 'status'];
 
     protected $casts = [
         'title' => 'array',
         'description' => 'array',
     ];
 
-    protected $attributes = ['status' => 'draft'];
+    protected $attributes = ['form_type' => 'survey', 'status' => 'draft'];
 
     public function questions(): HasMany
     {

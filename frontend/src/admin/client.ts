@@ -215,8 +215,11 @@ export type PartialLocalized = { en: string } & Partial<
   Record<Exclude<Locale, 'en'>, string | null>
 >
 
+export type FormType = 'survey' | 'feedback'
+
 export interface AdminSurvey {
   id: number
+  form_type: FormType
   title: PartialLocalized
   description: PartialLocalized | null
   status: SurveyStatus
