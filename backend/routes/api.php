@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\Admin\RegistrationExportController;
 use App\Http\Controllers\Api\Admin\SessionController;
 use App\Http\Controllers\Api\Admin\SpeakerAdminController;
 use App\Http\Controllers\Api\Admin\SponsorAdminController;
+use App\Http\Controllers\Api\Admin\SurveyAdminController;
+use App\Http\Controllers\Api\Admin\SurveyQuestionAdminController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\GoogleFormIntakeController;
 use App\Http\Controllers\Api\PageViewController;
@@ -134,6 +136,17 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // "Sync now": the script sends every response again; the panel watches.
     Route::post('/google-form/sync', [GoogleFormAdminController::class, 'sync'])->middleware('throttle:10,1');
     Route::get('/google-form/sync', [GoogleFormAdminController::class, 'syncStatus']);
+
+    // Surveys the team runs during and after the event.
+    Route::get('/surveys', [SurveyAdminController::class, 'index']);
+    Route::post('/surveys', [SurveyAdminController::class, 'store']);
+    Route::get('/surveys/{survey}', [SurveyAdminController::class, 'show']);
+    Route::put('/surveys/{survey}', [SurveyAdminController::class, 'update']);
+    Route::delete('/surveys/{survey}', [SurveyAdminController::class, 'destroy']);
+    Route::post('/surveys/{survey}/questions', [SurveyQuestionAdminController::class, 'store']);
+    Route::post('/surveys/{survey}/questions/reorder', [SurveyQuestionAdminController::class, 'reorder']);
+    Route::put('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'update']);
+    Route::delete('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'destroy']);
 });
 
 /*
