@@ -12,7 +12,7 @@ import { AdminButton, AdminCard, Notice } from './ui'
 import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
 import { SurveyQuestionForm } from './SurveyQuestionForm'
-import { SurveyResults, StatusChip } from './SurveyResults'
+import { SurveyResults } from './SurveyResults'
 import { SurveyShare } from './SurveyShare'
 import { SurveyForm } from './SurveyAdmin'
 
@@ -198,7 +198,6 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
                     {q.responses_count ?? 0} answers
                   </p>
                 </div>
-                <StatusChip status={q.status} />
                 <div className="flex flex-wrap items-center gap-1">
                   {q.status === 'open' ? (
                     <AdminButton variant="danger" onClick={() => setQuestionStatus(q, 'closed')}>
