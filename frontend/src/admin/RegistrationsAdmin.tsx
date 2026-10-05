@@ -22,7 +22,7 @@ interface Row {
   /** The Chevening questions, labelled, e.g. { 'Chevening scholar': 'Yes' }. */
   answers: Record<string, string> | null
   /** Where it came from: the site's own form, or the Google Form. */
-  source: 'website' | 'google_form'
+  source: 'website' | 'google_form' | 'import'
   /** Whether the Google Form has it. */
   inGoogleForm: boolean
 }
@@ -529,6 +529,11 @@ export function RegistrationsAdmin() {
                         {row.source === 'google_form' && (
                           <span className="mt-0.5 block text-micro font-normal text-slate">
                             Google Form
+                          </span>
+                        )}
+                        {row.source === 'import' && (
+                          <span className="mt-0.5 block text-micro font-normal text-slate">
+                            Imported
                           </span>
                         )}
                         {meta?.handoff && row.source === 'website' && !row.inGoogleForm && (
