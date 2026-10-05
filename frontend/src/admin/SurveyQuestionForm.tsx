@@ -36,6 +36,7 @@ export function SurveyQuestionForm({
   const [options, setOptions] = useState<Localized[]>(
     question?.options?.map(toLocalized) ?? [toLocalized(null), toLocalized(null)],
   )
+  const [required, setRequired] = useState(question?.is_required ?? true)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -57,6 +58,7 @@ export function SurveyQuestionForm({
         type,
         question: text,
         options: type === 'choice' ? options : null,
+        is_required: required,
         ...(question ? { status: question.status } : {}),
       }
       if (question) await adminApi.put(`/admin/survey-questions/${question.id}`, payload)
@@ -68,7 +70,9 @@ export function SurveyQuestionForm({
         setError(
           e.fields.options ??
             e.fields.type ??
-            (Object.keys(e.fields).length > 0 ? 'Some fields need attention — see below.' : e.message),
+            (Object.keys(e.fields).length > 0
+              ? 'Some fields need attention — see below.'
+              : e.message),
         )
       } else {
         setError('Could not save.')
@@ -87,8 +91,8 @@ export function SurveyQuestionForm({
       <AdminCard className="space-y-4">
         {locked && (
           <Notice kind="error">
-            People have answered this question. You can change the wording and translations, but
-            not the type or the number and order of options.
+            People have answered this question. You can change the wording and translations, but not
+            the type or the number and order of options.
           </Notice>
         )}
 
@@ -122,6 +126,21 @@ export function SurveyQuestionForm({
           onChange={setText}
           errors={localeErrors('question')}
         />
+
+        <label className="flex items-start gap-2.5">
+          <input
+            type="checkbox"
+            checked={required}
+            onChange={(e) => setRequired(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-[#C9A227]"
+          />
+          <span className="text-small text-navy-800">
+            Required
+            <span className="block text-micro text-slate">
+              Untick to let attendees skip this question.
+            </span>
+          </span>
+        </label>
 
         {type === 'choice' && (
           <div className="space-y-3">

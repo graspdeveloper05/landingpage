@@ -56,7 +56,10 @@ class SurveyAdminController extends Controller
 
     private function summarise(SurveyQuestion $q): array
     {
-        $answers = $q->responses->pluck('answer');
+        // A skipped optional question is stored as an empty answer; it is not
+        // an answer, so it is left out of every count.
+        $responses = $q->responses->filter(fn ($r) => $r->answer !== '');
+        $answers = $responses->pluck('answer');
         $base = [
             'id' => $q->id,
             'type' => $q->type,
@@ -83,7 +86,7 @@ class SurveyAdminController extends Controller
             ];
         }
 
-        return $base + ['answers' => $q->responses->sortByDesc('id')->map(fn ($r) => [
+        return $base + ['answers' => $responses->sortByDesc('id')->map(fn ($r) => [
             'answer' => $r->answer,
             'name' => $r->registration?->full_name,
             'reference' => $r->registration?->reference,

@@ -10,16 +10,17 @@ class SurveyQuestion extends Model
 {
     public const TYPES = ['choice', 'rating', 'text'];
 
-    protected $fillable = ['type', 'question', 'options', 'status', 'display_order', 'closed_at'];
+    protected $fillable = ['type', 'question', 'options', 'is_required', 'status', 'display_order', 'closed_at'];
 
     protected $casts = [
         'question' => 'array',
         'options' => 'array',
+        'is_required' => 'boolean',
         'display_order' => 'integer',
         'closed_at' => 'datetime',
     ];
 
-    protected $attributes = ['status' => 'draft'];
+    protected $attributes = ['status' => 'draft', 'is_required' => true];
 
     public function survey(): BelongsTo
     {

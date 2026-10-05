@@ -173,7 +173,9 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
 
       <section>
         <div className="mb-2 flex items-center justify-between gap-3">
-          <h3 className="text-[0.82rem] font-semibold uppercase tracking-wide text-slate">Questions</h3>
+          <h3 className="text-[0.82rem] font-semibold uppercase tracking-wide text-slate">
+            Questions
+          </h3>
           <AdminButton onClick={() => setEditing('new')}>Add question</AdminButton>
         </div>
 
@@ -191,7 +193,8 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
                 <div className="min-w-[12rem] flex-1">
                   <p className="text-[0.88rem] font-semibold text-navy-950">{q.question.en}</p>
                   <p className="text-micro text-slate">
-                    {TYPE_LABEL[q.type]} · {q.responses_count ?? 0} answers
+                    {TYPE_LABEL[q.type]} · {q.is_required ? 'Required' : 'Optional'} ·{' '}
+                    {q.responses_count ?? 0} answers
                   </p>
                 </div>
                 <StatusChip status={q.status} />

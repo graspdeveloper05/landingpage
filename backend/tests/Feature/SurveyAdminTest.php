@@ -100,6 +100,37 @@ class SurveyAdminTest extends TestCase
             ->assertJsonPath('0.responses_count', 0);
     }
 
+    public function test_a_question_is_required_unless_marked_optional(): void
+    {
+        $survey = $this->survey();
+
+        $this->admin()->postJson("/api/admin/surveys/{$survey->id}/questions", [
+            'type' => 'rating',
+            'question' => ['en' => 'Rate it'],
+        ])->assertCreated()->assertJsonPath('is_required', true);
+
+        $this->postJson("/api/admin/surveys/{$survey->id}/questions", [
+            'type' => 'text',
+            'question' => ['en' => 'Anything else?'],
+            'is_required' => false,
+        ])->assertCreated()->assertJsonPath('is_required', false);
+    }
+
+    public function test_skipped_optional_answers_are_left_out_of_results(): void
+    {
+        $survey = $this->survey();
+        $q = $this->question($survey, ['type' => 'rating', 'options' => null, 'is_required' => false]);
+        $q->responses()->create(['registration_id' => $this->registration()->id, 'answer' => '4']);
+        $q->responses()->create(['registration_id' => $this->registration()->id, 'answer' => '']);
+
+        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/results")
+            ->assertJsonPath('questions.0.total', 1)
+            ->assertJsonPath('questions.0.average', 4);
+
+        $csv = $this->get("/api/admin/surveys/{$survey->id}/export")->streamedContent();
+        $this->assertSame(2, substr_count(trim($csv), "\n") + 1);
+    }
+
     public function test_english_is_required_and_a_choice_needs_two_options(): void
     {
         $this->admin()->postJson('/api/admin/surveys', ['title' => ['en' => '']])

@@ -176,6 +176,38 @@ class SurveyPublicTest extends TestCase
         ];
     }
 
+    public function test_an_optional_question_can_be_skipped_and_counts_as_answered(): void
+    {
+        $q = $this->openQuestion('text');
+        $q->update(['is_required' => false]);
+        $token = $this->token();
+
+        $this->postJson("/api/survey/questions/{$q->id}/answer", ['token' => $token, 'answer' => ''])
+            ->assertCreated();
+
+        $this->assertSame('', $q->responses()->value('answer'));
+        $this->getJson("/api/survey/{$q->survey_id}?token=".urlencode($token))
+            ->assertJsonPath('questions.0.is_required', false)
+            ->assertJsonPath('questions.0.answered', true);
+    }
+
+    public function test_an_optional_question_still_checks_an_answer_that_is_given(): void
+    {
+        $q = $this->openQuestion('rating');
+        $q->update(['is_required' => false]);
+
+        $this->postJson("/api/survey/questions/{$q->id}/answer", ['token' => $this->token(), 'answer' => '9'])
+            ->assertUnprocessable();
+    }
+
+    public function test_a_required_question_cannot_be_skipped(): void
+    {
+        $q = $this->openQuestion('text');
+
+        $this->postJson("/api/survey/questions/{$q->id}/answer", ['token' => $this->token(), 'answer' => ''])
+            ->assertUnprocessable();
+    }
+
     public function test_a_second_answer_is_refused_not_overwritten(): void
     {
         $q = $this->openQuestion();

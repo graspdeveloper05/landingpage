@@ -22,6 +22,8 @@ class SurveyExportController extends Controller
 
             SurveyResponse::query()
                 ->whereIn('survey_question_id', $questions->keys())
+                // Skipped optional questions are stored empty; not answers.
+                ->where('answer', '!=', '')
                 ->with('registration:id,full_name,reference')
                 ->orderBy('survey_question_id')->orderBy('id')
                 ->chunk(200, function ($rows) use ($out, $questions) {

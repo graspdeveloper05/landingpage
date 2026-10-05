@@ -234,7 +234,8 @@ function AnswerForm({
   const current = Math.min(page, pages - 1)
   const onPage = pending.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE)
   const lastPage = current === pages - 1
-  const blank = (q: PublicQuestion) => !answers[q.id]?.trim()
+  // Only a required question left empty holds the form back.
+  const blank = (q: PublicQuestion) => q.is_required && !answers[q.id]?.trim()
 
   const goTo = (next: number) => {
     setPage(next)
@@ -283,7 +284,8 @@ function AnswerForm({
     // its own and the rest still count.
     for (const q of pending) {
       try {
-        await surveyApi.answer(q.id, token, answers[q.id])
+        // A skipped optional question is sent empty, so it is not asked again.
+        await surveyApi.answer(q.id, token, answers[q.id] ?? '')
         done.add(q.id)
       } catch (err) {
         if (err instanceof SurveyError && err.status === 401) {
@@ -409,6 +411,9 @@ function QuestionField({
       <fieldset aria-describedby={error ? errorId : undefined} className="min-w-0">
         <legend className="font-display text-[1.2rem] leading-snug text-navy-950 sm:text-[1.35rem]">
           {text}
+          {!question.is_required && (
+            <span className="ml-2 font-sans text-small text-slate">({t('survey.optional')})</span>
+          )}
         </legend>
 
         {done ? (

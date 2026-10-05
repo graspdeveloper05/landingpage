@@ -82,6 +82,7 @@ class SurveyController extends Controller
                 'type' => $q->type,
                 'question' => $q->question,
                 'options' => $q->options,
+                'is_required' => $q->is_required,
                 'answered' => $answered->has($q->id),
             ])->values(),
         ]);
@@ -98,8 +99,11 @@ class SurveyController extends Controller
             return response()->json(['message' => 'This question is closed.'], 422);
         }
 
+        // An optional question may be skipped. The skip is stored as an empty
+        // answer, so the question counts as done and is not asked again; the
+        // results leave empty answers out.
         $answer = (string) $request->validate([
-            'answer' => ['required', 'string', ...$this->rulesFor($question)],
+            'answer' => [$question->is_required ? 'required' : 'nullable', 'string', ...$this->rulesFor($question)],
         ])['answer'];
 
         try {

@@ -28,6 +28,7 @@ class StoreSurveyQuestionRequest extends FormRequest
             'options.*.zh' => ['nullable', 'string', 'max:150'],
             'options.*.ta' => ['nullable', 'string', 'max:150'],
 
+            'is_required' => ['sometimes', 'boolean'],
             'status' => ['sometimes', Rule::in(Survey::STATUSES)],
         ];
     }

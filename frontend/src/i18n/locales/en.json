@@ -229,6 +229,7 @@
     "alreadyDone": "Thank you for your response.",
     "goBack": "Go back",
     "next": "Next",
+    "optional": "optional",
     "back": "Back",
     "page": "Page {{page}} of {{pages}}",
     "answerPage": "Please answer every question on this page to continue.",

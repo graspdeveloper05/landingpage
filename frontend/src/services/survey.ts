@@ -8,6 +8,8 @@ export interface PublicQuestion {
   type: 'choice' | 'rating' | 'text'
   question: Text
   options: Text[] | null
+  /** Optional questions can be left blank; the skip is still sent. */
+  is_required: boolean
   answered: boolean
 }
 

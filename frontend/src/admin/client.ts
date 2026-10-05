@@ -232,6 +232,8 @@ export interface AdminSurveyQuestion {
   type: SurveyQuestionType
   question: PartialLocalized
   options: PartialLocalized[] | null
+  /** Optional questions can be skipped by attendees. */
+  is_required: boolean
   status: SurveyStatus
   display_order: number
   closed_at: string | null
