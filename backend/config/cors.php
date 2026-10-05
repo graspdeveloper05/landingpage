@@ -26,7 +26,9 @@ return [
 
     'paths' => ['api/*', 'sanctum/*'],
 
-    'allowed_methods' => ['GET', 'POST', 'OPTIONS'],
+    // PUT and DELETE are how the admin panel saves and removes; without them
+    // every edit fails wherever the panel and API are on different origins.
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => $origins !== [] ? $origins : [
         'https://serinegaradialogue.org',
