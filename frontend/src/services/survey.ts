@@ -15,6 +15,7 @@ export interface PublicQuestion {
 
 export interface PublicSurvey {
   id: number
+  form_type: 'survey' | 'feedback'
   title: Text
   description: Text | null
   status: 'draft' | 'open' | 'closed'

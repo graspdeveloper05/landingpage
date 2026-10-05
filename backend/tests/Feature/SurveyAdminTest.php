@@ -219,6 +219,25 @@ class SurveyAdminTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('options');
     }
 
+    public function test_a_form_is_a_survey_unless_marked_feedback(): void
+    {
+        $this->admin()->postJson('/api/admin/surveys', ['title' => ['en' => 'Live poll']])
+            ->assertCreated()
+            ->assertJsonPath('form_type', 'survey');
+
+        $id = $this->postJson('/api/admin/surveys', ['title' => ['en' => 'Feedback'], 'form_type' => 'feedback'])
+            ->assertCreated()
+            ->assertJsonPath('form_type', 'feedback')
+            ->json('id');
+
+        $this->getJson('/api/admin/surveys')->assertJsonFragment(['id' => $id, 'form_type' => 'feedback']);
+        $this->getJson("/api/survey/{$id}")->assertJsonPath('form_type', 'feedback');
+
+        $this->postJson('/api/admin/surveys', ['title' => ['en' => 'X'], 'form_type' => 'quiz'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('form_type');
+    }
+
     public function test_english_is_required_and_a_choice_needs_two_options(): void
     {
         $this->admin()->postJson('/api/admin/surveys', ['title' => ['en' => '']])

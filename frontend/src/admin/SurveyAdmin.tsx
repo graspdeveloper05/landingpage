@@ -8,6 +8,7 @@ import {
   type AdminSurvey,
   type Locale,
   type Localized,
+  type FormType,
   type SurveyStatus,
 } from './client'
 import { AdminButton, AdminCard, LocalizedFieldset, Notice } from './ui'
@@ -148,7 +149,12 @@ export function SurveyAdmin() {
           <AdminCard interactive key={s.id}>
             <div className="flex flex-wrap items-center gap-4">
               <div className="min-w-[12rem] flex-1">
-                <p className="text-[0.88rem] font-semibold text-navy-950">{s.title.en}</p>
+                <p className="text-[0.88rem] font-semibold text-navy-950">
+                  {s.title.en}
+                  <span className="ml-2 rounded-full border border-[#DDDCD8] px-2 py-0.5 align-middle text-micro font-semibold text-slate">
+                    {s.form_type === 'feedback' ? 'Feedback' : 'Survey'}
+                  </span>
+                </p>
                 <p className="text-micro text-slate">
                   {s.questions_count ?? 0} questions · {s.responses_count ?? 0} answers ·{' '}
                   <span className="break-all">{surveyUrl(s)}</span>
@@ -180,6 +186,11 @@ export function SurveyAdmin() {
 
 /* -------------------------------------------------------------------------- */
 
+const FORM_TYPES: { value: FormType; label: string; hint: string }[] = [
+  { value: 'survey', label: 'Survey', hint: 'Live polls and questions' },
+  { value: 'feedback', label: 'Feedback', hint: 'Participant feedback form' },
+]
+
 const STATUS_CHOICES: { value: SurveyStatus; label: string; hint: string }[] = [
   { value: 'draft', label: 'Draft', hint: 'Being prepared' },
   { value: 'open', label: 'Open', hint: 'Taking answers' },
@@ -198,6 +209,7 @@ export function SurveyForm({
   const [title, setTitle] = useState<Localized>(toLocalized(survey?.title))
   const [description, setDescription] = useState<Localized>(toLocalized(survey?.description))
   const [status, setStatus] = useState<SurveyStatus>(survey?.status ?? 'draft')
+  const [formType, setFormType] = useState<FormType>(survey?.form_type ?? 'survey')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -215,7 +227,9 @@ export function SurveyForm({
     setError(null)
     setFieldErrors({})
     try {
-      const payload = survey ? { title, description, status } : { title, description }
+      const payload = survey
+        ? { form_type: formType, title, description, status }
+        : { form_type: formType, title, description }
       const saved = survey
         ? await adminApi.put<AdminSurvey>(`/admin/surveys/${survey.id}`, payload)
         : await adminApi.post<AdminSurvey>('/admin/surveys', payload)
@@ -241,6 +255,29 @@ export function SurveyForm({
       </h2>
 
       <AdminCard className="space-y-4">
+        <fieldset>
+          <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">Form type</legend>
+          <div className="flex flex-wrap gap-2">
+            {FORM_TYPES.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setFormType(f.value)}
+                aria-pressed={formType === f.value}
+                className={cn(
+                  'rounded-sm border px-3 py-1.5 text-left',
+                  formType === f.value
+                    ? 'border-navy-900 bg-navy-900 text-cream'
+                    : 'border-[#DDDCD8] bg-white text-navy-900 hover:border-gold-500',
+                )}
+              >
+                <span className="block text-[0.78rem] font-semibold">{f.label}</span>
+                <span className="block text-micro opacity-75">{f.hint}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
         <LocalizedFieldset
           label="Title"
           hint="The heading attendees see. Only English is required; empty languages show the English."

@@ -21,6 +21,7 @@ class StoreSurveyRequest extends FormRequest
             'description' => ['nullable', 'array'],
             'description.*' => ['nullable', 'string', 'max:500'],
 
+            'form_type' => ['sometimes', Rule::in(Survey::FORM_TYPES)],
             'status' => ['sometimes', Rule::in(Survey::STATUSES)],
         ];
     }

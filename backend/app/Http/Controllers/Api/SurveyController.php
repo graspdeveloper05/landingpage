@@ -48,6 +48,7 @@ class SurveyController extends Controller
 
         return response()->json([
             'id' => $survey->id,
+            'form_type' => $survey->form_type,
             'title' => $survey->title,
             'description' => $survey->description,
             'status' => $survey->status,
