@@ -120,6 +120,7 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
     return (
       <SurveyQuestionForm
         surveyId={id}
+        formType={survey?.form_type ?? 'survey'}
         question={editing === 'new' ? null : editing}
         onCancel={() => setEditing(null)}
         onSaved={() => {

@@ -23,7 +23,7 @@ class StoreSurveyQuestionRequest extends FormRequest
 
             'options' => [
                 Rule::excludeIf(! in_array($this->input('type'), SurveyQuestion::WITH_OPTIONS, true)),
-                'required', 'array', 'min:2', 'max:10',
+                'required', 'array', 'min:'.($this->allowsSingleTickbox() ? 1 : 2), 'max:10',
             ],
             'options.*' => ['array'],
             'options.*.en' => ['required', 'string', 'max:150'],
@@ -38,10 +38,14 @@ class StoreSurveyQuestionRequest extends FormRequest
 
     public function messages(): array
     {
+        $tooFew = $this->allowsSingleTickbox()
+            ? 'A checkbox question needs at least one option.'
+            : 'This question needs at least two options.';
+
         return [
             'question.en.required' => 'The question is needed in English.',
-            'options.required' => 'A multiple-choice question needs at least two options.',
-            'options.min' => 'A multiple-choice question needs at least two options.',
+            'options.required' => $tooFew,
+            'options.min' => $tooFew,
             'options.*.en.required' => 'Each option needs English text.',
         ];
     }
@@ -84,6 +88,18 @@ class StoreSurveyQuestionRequest extends FormRequest
         }
 
         return false;
+    }
+
+    /**
+     * A checkbox with one option -- a single tickbox, such as consent to
+     * publish a testimonial -- is for feedback forms only. Everywhere else a
+     * question offers at least two options to choose between.
+     */
+    private function allowsSingleTickbox(): bool
+    {
+        $survey = $this->route('survey') ?? $this->route('question')?->survey;
+
+        return $this->input('type') === 'checkbox' && $survey?->form_type === 'feedback';
     }
 
     /** The validated fields, with options cleared for non-choice types. */
