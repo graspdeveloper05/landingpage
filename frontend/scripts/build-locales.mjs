@@ -534,6 +534,44 @@ const src = {
     rights: L('Seri Negara Dialogue', 'Dialog Seri Negara', '斯里尼加拉对话', 'சேரி நெகாரா உரையாடல்'),
   },
 
+  survey: {
+    title: L('Survey', 'Tinjauan', '问卷', 'கருத்துக்கணிப்பு'),
+    contact: L('Email or mobile number', 'E-mel atau nombor telefon bimbit', '电子邮件或手机号码', 'மின்னஞ்சல் அல்லது கைபேசி எண்'),
+    contactHint: L(
+      'The one you registered with.',
+      'Yang anda gunakan semasa mendaftar.',
+      '即您报名时使用的。',
+      'நீங்கள் பதிவு செய்தபோது பயன்படுத்தியது.',
+    ),
+    continue: L('Continue', 'Teruskan', '继续', 'தொடரவும்'),
+    notFound: L('User not found.', 'Pengguna tidak ditemui.', '未找到用户。', 'பயனர் கிடைக்கவில்லை.'),
+    welcome: L('Welcome, {{name}}', 'Selamat datang, {{name}}', '欢迎，{{name}}', 'வரவேற்கிறோம், {{name}}'),
+    notYou: L('Not you?', 'Bukan anda?', '不是您？', 'நீங்கள் இல்லையா?'),
+    linked: L(
+      'Your responses are linked to your registration.',
+      'Jawapan anda dipautkan kepada pendaftaran anda.',
+      '您的回答将与您的报名记录关联。',
+      'உங்கள் பதில்கள் உங்கள் பதிவுடன் இணைக்கப்படும்.',
+    ),
+    wait: L('Please wait for the next question.', 'Sila tunggu soalan seterusnya.', '请等待下一个问题。', 'அடுத்த கேள்விக்காக காத்திருக்கவும்.'),
+    notOpen: L(
+      'This survey is not open right now.',
+      'Tinjauan ini tidak dibuka buat masa ini.',
+      '此问卷目前未开放。',
+      'இந்தக் கருத்துக்கணிப்பு தற்போது திறக்கப்படவில்லை.',
+    ),
+    missing: L('Survey not found.', 'Tinjauan tidak ditemui.', '未找到问卷。', 'கருத்துக்கணிப்பு கிடைக்கவில்லை.'),
+    submit: L('Submit', 'Hantar', '提交', 'சமர்ப்பி'),
+    thanks: L('Thank you for your answer.', 'Terima kasih atas jawapan anda.', '感谢您的回答。', 'உங்கள் பதிலுக்கு நன்றி.'),
+    typeHere: L('Type your answer', 'Taip jawapan anda', '请输入您的回答', 'உங்கள் பதிலை தட்டச்சு செய்யவும்'),
+    error: L(
+      'Something went wrong. Please try again.',
+      'Ralat berlaku. Sila cuba lagi.',
+      '出错了，请重试。',
+      'ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.',
+    ),
+  },
+
   common: {
     newTab: L('opens in a new tab', 'dibuka dalam tab baharu', '在新分页中开启', 'புதிய தாவலில் திறக்கும்'),
     backToTop: L('Back to top', 'Kembali ke atas', '回到顶部', 'மேலே செல்க'),

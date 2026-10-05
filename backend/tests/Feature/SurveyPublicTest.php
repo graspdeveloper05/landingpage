@@ -48,6 +48,19 @@ class SurveyPublicTest extends TestCase
         return $this->postJson('/api/survey/identify', ['contact' => 'aisyah@example.com'])->json('token');
     }
 
+    /**
+     * A browser on the site's own domain makes the API stateful, which turns
+     * on CSRF. The survey sends no token, like the RSVP form, so its routes
+     * have to be exempt. Laravel skips CSRF while tests run, so the request
+     * itself cannot show this; the exemption list can.
+     */
+    public function test_the_survey_endpoints_are_exempt_from_csrf(): void
+    {
+        $excluded = app(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class)->getExcludedPaths();
+
+        $this->assertContains('api/survey/*', $excluded);
+    }
+
     public function test_identify_by_email_is_case_insensitive(): void
     {
         $this->postJson('/api/survey/identify', ['contact' => ' Aisyah@Example.com '])

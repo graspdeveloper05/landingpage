@@ -50,6 +50,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/registrations',
             'api/analytics/pageview',
+            // Same reasoning: attendees answer with a token in the body, not
+            // a session, so there is no ambient authority to forge.
+            'api/survey/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

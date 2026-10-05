@@ -219,6 +219,23 @@
     "privacy": "Privacy notice",
     "rights": "Seri Negara Dialogue"
   },
+  "survey": {
+    "title": "Survey",
+    "contact": "Email or mobile number",
+    "contactHint": "The one you registered with.",
+    "continue": "Continue",
+    "notFound": "User not found.",
+    "welcome": "Welcome, {{name}}",
+    "notYou": "Not you?",
+    "linked": "Your responses are linked to your registration.",
+    "wait": "Please wait for the next question.",
+    "notOpen": "This survey is not open right now.",
+    "missing": "Survey not found.",
+    "submit": "Submit",
+    "thanks": "Thank you for your answer.",
+    "typeHere": "Type your answer",
+    "error": "Something went wrong. Please try again."
+  },
   "common": {
     "newTab": "opens in a new tab",
     "backToTop": "Back to top"

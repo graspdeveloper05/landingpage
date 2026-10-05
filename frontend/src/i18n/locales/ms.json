@@ -219,6 +219,23 @@
     "privacy": "Notis privasi",
     "rights": "Dialog Seri Negara"
   },
+  "survey": {
+    "title": "Tinjauan",
+    "contact": "E-mel atau nombor telefon bimbit",
+    "contactHint": "Yang anda gunakan semasa mendaftar.",
+    "continue": "Teruskan",
+    "notFound": "Pengguna tidak ditemui.",
+    "welcome": "Selamat datang, {{name}}",
+    "notYou": "Bukan anda?",
+    "linked": "Jawapan anda dipautkan kepada pendaftaran anda.",
+    "wait": "Sila tunggu soalan seterusnya.",
+    "notOpen": "Tinjauan ini tidak dibuka buat masa ini.",
+    "missing": "Tinjauan tidak ditemui.",
+    "submit": "Hantar",
+    "thanks": "Terima kasih atas jawapan anda.",
+    "typeHere": "Taip jawapan anda",
+    "error": "Ralat berlaku. Sila cuba lagi."
+  },
   "common": {
     "newTab": "dibuka dalam tab baharu",
     "backToTop": "Kembali ke atas"
