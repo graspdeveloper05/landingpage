@@ -91,10 +91,7 @@ type Body = Record<string, unknown> | FormData | undefined
 
 async function request<T>(method: string, path: string, body?: Body): Promise<T> {
   if (!API_CONFIGURED) {
-    throw new AdminError(
-      'This build has no API configured, so there is nothing to sign in to.',
-      0,
-    )
+    throw new AdminError('This build has no API configured, so there is nothing to sign in to.', 0)
   }
 
   const writing = method !== 'GET'
@@ -165,10 +162,10 @@ export function reachable(error: unknown): string {
 }
 
 export const adminApi = {
-  get: <T,>(path: string) => request<T>('GET', path),
-  post: <T,>(path: string, body?: Body) => request<T>('POST', path, body),
-  put: <T,>(path: string, body?: Body) => request<T>('PUT', path, body),
-  del: <T,>(path: string) => request<T>('DELETE', path),
+  get: <T>(path: string) => request<T>('GET', path),
+  post: <T>(path: string, body?: Body) => request<T>('POST', path, body),
+  put: <T>(path: string, body?: Body) => request<T>('PUT', path, body),
+  del: <T>(path: string) => request<T>('DELETE', path),
 }
 
 /* -------------------------------------------------------------------------- */
@@ -214,7 +211,9 @@ export interface AdminProgrammeItem {
 export type SurveyStatus = 'draft' | 'open' | 'closed'
 export type SurveyQuestionType = 'choice' | 'checkbox' | 'rating' | 'text'
 /** Only English is required; other languages may be empty or missing. */
-export type PartialLocalized = { en: string } & Partial<Record<Exclude<Locale, 'en'>, string | null>>
+export type PartialLocalized = { en: string } & Partial<
+  Record<Exclude<Locale, 'en'>, string | null>
+>
 
 export interface AdminSurvey {
   id: number
@@ -249,14 +248,13 @@ export interface SurveyResult {
   options?: { label: string; count: number }[]
   ratings?: Record<'1' | '2' | '3' | '4' | '5', number>
   average?: number | null
-  answers?: { answer: string; name: string | null; reference: string | null; at: string }[]
+  answers?: { answer: string; name: string | null; email: string | null; at: string }[]
 }
 
+/** A person is the email they typed into the survey. */
 export interface SurveyRespondent {
-  id: number
-  reference: string | null
+  email: string
   name: string | null
-  email: string | null
   mobile: string | null
   /** Questions answered, not counting skipped optional ones. */
   answers: number
@@ -265,13 +263,9 @@ export interface SurveyRespondent {
 
 export interface SurveyRespondentDetail {
   respondent: {
-    id: number
-    reference: string
-    name: string
-    email: string | null
+    email: string
+    name: string | null
     mobile: string | null
-    organisation: string | null
-    designation: string | null
   }
   answers: {
     question_id: number

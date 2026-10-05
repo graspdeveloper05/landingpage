@@ -47,7 +47,7 @@ class SurveyAdminController extends Controller
     /** Counts per option or star, or the written answers, per question. */
     public function results(Survey $survey): JsonResponse
     {
-        $questions = $survey->questions()->with('responses.registration:id,full_name,reference')->get();
+        $questions = $survey->questions()->with('responses')->get();
 
         return response()->json([
             'questions' => $questions->map(fn (SurveyQuestion $q) => $this->summarise($q))->values(),
@@ -89,8 +89,8 @@ class SurveyAdminController extends Controller
 
         return $base + ['answers' => $responses->sortByDesc('id')->map(fn ($r) => [
             'answer' => $r->answer,
-            'name' => $r->registration?->full_name,
-            'reference' => $r->registration?->reference,
+            'name' => $r->name,
+            'email' => $r->email,
             'at' => $r->created_at,
         ])->values()];
     }

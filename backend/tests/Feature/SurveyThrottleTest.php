@@ -9,8 +9,8 @@ use Tests\TestCase;
 /**
  * A hall of phones on one Wi-Fi address polls the survey every ten seconds.
  * Plain throttle:N,1 counts every route against one shared per-IP counter,
- * so that polling must not use up the allowance for signing in to answer,
- * registering at the door, or the organisers logging in.
+ * so that polling must not use up the allowance for registering at the door
+ * or the organisers logging in.
  */
 class SurveyThrottleTest extends TestCase
 {
@@ -24,7 +24,7 @@ class SurveyThrottleTest extends TestCase
             $this->getJson("/api/survey/live-poll-{$survey->id}")->assertOk();
         }
 
-        $this->postJson('/api/survey/identify', ['contact' => 'nobody@example.com'])->assertUnprocessable();
+        $this->postJson('/api/registrations', [])->assertUnprocessable();
         $this->postJson('/api/admin/login', ['email' => 'x@example.com', 'password' => 'wrong'])
             ->assertStatus(422);
     }

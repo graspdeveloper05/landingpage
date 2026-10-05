@@ -16,7 +16,7 @@ class SurveyExportController extends Controller
 
         return response()->streamDownload(function () use ($survey) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Reference', 'Name', 'Question', 'Answer', 'Answered at']);
+            fputcsv($out, ['Name', 'Email', 'Phone', 'Question', 'Answer', 'Answered at']);
 
             $questions = $survey->questions()->get()->keyBy('id');
 
@@ -24,7 +24,6 @@ class SurveyExportController extends Controller
                 ->whereIn('survey_question_id', $questions->keys())
                 // Skipped optional questions are stored empty; not answers.
                 ->where('answer', '!=', '')
-                ->with('registration:id,full_name,reference')
                 ->orderBy('survey_question_id')->orderBy('id')
                 ->chunk(200, function ($rows) use ($out, $questions) {
                     foreach ($rows as $r) {
@@ -34,8 +33,9 @@ class SurveyExportController extends Controller
                         $answer = $q->label($r->answer);
 
                         fputcsv($out, array_map(fn ($v) => $this->guard((string) $v), [
-                            $r->registration?->reference,
-                            $r->registration?->full_name,
+                            $r->name,
+                            $r->email,
+                            $r->mobile,
                             $q->question['en'] ?? '',
                             $answer,
                             $r->created_at?->timezone('Asia/Kuala_Lumpur')->format('Y-m-d H:i'),

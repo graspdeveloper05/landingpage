@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Registration;
 use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use App\Models\User;
@@ -33,22 +32,18 @@ class SurveyAdminTest extends TestCase
         ]);
     }
 
-    private int $registrations = 0;
+    private int $people = 0;
 
-    private function registration(array $attrs = []): Registration
+    /** The details a person types into the survey form. */
+    private function person(array $attrs = []): array
     {
-        $n = ++$this->registrations;
+        $n = ++$this->people;
 
-        return Registration::create($attrs + [
-            'reference' => sprintf('SND26-%04d', $n),
-            'full_name' => "Guest {$n}",
+        return $attrs + [
+            'name' => "Guest {$n}",
             'email' => "guest{$n}@example.com",
             'mobile' => sprintf('+60 12 345 67%02d', $n),
-            'organisation' => 'Org',
-            'designation' => 'Role',
-            'pdpa_accepted' => true,
-            'edition' => 2026,
-        ]);
+        ];
     }
 
     public function test_a_question_is_answerable_only_when_it_and_its_survey_are_open(): void
@@ -120,8 +115,8 @@ class SurveyAdminTest extends TestCase
     {
         $survey = $this->survey();
         $q = $this->question($survey, ['type' => 'rating', 'options' => null, 'is_required' => false]);
-        $q->responses()->create(['registration_id' => $this->registration()->id, 'answer' => '4']);
-        $q->responses()->create(['registration_id' => $this->registration()->id, 'answer' => '']);
+        $q->responses()->create([...$this->person(), 'answer' => '4']);
+        $q->responses()->create([...$this->person(), 'answer' => '']);
 
         $this->admin()->getJson("/api/admin/surveys/{$survey->id}/results")
             ->assertJsonPath('questions.0.total', 1)
@@ -136,17 +131,17 @@ class SurveyAdminTest extends TestCase
         $survey = $this->survey();
         $a = $this->question($survey);
         $b = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 1]);
-        $amy = $this->registration(['full_name' => 'Amy Tan']);
-        $raj = $this->registration(['full_name' => 'Raj Kumar']);
-        $a->responses()->create(['registration_id' => $amy->id, 'answer' => '1']);
-        $b->responses()->create(['registration_id' => $amy->id, 'answer' => 'Great']);
-        $a->responses()->create(['registration_id' => $raj->id, 'answer' => '0']);
-        $this->registration(['full_name' => 'Did Not Answer']);
+        $amy = $this->person(['name' => 'Amy Tan']);
+        $raj = $this->person(['name' => 'Raj Kumar']);
+        $a->responses()->create([...$amy, 'answer' => '1']);
+        $b->responses()->create([...$amy, 'answer' => 'Great']);
+        $a->responses()->create([...$raj, 'answer' => '0']);
+        $this->person(['name' => 'Did Not Answer']);
 
         $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents")
             ->assertOk()
             ->assertJsonCount(2)
-            ->assertJsonFragment(['name' => 'Amy Tan', 'reference' => $amy->reference, 'answers' => 2])
+            ->assertJsonFragment(['name' => 'Amy Tan', 'email' => $amy['email'], 'mobile' => $amy['mobile'], 'answers' => 2])
             ->assertJsonFragment(['name' => 'Raj Kumar', 'answers' => 1])
             ->assertJsonMissing(['name' => 'Did Not Answer']);
     }
@@ -158,15 +153,16 @@ class SurveyAdminTest extends TestCase
         $rating = $this->question($survey, ['type' => 'rating', 'options' => null, 'display_order' => 1]);
         $text = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 2, 'is_required' => false]);
         $open = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 3]);
-        $amy = $this->registration(['full_name' => 'Amy Tan']);
-        $choice->responses()->create(['registration_id' => $amy->id, 'answer' => '1']);
-        $rating->responses()->create(['registration_id' => $amy->id, 'answer' => '4']);
-        $text->responses()->create(['registration_id' => $amy->id, 'answer' => '']);
+        $amy = $this->person(['name' => 'Amy Tan']);
+        $choice->responses()->create([...$amy, 'answer' => '1']);
+        $rating->responses()->create([...$amy, 'answer' => '4']);
+        $text->responses()->create([...$amy, 'answer' => '']);
 
-        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents/{$amy->id}")
+        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents/{$amy['email']}")
             ->assertOk()
             ->assertJsonPath('respondent.name', 'Amy Tan')
-            ->assertJsonPath('respondent.email', $amy->email)
+            ->assertJsonPath('respondent.email', $amy['email'])
+            ->assertJsonPath('respondent.mobile', $amy['mobile'])
             ->assertJsonPath('answers.0.answer', 'B')
             ->assertJsonPath('answers.1.answer', '4')
             ->assertJsonPath('answers.2.skipped', true)
@@ -179,7 +175,7 @@ class SurveyAdminTest extends TestCase
         $survey = $this->survey();
         $this->question($survey);
 
-        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents/{$this->registration()->id}")
+        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents/nobody@example.com")
             ->assertNotFound();
     }
 
@@ -194,10 +190,10 @@ class SurveyAdminTest extends TestCase
         ])->assertCreated()->assertJsonPath('options.1.en', 'Panel');
 
         $q = $survey->questions()->first();
-        $amy = $this->registration(['full_name' => 'Amy Tan']);
-        $raj = $this->registration();
-        $q->responses()->create(['registration_id' => $amy->id, 'answer' => '0,1']);
-        $q->responses()->create(['registration_id' => $raj->id, 'answer' => '1']);
+        $amy = $this->person(['name' => 'Amy Tan']);
+        $raj = $this->person();
+        $q->responses()->create([...$amy, 'answer' => '0,1']);
+        $q->responses()->create([...$raj, 'answer' => '1']);
 
         $this->getJson("/api/admin/surveys/{$survey->id}/results")
             ->assertJsonPath('questions.0.total', 2)
@@ -205,7 +201,7 @@ class SurveyAdminTest extends TestCase
             ->assertJsonPath('questions.0.options.1', ['label' => 'Panel', 'count' => 2])
             ->assertJsonPath('questions.0.options.2', ['label' => 'Q&A', 'count' => 0]);
 
-        $this->getJson("/api/admin/surveys/{$survey->id}/respondents/{$amy->id}")
+        $this->getJson("/api/admin/surveys/{$survey->id}/respondents/{$amy['email']}")
             ->assertJsonPath('answers.0.answer', 'Opening; Panel');
 
         $csv = $this->get("/api/admin/surveys/{$survey->id}/export")->streamedContent();
@@ -253,7 +249,7 @@ class SurveyAdminTest extends TestCase
     {
         $q = $this->question($this->survey());
         $q->responses()->create([
-            'registration_id' => $this->registration()->id,
+            ...$this->person(),
             'answer' => '0',
         ]);
 
@@ -275,7 +271,7 @@ class SurveyAdminTest extends TestCase
     {
         $three = [['en' => 'A'], ['en' => 'B'], ['en' => 'C']];
         $q = $this->question($this->survey(), ['options' => $three]);
-        $q->responses()->create(['registration_id' => $this->registration()->id, 'answer' => '0']);
+        $q->responses()->create([...$this->person(), 'answer' => '0']);
 
         $this->admin()->putJson("/api/admin/survey-questions/{$q->id}", $change + [
             'type' => 'choice',
@@ -321,13 +317,13 @@ class SurveyAdminTest extends TestCase
         $rating = $this->question($survey, ['type' => 'rating', 'options' => null, 'display_order' => 1]);
         $text = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 2]);
 
-        $a = $this->registration();
-        $b = $this->registration();
-        $choice->responses()->create(['registration_id' => $a->id, 'answer' => '1']);
-        $choice->responses()->create(['registration_id' => $b->id, 'answer' => '1']);
-        $rating->responses()->create(['registration_id' => $a->id, 'answer' => '4']);
-        $rating->responses()->create(['registration_id' => $b->id, 'answer' => '5']);
-        $text->responses()->create(['registration_id' => $a->id, 'answer' => 'More Q&A time']);
+        $a = $this->person();
+        $b = $this->person();
+        $choice->responses()->create([...$a, 'answer' => '1']);
+        $choice->responses()->create([...$b, 'answer' => '1']);
+        $rating->responses()->create([...$a, 'answer' => '4']);
+        $rating->responses()->create([...$b, 'answer' => '5']);
+        $text->responses()->create([...$a, 'answer' => 'More Q&A time']);
 
         $this->admin()->getJson("/api/admin/surveys/{$survey->id}/results")
             ->assertOk()
@@ -337,21 +333,21 @@ class SurveyAdminTest extends TestCase
             ->assertJsonPath('questions.1.ratings.5', 1)
             ->assertJsonPath('questions.1.average', 4.5)
             ->assertJsonPath('questions.2.answers.0.answer', 'More Q&A time')
-            ->assertJsonPath('questions.2.answers.0.reference', $a->reference);
+            ->assertJsonPath('questions.2.answers.0.email', $a['email']);
     }
 
     public function test_export_writes_one_row_per_answer_with_the_option_label(): void
     {
         $survey = $this->survey();
         $q = $this->question($survey);
-        $r = $this->registration(['full_name' => '=HYPERLINK("x")']);
-        $q->responses()->create(['registration_id' => $r->id, 'answer' => '1']);
+        $r = $this->person(['name' => '=HYPERLINK("x")']);
+        $q->responses()->create([...$r, 'answer' => '1']);
 
         $csv = $this->admin()->get("/api/admin/surveys/{$survey->id}/export")
             ->assertOk()
             ->streamedContent();
 
-        $this->assertStringContainsString('Reference,Name,Question,Answer,"Answered at"', $csv);
-        $this->assertStringContainsString("{$r->reference},\"'=HYPERLINK(\"\"x\"\")\",\"Pick one\",B,", $csv);
+        $this->assertStringContainsString('Name,Email,Phone,Question,Answer,"Answered at"', $csv);
+        $this->assertStringContainsString("\"'=HYPERLINK(\"\"x\"\")\",{$r['email']},\"'{$r['mobile']}\",\"Pick one\",B,", $csv);
     }
 }

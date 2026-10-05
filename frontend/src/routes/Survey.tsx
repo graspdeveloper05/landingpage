@@ -33,7 +33,7 @@ export function Survey() {
   const load = useCallback(
     () =>
       surveyApi
-        .get(id, identity?.token)
+        .get(id, identity?.email)
         .then((s) => {
           setSurvey(s)
           setMissing(false)
@@ -41,7 +41,7 @@ export function Survey() {
         .catch((e) => {
           if (e instanceof SurveyError && e.status === 404) setMissing(true)
         }),
-    [id, identity?.token],
+    [id, identity?.email],
   )
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export function Survey() {
               ) : (
                 <AnswerForm
                   questions={survey.questions}
-                  token={identity.token}
+                  who={identity}
                   onDone={load}
                   onForget={forget}
                   onSubmitted={() => {
@@ -163,62 +163,79 @@ function Notice({ children }: { children: React.ReactNode }) {
   return <p className="text-center font-display text-h3 text-navy-950">{children}</p>
 }
 
+/**
+ * The first step: who is answering. Checked here, before any question, so a
+ * mistyped email is caught once rather than on every answer.
+ */
 function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void }) {
   const { t } = useI18n()
-  const [contact, setContact] = useState('')
-  const [error, setError] = useState<string | undefined>()
-  const [busy, setBusy] = useState(false)
+  const [values, setValues] = useState<Identity>({ name: '', email: '', mobile: '' })
+  const [errors, setErrors] = useState<Partial<Record<keyof Identity, string>>>({})
 
-  async function submit(e: React.FormEvent) {
+  function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!contact.trim()) return
-    setBusy(true)
-    setError(undefined)
-    try {
-      onIdentified(await surveyApi.identify(contact.trim()))
-    } catch (err) {
-      setError(
-        err instanceof SurveyError && err.status === 422 ? t('survey.notFound') : t('survey.error'),
-      )
-    } finally {
-      setBusy(false)
-    }
+    const next: Partial<Record<keyof Identity, string>> = {}
+    if (!values.name.trim()) next.name = t('survey.nameRequired')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim()))
+      next.email = t('survey.emailInvalid')
+    // Malaysian and international numbers, as the RSVP form accepts.
+    if (!/^\+?[0-9\s-]{8,16}$/.test(values.mobile.trim())) next.mobile = t('survey.mobileInvalid')
+    setErrors(next)
+    if (Object.keys(next).length > 0) return
+    onIdentified({
+      name: values.name.trim(),
+      email: values.email.trim().toLowerCase(),
+      mobile: values.mobile.trim(),
+    })
   }
 
+  const field = (key: keyof Identity, type: string, autoComplete: string) => (
+    <label className="block text-left">
+      <span className="text-micro font-medium uppercase tracking-[0.08em] text-slate">
+        {t(`survey.${key}`)}
+      </span>
+      <input
+        type={type}
+        value={values[key]}
+        onChange={(e) => {
+          setValues((v) => ({ ...v, [key]: e.target.value }))
+          setErrors(({ [key]: _cleared, ...rest }) => rest)
+        }}
+        autoComplete={autoComplete}
+        required
+        aria-invalid={errors[key] ? true : undefined}
+        aria-describedby={errors[key] ? `survey-${key}-error` : undefined}
+        className={cn(
+          'mt-2 block min-h-[48px] w-full rounded-sm border bg-white px-4 text-body text-navy-950',
+          'transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold-500/40',
+          errors[key]
+            ? 'border-red-400 bg-red-50'
+            : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
+        )}
+      />
+      {errors[key] && (
+        <span
+          id={`survey-${key}-error`}
+          className="mt-1.5 flex items-center gap-1.5 text-micro text-red-700"
+        >
+          <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-red-600" />
+          {errors[key]}
+        </span>
+      )}
+    </label>
+  )
+
   return (
-    <form onSubmit={submit} className="mx-auto max-w-md text-center">
+    <form onSubmit={submit} noValidate className="mx-auto max-w-md text-center">
       <p className="text-body text-navy-900/80">{t('survey.signIn')}</p>
 
-      <label className="mt-8 block text-center">
-        <span className="sr-only">{t('survey.contact')}</span>
-        <input
-          value={contact}
-          placeholder={t('survey.contact')}
-          onChange={(e) => setContact(e.target.value)}
-          autoComplete="email"
-          required
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? 'survey-contact-error' : undefined}
-          className={cn(
-            'block min-h-[48px] w-full rounded-sm border bg-white px-4 text-center text-body text-navy-950 placeholder:text-slate/60',
-            'transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold-500/40',
-            error
-              ? 'border-red-400 bg-red-50'
-              : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
-          )}
-        />
-        {error && (
-          <span
-            id="survey-contact-error"
-            className="mt-1.5 flex items-center gap-1.5 text-micro text-red-700"
-          >
-            <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-red-600" />
-            {error}
-          </span>
-        )}
-      </label>
+      <div className="mt-8 space-y-5">
+        {field('name', 'text', 'name')}
+        {field('email', 'email', 'email')}
+        {field('mobile', 'tel', 'tel')}
+      </div>
 
-      <Button type="submit" disabled={busy} withArrow className="mt-6 w-full">
+      <Button type="submit" withArrow className="mt-8 w-full">
         {t('survey.continue')}
       </Button>
     </form>
@@ -235,13 +252,13 @@ const PAGE_SIZE = 10
  */
 function AnswerForm({
   questions,
-  token,
+  who,
   onDone,
   onForget,
   onSubmitted,
 }: {
   questions: PublicQuestion[]
-  token: string
+  who: Identity
   onDone: () => void
   onForget: () => void
   /** Every answer was recorded. */
@@ -317,13 +334,9 @@ function AnswerForm({
     for (const q of pending) {
       try {
         // A skipped optional question is sent empty, so it is not asked again.
-        await surveyApi.answer(q.id, token, answers[q.id] ?? '')
+        await surveyApi.answer(q.id, who, answers[q.id] ?? '')
         done.add(q.id)
       } catch (err) {
-        if (err instanceof SurveyError && err.status === 401) {
-          setBusy(false)
-          return onForget()
-        }
         if (err instanceof SurveyError && err.status === 409) done.add(q.id)
         else
           failed[q.id] = err instanceof SurveyError && err.message ? err.message : t('survey.error')

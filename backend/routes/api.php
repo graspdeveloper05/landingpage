@@ -52,7 +52,6 @@ Route::post('/registrations', [RegistrationController::class, 'store'])
 
 // The attendee side of a survey. Named limiters (AppServiceProvider), each
 // on its own counter, because a hall full of people shares one Wi-Fi address.
-Route::post('/survey/identify', [SurveyController::class, 'identify'])->middleware('throttle:survey-identify');
 Route::get('/survey/{link}', [SurveyController::class, 'show'])->middleware('throttle:survey-read');
 Route::post('/survey/questions/{question}/answer', [SurveyController::class, 'answer'])->middleware('throttle:survey-answer');
 
@@ -154,7 +153,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::delete('/surveys/{survey}', [SurveyAdminController::class, 'destroy']);
     Route::get('/surveys/{survey}/results', [SurveyAdminController::class, 'results']);
     Route::get('/surveys/{survey}/respondents', [SurveyRespondentController::class, 'index']);
-    Route::get('/surveys/{survey}/respondents/{registration}', [SurveyRespondentController::class, 'show']);
+    // A person is their email; an address carries @ and dots, so allow them.
+    Route::get('/surveys/{survey}/respondents/{email}', [SurveyRespondentController::class, 'show'])
+        ->where('email', '[^/]+');
     Route::post('/surveys/{survey}/questions', [SurveyQuestionAdminController::class, 'store']);
     Route::post('/surveys/{survey}/questions/reorder', [SurveyQuestionAdminController::class, 'reorder']);
     Route::put('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'update']);
