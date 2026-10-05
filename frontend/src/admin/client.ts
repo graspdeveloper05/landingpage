@@ -211,6 +211,50 @@ export interface AdminProgrammeItem {
   sort_order: number
 }
 
+export type SurveyStatus = 'draft' | 'open' | 'closed'
+export type SurveyQuestionType = 'choice' | 'rating' | 'text'
+/** Only English is required; other languages may be empty or missing. */
+export type PartialLocalized = { en: string } & Partial<Record<Exclude<Locale, 'en'>, string | null>>
+
+export interface AdminSurvey {
+  id: number
+  title: PartialLocalized
+  description: PartialLocalized | null
+  status: SurveyStatus
+  questions_count?: number
+  responses_count?: number
+  questions?: AdminSurveyQuestion[]
+}
+
+export interface AdminSurveyQuestion {
+  id: number
+  survey_id: number
+  type: SurveyQuestionType
+  question: PartialLocalized
+  options: PartialLocalized[] | null
+  status: SurveyStatus
+  display_order: number
+  closed_at: string | null
+  responses_count?: number
+}
+
+export interface SurveyResult {
+  id: number
+  type: SurveyQuestionType
+  question: PartialLocalized
+  status: SurveyStatus
+  total: number
+  options?: { label: string; count: number }[]
+  ratings?: Record<'1' | '2' | '3' | '4' | '5', number>
+  average?: number | null
+  answers?: { answer: string; name: string | null; reference: string | null; at: string }[]
+}
+
+/** Fills the languages an API row left out, so LocalizedFieldset has four strings. */
+export function toLocalized(v: PartialLocalized | null | undefined): Localized {
+  return { en: v?.en ?? '', ms: v?.ms ?? '', zh: v?.zh ?? '', ta: v?.ta ?? '' }
+}
+
 export interface AdminUser {
   name: string
   email: string

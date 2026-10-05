@@ -12,6 +12,7 @@ import { SponsorsAdmin } from './SponsorsAdmin'
 import { ProgrammeAdmin } from './ProgrammeAdmin'
 import { RegistrationsAdmin } from './RegistrationsAdmin'
 import { Shell } from './Shell'
+import { SurveyAdmin } from './SurveyAdmin'
 
 /**
  * §15 — "Routine website updates should not require developer involvement."
@@ -68,6 +69,7 @@ export default function AdminApp() {
           <Route path="sponsors" element={<SponsorsAdmin />} />
           <Route path="programme" element={<ProgrammeAdmin />} />
           <Route path="registrations" element={<RegistrationsAdmin />} />
+          <Route path="survey" element={<SurveyAdmin />} />
           <Route path="*" element={<Navigate to="/admin/event" replace />} />
         </Routes>
         </SessionBoundary>
