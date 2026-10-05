@@ -3,6 +3,7 @@ import {
   adminApi,
   reachable,
   type AdminSurvey,
+  type AdminSurveyQuestion,
   type SurveyRespondent,
   type SurveyRespondentDetail,
 } from './client'
@@ -25,7 +26,10 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
   const [list, setList] = useState<SurveyRespondent[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [openEmail, setOpenEmail] = useState<string | null>(null)
+  const [openKey, setOpenKey] = useState<string | null>(null)
+  // The questions head the columns, so each response reads across one row.
+  const [questions, setQuestions] = useState<AdminSurveyQuestion[]>([])
+  const anonymous = survey.form_type === 'feedback'
 
   const load = () => {
     setError(null)
@@ -39,14 +43,41 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
   }
 
   useEffect(load, [survey.id])
+  useEffect(() => {
+    adminApi
+      .get<AdminSurvey>(`/admin/surveys/${survey.id}`)
+      .then((s) => setQuestions(s.questions ?? []))
+      .catch(() => setQuestions([]))
+  }, [survey.id])
 
-  if (openEmail !== null) {
-    return <Respondent surveyId={survey.id} email={openEmail} onBack={() => setOpenEmail(null)} />
+  // Anonymous feedback, numbered oldest first: Anonymous response 1, 2, ...
+  const labels = new Map(
+    [...(list ?? [])]
+      .filter((r) => !r.email)
+      .reverse()
+      .map((r, i) => [r.key, `Anonymous response ${i + 1}`]),
+  )
+  const label = (r: SurveyRespondent) => r.name || r.email || labels.get(r.key) || 'Anonymous'
+
+  if (openKey !== null) {
+    const r = list?.find((x) => x.key === openKey)
+    return (
+      <Respondent
+        surveyId={survey.id}
+        respondentKey={openKey}
+        title={r ? label(r) : ''}
+        onBack={() => setOpenKey(null)}
+      />
+    )
   }
 
   const q = search.trim().toLowerCase()
   const shown = (list ?? []).filter(
-    (r) => !q || [r.name, r.email, r.mobile].some((v) => v?.toLowerCase().includes(q)),
+    (r) =>
+      !q ||
+      [label(r), r.email, r.mobile, ...Object.values(r.values ?? {})].some((v) =>
+        v?.toLowerCase().includes(q),
+      ),
   )
 
   return (
@@ -60,7 +91,7 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
         </h2>
         {list && (
           <span className="text-micro text-slate">
-            {list.length} {list.length === 1 ? 'person' : 'people'}
+            {list.length} {list.length === 1 ? 'response' : 'responses'}
           </span>
         )}
       </div>
@@ -68,7 +99,7 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Name, email or phone"
+        placeholder={anonymous ? 'Search answers' : 'Name, email, phone or answer'}
         aria-label="Search responses"
         className="block w-full max-w-sm rounded-sm border border-[#DDDCD8] bg-white px-2.5 py-1.5 text-[0.85rem] focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/35"
       />
@@ -94,18 +125,28 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
           <table className="w-full min-w-[40rem] text-left text-[0.82rem]">
             <thead className="border-b border-[#DDDCD8] bg-[#FAFAF8] text-micro text-slate">
               <tr>
-                <th className="px-3 py-2 font-semibold">Name</th>
-                <th className="px-3 py-2 font-semibold">Email</th>
-                <th className="px-3 py-2 font-semibold">Phone</th>
-                <th className="px-3 py-2 font-semibold">Answered</th>
-                <th className="px-3 py-2 font-semibold">Last answer</th>
+                <th className="px-3 py-2 font-semibold">{anonymous ? 'Response' : 'Name'}</th>
+                {!anonymous && <th className="px-3 py-2 font-semibold">Email</th>}
+                {!anonymous && <th className="px-3 py-2 font-semibold">Phone</th>}
+                {questions.map((qq, i) => (
+                  <th
+                    key={qq.id}
+                    title={qq.question.en}
+                    className="max-w-[14rem] px-3 py-2 align-bottom font-semibold"
+                  >
+                    <span className="line-clamp-2">
+                      {i + 1}. {qq.question.en}
+                    </span>
+                  </th>
+                ))}
+                <th className="whitespace-nowrap px-3 py-2 font-semibold">Submitted</th>
               </tr>
             </thead>
             <tbody>
               {shown.map((r) => (
                 <tr
-                  key={r.email}
-                  onClick={() => setOpenEmail(r.email)}
+                  key={r.key}
+                  onClick={() => setOpenKey(r.key)}
                   className="cursor-pointer border-b border-[#EEEDEA] last:border-0 hover:bg-[#FAFAF8]"
                 >
                   <td className="px-3 py-2.5">
@@ -113,17 +154,36 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
-                        setOpenEmail(r.email)
+                        setOpenKey(r.key)
                       }}
                       className="font-semibold text-navy-950 underline decoration-[#DDDCD8] underline-offset-4 hover:decoration-gold-500"
                     >
-                      {r.name || r.email}
+                      {label(r)}
                     </button>
                   </td>
-                  <td className="px-3 py-2.5 text-navy-800">{r.email}</td>
-                  <td className="tnum px-3 py-2.5 text-slate">{r.mobile}</td>
-                  <td className="tnum px-3 py-2.5">{r.answers}</td>
-                  <td className="px-3 py-2.5 text-slate">{when(r.last_answered_at)}</td>
+                  {!anonymous && <td className="px-3 py-2.5 text-navy-800">{r.email}</td>}
+                  {!anonymous && <td className="tnum px-3 py-2.5 text-slate">{r.mobile}</td>}
+                  {questions.map((qq) => {
+                    const v = r.values?.[qq.id]
+                    return (
+                      <td key={qq.id} className="max-w-[14rem] px-3 py-2.5 align-top text-navy-900">
+                        {v === undefined ? (
+                          <span className="text-slate">—</span>
+                        ) : qq.type === 'rating' ? (
+                          <span className="tnum whitespace-nowrap">
+                            <span className="text-gold-600">{'★'.repeat(Number(v))}</span> {v}/5
+                          </span>
+                        ) : (
+                          <span className="line-clamp-3" title={v}>
+                            {v}
+                          </span>
+                        )}
+                      </td>
+                    )
+                  })}
+                  <td className="whitespace-nowrap px-3 py-2.5 align-top text-slate">
+                    {when(r.last_answered_at)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -141,11 +201,13 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
 /** One person's answers to every question, in the survey's order. */
 function Respondent({
   surveyId,
-  email,
+  respondentKey,
+  title,
   onBack,
 }: {
   surveyId: number
-  email: string
+  respondentKey: string
+  title: string
   onBack: () => void
 }) {
   const [data, setData] = useState<SurveyRespondentDetail | null>(null)
@@ -154,11 +216,11 @@ function Respondent({
   useEffect(() => {
     adminApi
       .get<SurveyRespondentDetail>(
-        `/admin/surveys/${surveyId}/respondents/${encodeURIComponent(email)}`,
+        `/admin/surveys/${surveyId}/respondents/${encodeURIComponent(respondentKey)}`,
       )
       .then(setData)
       .catch((e) => setError(reachable(e)))
-  }, [surveyId, email])
+  }, [surveyId, respondentKey])
 
   return (
     <div className="space-y-4">
@@ -173,7 +235,7 @@ function Respondent({
         <>
           <AdminCard>
             <p className="text-[0.95rem] font-semibold text-navy-950">
-              {data.respondent.name || data.respondent.email}
+              {data.respondent.name || data.respondent.email || title}
             </p>
             <dl className="mt-2 grid gap-x-6 gap-y-1 text-[0.8rem] sm:grid-cols-2">
               <Item label="Email" value={data.respondent.email} />

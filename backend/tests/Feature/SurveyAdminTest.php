@@ -170,6 +170,33 @@ class SurveyAdminTest extends TestCase
             ->assertJsonPath('answers.3.question', $open->question);
     }
 
+    public function test_anonymous_feedback_is_listed_one_entry_per_submission(): void
+    {
+        $survey = $this->survey(['form_type' => 'feedback', 'status' => 'open']);
+        $rating = $this->question($survey, ['type' => 'rating', 'options' => null, 'status' => 'open']);
+        $text = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 1, 'status' => 'open']);
+        $first = '11111111-1111-4111-8111-111111111111';
+        $second = '22222222-2222-4222-8222-222222222222';
+
+        $this->postJson("/api/survey/questions/{$rating->id}/answer", ['answer' => '5', 'submission' => $first])->assertCreated();
+        $this->postJson("/api/survey/questions/{$text->id}/answer", ['answer' => 'Great', 'submission' => $first])->assertCreated();
+        $this->postJson("/api/survey/questions/{$rating->id}/answer", ['answer' => '3', 'submission' => $second])->assertCreated();
+
+        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents")
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonFragment(['key' => $first, 'email' => null, 'answers' => 2])
+            ->assertJsonFragment(['key' => $second, 'answers' => 1])
+            // Each answer in the list, by question, so the list reads on its own.
+            ->assertJsonFragment(['values' => [(string) $rating->id => '5', (string) $text->id => 'Great']]);
+
+        $this->getJson("/api/admin/surveys/{$survey->id}/respondents/{$first}")
+            ->assertOk()
+            ->assertJsonPath('respondent.email', null)
+            ->assertJsonPath('answers.0.answer', '5')
+            ->assertJsonPath('answers.1.answer', 'Great');
+    }
+
     public function test_a_person_who_did_not_answer_this_survey_is_404(): void
     {
         $survey = $this->survey();

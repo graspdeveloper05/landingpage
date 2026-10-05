@@ -117,7 +117,10 @@ class SurveyController extends Controller
 
         $data = $request->validate([
             'answer' => [$question->is_required ? 'required' : 'nullable', 'string', ...$this->rulesFor($question)],
-        ] + ($anonymous ? [] : [
+        ] + ($anonymous ? [
+            // One id per submit, so the admin can read each response whole.
+            'submission' => ['nullable', 'uuid'],
+        ] : [
             // The form asks only for email and phone; a name is kept if sent.
             'name' => ['nullable', 'string', 'max:120'],
             'email' => ['required', 'email:rfc,filter', 'max:190'],
@@ -137,6 +140,7 @@ class SurveyController extends Controller
                 'name' => ! $anonymous && isset($data['name']) ? trim($data['name']) : null,
                 'email' => $anonymous ? null : $this->email($data['email']),
                 'mobile' => $anonymous ? null : preg_replace('/\s+/', ' ', trim($data['mobile'])),
+                'submission_id' => $anonymous ? ($data['submission'] ?? null) : null,
                 'answer' => $answer,
             ]);
         } catch (UniqueConstraintViolationException) {

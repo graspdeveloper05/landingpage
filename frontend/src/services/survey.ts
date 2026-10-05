@@ -113,8 +113,22 @@ export const surveyApi = {
       ...who,
       ...entry,
     }),
-  answer: (questionId: number, who: Identity, answer: string) =>
-    call<{ message: string }>('POST', `/survey/questions/${questionId}/answer`, { ...who, answer }),
+  /** `submission` ties one anonymous submit's answers together. */
+  answer: (questionId: number, who: Identity, answer: string, submission?: string) =>
+    call<{ message: string }>('POST', `/survey/questions/${questionId}/answer`, {
+      ...who,
+      answer,
+      submission,
+    }),
+}
+
+/** A fresh id for one submit of an anonymous feedback form. */
+export function newSubmissionId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+  })
 }
 
 /** The text in the reader's language, or the English when that one is empty. */

@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Ornament } from '@/components/ui/Ornament'
 import {
+  newSubmissionId,
   pick,
   savedIdentity,
   saveIdentity,
@@ -289,6 +290,9 @@ function AnswerForm({
   const [page, setPage] = useState(0)
   const [testimonial, setTestimonial] = useState<TestimonialEntry>(EMPTY_TESTIMONIAL)
   const [testimonialErrors, setTestimonialErrors] = useState<TestimonialErrors>({})
+  // One id for this filling-in, kept across a retry, so the admin sees one
+  // anonymous response rather than loose answers.
+  const submission = useRef(newSubmissionId())
 
   // A testimonial is sent only when written and permitted; without either,
   // the feedback goes on its own, as the form promises.
@@ -364,7 +368,7 @@ function AnswerForm({
     for (const q of pending) {
       try {
         // A skipped optional question is sent empty, so it is not asked again.
-        await surveyApi.answer(q.id, who, answers[q.id] ?? '')
+        await surveyApi.answer(q.id, who, answers[q.id] ?? '', submission.current)
         done.add(q.id)
       } catch (err) {
         if (err instanceof SurveyError && err.status === 409) done.add(q.id)

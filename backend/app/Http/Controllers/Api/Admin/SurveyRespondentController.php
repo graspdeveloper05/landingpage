@@ -11,28 +11,38 @@ use Illuminate\Http\JsonResponse;
 /**
  * Who filled a survey in, and everything one of them answered. A person is
  * the email they typed; the name and phone shown are the latest they gave.
+ * Anonymous feedback has no email: each submission is one response instead.
  */
 class SurveyRespondentController extends Controller
 {
     public function index(Survey $survey): JsonResponse
     {
+        $questions = $survey->questions()->get()->keyBy('id');
         $rows = SurveyResponse::query()
             ->whereIn('survey_question_id', $survey->questions()->select('id'))
-            ->whereNotNull('email')
+            ->where(fn ($q) => $q->whereNotNull('email')->orWhereNotNull('submission_id'))
             ->orderBy('id')
-            ->get(['email', 'name', 'mobile', 'answer', 'created_at'])
-            ->groupBy('email');
+            ->get(['survey_question_id', 'email', 'submission_id', 'name', 'mobile', 'answer', 'created_at'])
+            ->groupBy(fn ($r) => $r->email ?? $r->submission_id);
 
-        return response()->json($rows->map(function ($answers, $email) {
+        return response()->json($rows->map(function ($answers, $key) use ($questions) {
             $latest = $answers->last();
 
             return [
-                'email' => $email,
+                'key' => $key,
+                'email' => $latest->email,
                 'name' => $latest->name,
                 'mobile' => $latest->mobile,
                 // Skipped optional questions are stored empty; not answers.
                 'answers' => $answers->filter(fn ($r) => $r->answer !== '')->count(),
                 'last_answered_at' => $answers->max('created_at'),
+                // Every answer, by question id, as the admin reads it.
+                'values' => $answers
+                    ->filter(fn ($r) => $r->answer !== '' && $questions->has($r->survey_question_id))
+                    ->mapWithKeys(fn ($r) => [
+                        (string) $r->survey_question_id => $questions[$r->survey_question_id]->label($r->answer),
+                    ])
+                    ->toArray() ?: new \stdClass,
             ];
         })->sortByDesc('last_answered_at')->values());
     }
@@ -42,11 +52,13 @@ class SurveyRespondentController extends Controller
      * choice as its English label, a skipped optional question marked as
      * skipped, and a question they never reached as null.
      */
-    public function show(Survey $survey, string $email): JsonResponse
+    public function show(Survey $survey, string $key): JsonResponse
     {
-        $email = strtolower(trim(urldecode($email)));
+        // An email for a named person, a submission id for anonymous feedback.
+        $key = strtolower(trim(urldecode($key)));
+        $column = str_contains($key, '@') ? 'email' : 'submission_id';
         $questions = $survey->questions()->get();
-        $responses = SurveyResponse::where('email', $email)
+        $responses = SurveyResponse::where($column, $key)
             ->whereIn('survey_question_id', $questions->pluck('id'))
             ->orderBy('id')
             ->get()
@@ -58,7 +70,7 @@ class SurveyRespondentController extends Controller
 
         return response()->json([
             'respondent' => [
-                'email' => $email,
+                'email' => $latest->email,
                 'name' => $latest->name,
                 'mobile' => $latest->mobile,
             ],

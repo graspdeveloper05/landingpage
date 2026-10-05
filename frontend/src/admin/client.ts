@@ -279,17 +279,21 @@ export interface AttendancePage {
 
 /** A person is the email they typed into the survey. */
 export interface SurveyRespondent {
-  email: string
+  /** The email, or a submission id for anonymous feedback. */
+  key: string
+  email: string | null
   name: string | null
   mobile: string | null
   /** Questions answered, not counting skipped optional ones. */
   answers: number
+  /** Each answer as shown to the admin, by question id. */
+  values: Record<string, string>
   last_answered_at: string
 }
 
 export interface SurveyRespondentDetail {
   respondent: {
-    email: string
+    email: string | null
     name: string | null
     mobile: string | null
   }
