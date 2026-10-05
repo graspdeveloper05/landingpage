@@ -182,6 +182,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Attendance on the day: the tracker, and staff check-in and undo.
     Route::get('/attendance', [AttendanceAdminController::class, 'index']);
+    Route::post('/attendance/import', [AttendanceAdminController::class, 'import'])->middleware('throttle:10,1');
     Route::post('/attendance/{registration:reference}', [AttendanceAdminController::class, 'store']);
     Route::delete('/attendance/{registration:reference}', [AttendanceAdminController::class, 'destroy']);
 });

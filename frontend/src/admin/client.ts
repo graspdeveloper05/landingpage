@@ -262,6 +262,8 @@ export interface AttendanceRow {
   organisation: string | null
   checkedInAt: string | null
   checkedInVia: 'self' | 'staff' | null
+  /** website, google_form, or import (the organisers' own list). */
+  source: string
 }
 
 export interface AttendancePage {

@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
 use Illuminate\Http\JsonResponse;
+use App\Support\AttendeeImport;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 /** Who has arrived, and the controls the organisers use on the day. */
 class AttendanceAdminController extends Controller
@@ -46,6 +48,8 @@ class AttendanceAdminController extends Controller
                 'organisation' => $r->organisation,
                 'checkedInAt' => $r->checked_in_at?->toIso8601String(),
                 'checkedInVia' => $r->checked_in_via,
+                // website, google_form, or import (the organisers' own list).
+                'source' => $r->source,
             ])->values(),
             'meta' => [
                 'registered' => $registered,
@@ -65,6 +69,28 @@ class AttendanceAdminController extends Controller
         }
 
         return response()->json(['checkedInAt' => $registration->checked_in_at->toIso8601String()]);
+    }
+
+    /**
+     * Bulk-adds attendees from a CSV or Excel file: people on the organisers'
+     * own list who did not register on the website.
+     */
+    public function import(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'max:5120', 'mimes:csv,txt,xlsx'],
+        ], [
+            'file.mimes' => 'Upload a CSV or Excel (.xlsx) file.',
+        ]);
+
+        $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension()) === 'xlsx' ? 'xlsx' : 'csv';
+
+        try {
+            return response()->json((new AttendeeImport())->run($file->getRealPath(), $extension));
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['file' => $e->getMessage()]);
+        }
     }
 
     /** Undo a mistaken check-in. */
