@@ -16,6 +16,28 @@ import { SkeletonRows } from './Loading'
 import { SurveyDetail } from './SurveyDetail'
 import { StatusChip } from './SurveyResults'
 import { surveyUrl } from './SurveyShare'
+import { SurveyResponses } from './SurveyResponses'
+
+/** People with a list beside them: who answered. */
+function ResponsesIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden>
+      <circle cx="5" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M1.5 13c0-2.2 1.6-3.8 3.5-3.8s3.5 1.6 3.5 3.8"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10.5 4.5h4M10.5 8h4M10.5 11.5h3"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
 
 /** Surveys run during and after the event, answered by registered attendees. */
 export function SurveyAdmin() {
@@ -25,6 +47,7 @@ export function SurveyAdmin() {
   // one starts from the bare form here.
   const [adding, setAdding] = useState(false)
   const [openId, setOpenId] = useState<number | null>(null)
+  const [viewing, setViewing] = useState<AdminSurvey | null>(null)
   const toast = useToast()
 
   // A failure clears `list` to [] as well as setting the error: leaving it
@@ -53,6 +76,18 @@ export function SurveyAdmin() {
     } catch (e) {
       toast.error(e instanceof AdminError ? e.message : 'Could not delete that survey.')
     }
+  }
+
+  if (viewing) {
+    return (
+      <SurveyResponses
+        survey={viewing}
+        onBack={() => {
+          setViewing(null)
+          load()
+        }}
+      />
+    )
   }
 
   if (openId !== null) {
@@ -121,6 +156,15 @@ export function SurveyAdmin() {
               </div>
               <StatusChip status={s.status} />
               <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setViewing(s)}
+                  aria-label={`View responses to ${s.title.en}`}
+                  title="View responses"
+                  className="grid h-[34px] w-[34px] place-items-center rounded-sm border border-[#DDDCD8] bg-white text-navy-900 transition-colors hover:border-navy-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/35"
+                >
+                  <ResponsesIcon />
+                </button>
                 <AdminButton onClick={() => setOpenId(s.id)}>Edit</AdminButton>
                 <AdminButton variant="danger" onClick={() => remove(s)}>
                   Delete
@@ -179,7 +223,9 @@ export function SurveyForm({
     } catch (e) {
       if (e instanceof AdminError) {
         setFieldErrors(e.fields)
-        setError(Object.keys(e.fields).length > 0 ? 'Some fields need attention — see below.' : e.message)
+        setError(
+          Object.keys(e.fields).length > 0 ? 'Some fields need attention — see below.' : e.message,
+        )
       } else {
         setError('Could not save.')
       }

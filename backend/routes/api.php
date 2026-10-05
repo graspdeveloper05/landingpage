@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Admin\SponsorAdminController;
 use App\Http\Controllers\Api\Admin\SurveyAdminController;
 use App\Http\Controllers\Api\Admin\SurveyExportController;
 use App\Http\Controllers\Api\Admin\SurveyQuestionAdminController;
+use App\Http\Controllers\Api\Admin\SurveyRespondentController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\GoogleFormIntakeController;
 use App\Http\Controllers\Api\PageViewController;
@@ -152,6 +153,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/surveys/{survey}', [SurveyAdminController::class, 'update']);
     Route::delete('/surveys/{survey}', [SurveyAdminController::class, 'destroy']);
     Route::get('/surveys/{survey}/results', [SurveyAdminController::class, 'results']);
+    Route::get('/surveys/{survey}/respondents', [SurveyRespondentController::class, 'index']);
+    Route::get('/surveys/{survey}/respondents/{registration}', [SurveyRespondentController::class, 'show']);
     Route::post('/surveys/{survey}/questions', [SurveyQuestionAdminController::class, 'store']);
     Route::post('/surveys/{survey}/questions/reorder', [SurveyQuestionAdminController::class, 'reorder']);
     Route::put('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'update']);

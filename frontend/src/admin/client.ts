@@ -252,6 +252,39 @@ export interface SurveyResult {
   answers?: { answer: string; name: string | null; reference: string | null; at: string }[]
 }
 
+export interface SurveyRespondent {
+  id: number
+  reference: string | null
+  name: string | null
+  email: string | null
+  mobile: string | null
+  /** Questions answered, not counting skipped optional ones. */
+  answers: number
+  last_answered_at: string
+}
+
+export interface SurveyRespondentDetail {
+  respondent: {
+    id: number
+    reference: string
+    name: string
+    email: string | null
+    mobile: string | null
+    organisation: string | null
+    designation: string | null
+  }
+  answers: {
+    question_id: number
+    type: SurveyQuestionType
+    question: PartialLocalized
+    is_required: boolean
+    /** A choice arrives as its English label; null when not answered. */
+    answer: string | null
+    skipped: boolean
+    answered_at: string | null
+  }[]
+}
+
 /** Fills the languages an API row left out, so LocalizedFieldset has four strings. */
 export function toLocalized(v: PartialLocalized | null | undefined): Localized {
   return { en: v?.en ?? '', ms: v?.ms ?? '', zh: v?.zh ?? '', ta: v?.ta ?? '' }

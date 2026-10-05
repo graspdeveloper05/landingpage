@@ -131,6 +131,58 @@ class SurveyAdminTest extends TestCase
         $this->assertSame(2, substr_count(trim($csv), "\n") + 1);
     }
 
+    public function test_respondents_lists_each_person_who_answered_once(): void
+    {
+        $survey = $this->survey();
+        $a = $this->question($survey);
+        $b = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 1]);
+        $amy = $this->registration(['full_name' => 'Amy Tan']);
+        $raj = $this->registration(['full_name' => 'Raj Kumar']);
+        $a->responses()->create(['registration_id' => $amy->id, 'answer' => '1']);
+        $b->responses()->create(['registration_id' => $amy->id, 'answer' => 'Great']);
+        $a->responses()->create(['registration_id' => $raj->id, 'answer' => '0']);
+        $this->registration(['full_name' => 'Did Not Answer']);
+
+        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents")
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonFragment(['name' => 'Amy Tan', 'reference' => $amy->reference, 'answers' => 2])
+            ->assertJsonFragment(['name' => 'Raj Kumar', 'answers' => 1])
+            ->assertJsonMissing(['name' => 'Did Not Answer']);
+    }
+
+    public function test_one_respondents_full_answers_in_question_order(): void
+    {
+        $survey = $this->survey();
+        $choice = $this->question($survey);
+        $rating = $this->question($survey, ['type' => 'rating', 'options' => null, 'display_order' => 1]);
+        $text = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 2, 'is_required' => false]);
+        $open = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 3]);
+        $amy = $this->registration(['full_name' => 'Amy Tan']);
+        $choice->responses()->create(['registration_id' => $amy->id, 'answer' => '1']);
+        $rating->responses()->create(['registration_id' => $amy->id, 'answer' => '4']);
+        $text->responses()->create(['registration_id' => $amy->id, 'answer' => '']);
+
+        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents/{$amy->id}")
+            ->assertOk()
+            ->assertJsonPath('respondent.name', 'Amy Tan')
+            ->assertJsonPath('respondent.email', $amy->email)
+            ->assertJsonPath('answers.0.answer', 'B')
+            ->assertJsonPath('answers.1.answer', '4')
+            ->assertJsonPath('answers.2.skipped', true)
+            ->assertJsonPath('answers.3.answer', null)
+            ->assertJsonPath('answers.3.question', $open->question);
+    }
+
+    public function test_a_person_who_did_not_answer_this_survey_is_404(): void
+    {
+        $survey = $this->survey();
+        $this->question($survey);
+
+        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/respondents/{$this->registration()->id}")
+            ->assertNotFound();
+    }
+
     public function test_english_is_required_and_a_choice_needs_two_options(): void
     {
         $this->admin()->postJson('/api/admin/surveys', ['title' => ['en' => '']])
