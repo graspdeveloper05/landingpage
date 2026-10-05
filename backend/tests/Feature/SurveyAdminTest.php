@@ -167,4 +167,45 @@ class SurveyAdminTest extends TestCase
         $this->admin()->deleteJson("/api/admin/surveys/{$survey->id}")->assertNoContent();
         $this->assertSame(0, SurveyQuestion::count());
     }
+
+    public function test_results_count_choices_ratings_and_list_text(): void
+    {
+        $survey = $this->survey();
+        $choice = $this->question($survey);
+        $rating = $this->question($survey, ['type' => 'rating', 'options' => null, 'display_order' => 1]);
+        $text = $this->question($survey, ['type' => 'text', 'options' => null, 'display_order' => 2]);
+
+        $a = $this->registration();
+        $b = $this->registration();
+        $choice->responses()->create(['registration_id' => $a->id, 'answer' => '1']);
+        $choice->responses()->create(['registration_id' => $b->id, 'answer' => '1']);
+        $rating->responses()->create(['registration_id' => $a->id, 'answer' => '4']);
+        $rating->responses()->create(['registration_id' => $b->id, 'answer' => '5']);
+        $text->responses()->create(['registration_id' => $a->id, 'answer' => 'More Q&A time']);
+
+        $this->admin()->getJson("/api/admin/surveys/{$survey->id}/results")
+            ->assertOk()
+            ->assertJsonPath('questions.0.total', 2)
+            ->assertJsonPath('questions.0.options.0', ['label' => 'A', 'count' => 0])
+            ->assertJsonPath('questions.0.options.1', ['label' => 'B', 'count' => 2])
+            ->assertJsonPath('questions.1.ratings.5', 1)
+            ->assertJsonPath('questions.1.average', 4.5)
+            ->assertJsonPath('questions.2.answers.0.answer', 'More Q&A time')
+            ->assertJsonPath('questions.2.answers.0.reference', $a->reference);
+    }
+
+    public function test_export_writes_one_row_per_answer_with_the_option_label(): void
+    {
+        $survey = $this->survey();
+        $q = $this->question($survey);
+        $r = $this->registration(['full_name' => '=HYPERLINK("x")']);
+        $q->responses()->create(['registration_id' => $r->id, 'answer' => '1']);
+
+        $csv = $this->admin()->get("/api/admin/surveys/{$survey->id}/export")
+            ->assertOk()
+            ->streamedContent();
+
+        $this->assertStringContainsString('Reference,Name,Question,Answer,"Answered at"', $csv);
+        $this->assertStringContainsString("{$r->reference},\"'=HYPERLINK(\"\"x\"\")\",\"Pick one\",B,", $csv);
+    }
 }

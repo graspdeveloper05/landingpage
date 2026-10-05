@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Admin\SessionController;
 use App\Http\Controllers\Api\Admin\SpeakerAdminController;
 use App\Http\Controllers\Api\Admin\SponsorAdminController;
 use App\Http\Controllers\Api\Admin\SurveyAdminController;
+use App\Http\Controllers\Api\Admin\SurveyExportController;
 use App\Http\Controllers\Api\Admin\SurveyQuestionAdminController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\GoogleFormIntakeController;
@@ -143,6 +144,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/surveys/{survey}', [SurveyAdminController::class, 'show']);
     Route::put('/surveys/{survey}', [SurveyAdminController::class, 'update']);
     Route::delete('/surveys/{survey}', [SurveyAdminController::class, 'destroy']);
+    Route::get('/surveys/{survey}/results', [SurveyAdminController::class, 'results']);
     Route::post('/surveys/{survey}/questions', [SurveyQuestionAdminController::class, 'store']);
     Route::post('/surveys/{survey}/questions/reorder', [SurveyQuestionAdminController::class, 'reorder']);
     Route::put('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'update']);
@@ -156,6 +158,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 */
 Route::middleware(EnsureAdminToken::class)->prefix('admin')->group(function () {
     Route::get('/registrations', RegistrationExportController::class);
+    Route::get('/surveys/{survey}/export', SurveyExportController::class);
 });
 
 /*

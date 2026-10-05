@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSurveyRequest;
 use App\Models\Survey;
+use App\Models\SurveyQuestion;
 use Illuminate\Http\JsonResponse;
 
 /** Surveys the organising team runs during and after the event. */
@@ -41,5 +42,52 @@ class SurveyAdminController extends Controller
         $survey->delete();
 
         return response()->json(null, 204);
+    }
+
+    /** Counts per option or star, or the written answers, per question. */
+    public function results(Survey $survey): JsonResponse
+    {
+        $questions = $survey->questions()->with('responses.registration:id,full_name,reference')->get();
+
+        return response()->json([
+            'questions' => $questions->map(fn (SurveyQuestion $q) => $this->summarise($q))->values(),
+        ]);
+    }
+
+    private function summarise(SurveyQuestion $q): array
+    {
+        $answers = $q->responses->pluck('answer');
+        $base = [
+            'id' => $q->id,
+            'type' => $q->type,
+            'question' => $q->question,
+            'status' => $q->status,
+            'total' => $answers->count(),
+        ];
+
+        if ($q->type === 'choice') {
+            $counts = $answers->countBy();
+
+            return $base + ['options' => collect($q->options)->map(fn ($o, $i) => [
+                'label' => $o['en'] ?? '',
+                'count' => (int) ($counts[(string) $i] ?? 0),
+            ])->values()];
+        }
+
+        if ($q->type === 'rating') {
+            $counts = $answers->countBy();
+
+            return $base + [
+                'ratings' => collect(range(1, 5))->mapWithKeys(fn ($n) => [$n => (int) ($counts[(string) $n] ?? 0)]),
+                'average' => $answers->isEmpty() ? null : round($answers->map(fn ($a) => (int) $a)->avg(), 2),
+            ];
+        }
+
+        return $base + ['answers' => $q->responses->sortByDesc('id')->map(fn ($r) => [
+            'answer' => $r->answer,
+            'name' => $r->registration?->full_name,
+            'reference' => $r->registration?->reference,
+            'at' => $r->created_at,
+        ])->values()];
     }
 }
