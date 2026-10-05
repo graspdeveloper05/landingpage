@@ -14,6 +14,7 @@ import { SkeletonRows } from './Loading'
 import { SurveyQuestionForm } from './SurveyQuestionForm'
 import { SurveyResults, StatusChip } from './SurveyResults'
 import { SurveyShare } from './SurveyShare'
+import { SurveyForm } from './SurveyAdmin'
 
 const TYPE_LABEL = { choice: 'Multiple choice', rating: 'Rating 1–5', text: 'Text' }
 
@@ -21,6 +22,7 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
   const [survey, setSurvey] = useState<AdminSurvey | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState<AdminSurveyQuestion | 'new' | null>(null)
+  const [editingDetails, setEditingDetails] = useState(false)
   const toast = useToast()
 
   const load = useCallback(() => {
@@ -95,6 +97,20 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
     }
   }
 
+  if (editingDetails && survey) {
+    return (
+      <SurveyForm
+        survey={survey}
+        onCancel={() => setEditingDetails(false)}
+        onSaved={(saved) => {
+          setEditingDetails(false)
+          setSurvey(saved)
+          toast.success('Survey saved.')
+        }}
+      />
+    )
+  }
+
   if (editing) {
     return (
       <SurveyQuestionForm
@@ -134,6 +150,9 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
           ← All surveys
         </AdminButton>
         <h2 className="flex-1 text-[0.95rem] font-semibold text-navy-950">{survey.title.en}</h2>
+        <AdminButton variant="quiet" onClick={() => setEditingDetails(true)}>
+          Edit details
+        </AdminButton>
         <StatusChip status={survey.status} />
         {survey.status === 'open' ? (
           <AdminButton variant="danger" onClick={() => setSurveyStatus('closed')}>

@@ -21,7 +21,9 @@ import { surveyUrl } from './SurveyShare'
 export function SurveyAdmin() {
   const [list, setList] = useState<AdminSurvey[] | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [editing, setEditing] = useState<AdminSurvey | 'new' | null>(null)
+  // Existing surveys are edited on their own page (SurveyDetail); only a new
+  // one starts from the bare form here.
+  const [adding, setAdding] = useState(false)
   const [openId, setOpenId] = useState<number | null>(null)
   const toast = useToast()
 
@@ -65,17 +67,16 @@ export function SurveyAdmin() {
     )
   }
 
-  if (editing) {
+  if (adding) {
     return (
       <SurveyForm
-        survey={editing === 'new' ? null : editing}
-        onCancel={() => setEditing(null)}
+        survey={null}
+        onCancel={() => setAdding(false)}
         onSaved={(saved) => {
-          setEditing(null)
+          setAdding(false)
           toast.success('Survey saved.')
           // A new survey has no questions yet, so go straight to adding them.
-          if (editing === 'new') setOpenId(saved.id)
-          else load()
+          setOpenId(saved.id)
         }}
       />
     )
@@ -88,7 +89,7 @@ export function SurveyAdmin() {
           Each survey has its own link. Attendees answer with the email or mobile they registered
           with.
         </p>
-        <AdminButton onClick={() => setEditing('new')}>Add survey</AdminButton>
+        <AdminButton onClick={() => setAdding(true)}>Add survey</AdminButton>
       </div>
 
       {error && (
@@ -120,10 +121,7 @@ export function SurveyAdmin() {
               </div>
               <StatusChip status={s.status} />
               <div className="flex items-center gap-1">
-                <AdminButton onClick={() => setOpenId(s.id)}>Manage</AdminButton>
-                <AdminButton variant="quiet" onClick={() => setEditing(s)}>
-                  Edit
-                </AdminButton>
+                <AdminButton onClick={() => setOpenId(s.id)}>Edit</AdminButton>
                 <AdminButton variant="danger" onClick={() => remove(s)}>
                   Delete
                 </AdminButton>
@@ -144,7 +142,7 @@ const STATUS_CHOICES: { value: SurveyStatus; label: string; hint: string }[] = [
   { value: 'closed', label: 'Closed', hint: 'No more answers' },
 ]
 
-function SurveyForm({
+export function SurveyForm({
   survey,
   onCancel,
   onSaved,
@@ -217,7 +215,7 @@ function SurveyForm({
           <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">Status</legend>
           <p className="mb-2 text-[0.7rem] text-slate">
             Attendees can answer only while the survey is open. Questions are opened one by one on
-            the survey's Manage page.
+            the survey's page.
           </p>
           <div className="flex flex-wrap gap-2">
             {STATUS_CHOICES.map((s) => (
