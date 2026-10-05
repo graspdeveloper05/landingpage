@@ -5,6 +5,7 @@ import {
   AdminError,
   toLocalized,
   type AdminSurveyQuestion,
+  type FormType,
   type Locale,
   type Localized,
   type SurveyQuestionType,
@@ -20,11 +21,14 @@ const TYPES: { value: SurveyQuestionType; label: string; hint: string }[] = [
 
 export function SurveyQuestionForm({
   surveyId,
+  formType,
   question,
   onCancel,
   onSaved,
 }: {
   surveyId: number
+  /** Feedback forms may have a single tickbox, e.g. consent to publish. */
+  formType: FormType
   question: AdminSurveyQuestion | null
   onCancel: () => void
   onSaved: () => void
@@ -34,6 +38,7 @@ export function SurveyQuestionForm({
   const locked = (question?.responses_count ?? 0) > 0
   const [type, setType] = useState<SurveyQuestionType>(question?.type ?? 'choice')
   const hasOptions = type === 'choice' || type === 'checkbox'
+  const minOptions = type === 'checkbox' && formType === 'feedback' ? 1 : 2
   const [text, setText] = useState<Localized>(toLocalized(question?.question))
   const [options, setOptions] = useState<Localized[]>(
     question?.options?.map(toLocalized) ?? [toLocalized(null), toLocalized(null)],
@@ -158,7 +163,7 @@ export function SurveyQuestionForm({
                 </div>
                 <AdminButton
                   variant="danger"
-                  disabled={locked || options.length <= 2}
+                  disabled={locked || options.length <= minOptions}
                   onClick={() => setOptions((all) => all.filter((_, j) => j !== i))}
                   className="mt-3"
                 >

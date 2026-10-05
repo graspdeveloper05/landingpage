@@ -501,7 +501,10 @@ function QuestionField({
 
             {question.type === 'checkbox' && (
               <div className="space-y-2.5">
-                <p className="text-small text-slate">{t('survey.selectAll')}</p>
+                {/* A lone tickbox (consent) needs no "select all" hint. */}
+                {(question.options?.length ?? 0) > 1 && (
+                  <p className="text-small text-slate">{t('survey.selectAll')}</p>
+                )}
                 {question.options?.map((o, i) => {
                   // The answer is the ticked option numbers, e.g. "0,2".
                   const ticked = value ? value.split(',') : []

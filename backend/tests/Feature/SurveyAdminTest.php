@@ -208,15 +208,37 @@ class SurveyAdminTest extends TestCase
         $this->assertStringContainsString('"Opening; Panel"', $csv);
     }
 
-    public function test_a_checkbox_question_needs_two_options(): void
+    /** A single tickbox, e.g. consent to publish, is a checkbox with one option. */
+    public function test_a_feedback_form_can_have_a_single_tickbox(): void
     {
-        $survey = $this->survey();
+        $survey = $this->survey(['form_type' => 'feedback']);
 
         $this->admin()->postJson("/api/admin/surveys/{$survey->id}/questions", [
             'type' => 'checkbox',
-            'question' => ['en' => 'Pick any'],
-            'options' => [['en' => 'Only one']],
+            'question' => ['en' => 'Permission to publish'],
+            'options' => [['en' => 'I give permission']],
+            'is_required' => false,
+        ])->assertCreated()->assertJsonCount(1, 'options');
+
+        $this->postJson("/api/admin/surveys/{$survey->id}/questions", [
+            'type' => 'checkbox',
+            'question' => ['en' => 'Nothing to tick'],
+            'options' => [],
         ])->assertUnprocessable()->assertJsonValidationErrors('options');
+    }
+
+    public function test_a_survey_checkbox_still_needs_two_options(): void
+    {
+        $survey = $this->survey();
+        $one = ['type' => 'checkbox', 'question' => ['en' => 'Pick any'], 'options' => [['en' => 'Only one']]];
+
+        $this->admin()->postJson("/api/admin/surveys/{$survey->id}/questions", $one)
+            ->assertUnprocessable()->assertJsonValidationErrors('options');
+
+        // Editing an existing survey question is held to the same rule.
+        $q = $this->question($survey, ['type' => 'checkbox', 'options' => [['en' => 'A'], ['en' => 'B']]]);
+        $this->putJson("/api/admin/survey-questions/{$q->id}", $one)
+            ->assertUnprocessable()->assertJsonValidationErrors('options');
     }
 
     public function test_a_form_is_a_survey_unless_marked_feedback(): void
