@@ -191,10 +191,9 @@ const FORM_TYPES: { value: FormType; label: string; hint: string }[] = [
   { value: 'feedback', label: 'Feedback', hint: 'Participant feedback form' },
 ]
 
-const STATUS_CHOICES: { value: SurveyStatus; label: string; hint: string }[] = [
-  { value: 'draft', label: 'Draft', hint: 'Being prepared' },
-  { value: 'open', label: 'Open', hint: 'Taking answers' },
-  { value: 'closed', label: 'Closed', hint: 'No more answers' },
+const STATUS_CHOICES: { active: boolean; label: string; hint: string }[] = [
+  { active: true, label: 'Active', hint: 'Taking answers' },
+  { active: false, label: 'Inactive', hint: 'Not taking answers' },
 ]
 
 export function SurveyForm({
@@ -294,24 +293,28 @@ export function SurveyForm({
           multiline
         />
 
-        {/* A new survey starts as a draft; status is chosen once it exists. */}
+        {/* A new survey starts inactive; status is chosen once it exists. */}
         {survey && (
           <fieldset>
             <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">Status</legend>
             <p className="mb-2 text-[0.7rem] text-slate">
-              Attendees can answer only while the survey is open. Questions are opened one by one on
-              the survey's page.
+              Attendees can answer only while the survey is active. Questions are activated one by
+              one on the survey's page.
             </p>
             <div className="flex flex-wrap gap-2">
               {STATUS_CHOICES.map((s) => (
                 <button
-                  key={s.value}
+                  key={s.label}
                   type="button"
-                  onClick={() => setStatus(s.value)}
-                  aria-pressed={status === s.value}
+                  // Inactive keeps a never-opened survey as it was, and stops
+                  // one that was taking answers.
+                  onClick={() =>
+                    setStatus(s.active ? 'open' : status === 'open' ? 'closed' : status)
+                  }
+                  aria-pressed={(status === 'open') === s.active}
                   className={cn(
                     'rounded-sm border px-3 py-1.5 text-left',
-                    status === s.value
+                    (status === 'open') === s.active
                       ? 'border-navy-900 bg-navy-900 text-cream'
                       : 'border-[#DDDCD8] bg-white text-navy-900 hover:border-gold-500',
                   )}

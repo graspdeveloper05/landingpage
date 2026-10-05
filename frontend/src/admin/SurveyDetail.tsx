@@ -52,7 +52,7 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
           status,
         }),
       )
-      toast.success(status === 'open' ? 'Survey is open to attendees.' : 'Survey closed.')
+      toast.success(status === 'open' ? 'Survey is active.' : 'Survey is inactive.')
     } catch (e) {
       toast.error(e instanceof AdminError ? e.message : 'Could not change the survey.')
     }
@@ -160,18 +160,19 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
         </AdminButton>
         {survey.status === 'open' ? (
           <AdminButton variant="danger" onClick={() => setSurveyStatus('closed')}>
-            Close survey
+            Deactivate survey
           </AdminButton>
         ) : (
           <AdminButton variant="success" onClick={() => setSurveyStatus('open')}>
-            Open survey
+            Activate survey
           </AdminButton>
         )}
       </div>
 
       {survey.status !== 'open' && (
         <p className="text-micro text-slate">
-          Attendees see a question only while the survey is open <em>and</em> the question is open.
+          Attendees see a question only while the survey is active <em>and</em> the question is
+          active.
         </p>
       )}
 
@@ -206,11 +207,11 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
                 <div className="flex flex-wrap items-center gap-1">
                   {q.status === 'open' ? (
                     <AdminButton variant="danger" onClick={() => setQuestionStatus(q, 'closed')}>
-                      Close
+                      Deactivate
                     </AdminButton>
                   ) : (
                     <AdminButton variant="success" onClick={() => setQuestionStatus(q, 'open')}>
-                      Open
+                      Activate
                     </AdminButton>
                   )}
                   <button

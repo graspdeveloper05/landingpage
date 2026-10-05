@@ -3,21 +3,27 @@ import { cn } from '@/lib/cn'
 import { adminApi, reachable, type SurveyResult, type SurveyStatus } from './client'
 import { AdminCard, Notice } from './ui'
 
+/**
+ * Active or Inactive. Stored as open / draft / closed; the team only needs to
+ * know whether attendees can answer, so draft and closed both read Inactive.
+ */
 export function StatusChip({ status }: { status: SurveyStatus }) {
-  const styles = {
-    draft: 'border-[#DDDCD8] bg-[#F1F1EF] text-slate',
-    open: 'border-green-300 bg-green-50 text-green-800',
-    closed: 'border-navy-200 bg-white text-navy-800',
-  }[status]
-  const label = { draft: 'Draft', open: 'Open', closed: 'Closed' }[status]
+  const active = status === 'open'
   return (
-    <span className={cn('rounded-full border px-2 py-0.5 text-micro font-semibold', styles)}>
-      {label}
+    <span
+      className={cn(
+        'rounded-full border px-2 py-0.5 text-micro font-semibold',
+        active
+          ? 'border-green-300 bg-green-50 text-green-800'
+          : 'border-[#DDDCD8] bg-[#F1F1EF] text-slate',
+      )}
+    >
+      {active ? 'Active' : 'Inactive'}
     </span>
   )
 }
 
-/** Live counts while the survey is open; refreshed every five seconds. */
+/** Live counts while the survey is active; refreshed every five seconds. */
 export function SurveyResults({ surveyId, live }: { surveyId: number; live: boolean }) {
   const [results, setResults] = useState<SurveyResult[] | null>(null)
   const [error, setError] = useState<string | null>(null)
