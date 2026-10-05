@@ -7,7 +7,7 @@ use App\Models\Registration;
 use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
-use App\Support\Mobile;
+use App\Support\RegistrationLookup;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
@@ -31,7 +31,7 @@ class SurveyController extends Controller
             'contact' => ['required', 'string', 'max:190'],
         ])['contact']);
 
-        $registration = $this->find($contact);
+        $registration = RegistrationLookup::find($contact);
 
         if (! $registration) {
             throw ValidationException::withMessages(['contact' => 'User not found.']);
@@ -127,28 +127,6 @@ class SurveyController extends Controller
             'rating' => ['regex:/^[1-5]$/'],
             default => ['max:1000'],
         };
-    }
-
-    private function find(string $contact): ?Registration
-    {
-        $edition = (int) config('event.edition');
-
-        if (str_contains($contact, '@')) {
-            return Registration::forEdition($edition)->where('email', strtolower($contact))->first();
-        }
-
-        $wanted = Mobile::canonical($contact);
-        if (strlen($wanted) < 8) {
-            return null;
-        }
-
-        // A few hundred rows: compared in PHP because the stored numbers are
-        // written every way people type them, which SQL cannot normalise.
-        return Registration::forEdition($edition)
-            ->whereNotNull('mobile')
-            ->orderBy('id')
-            ->get(['id', 'full_name', 'mobile'])
-            ->first(fn (Registration $r) => Mobile::canonical($r->mobile) === $wanted);
     }
 
     private function fromToken(string $token): ?Registration

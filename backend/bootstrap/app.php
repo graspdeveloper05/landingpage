@@ -53,6 +53,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // Same reasoning: attendees answer with a token in the body, not
             // a session, so there is no ambient authority to forge.
             'api/survey/*',
+            // The same for check-in: a public form, no session behind it.
+            'api/checkin',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

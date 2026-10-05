@@ -27,6 +27,8 @@ class Registration extends Model
         'ip_address',
         'user_agent',
         'confirmation_sent_at',
+        'checked_in_at',
+        'checked_in_via',
     ];
 
     protected function casts(): array
@@ -36,6 +38,7 @@ class Registration extends Model
             'pdpa_accepted' => 'boolean',
             'pdpa_accepted_at' => 'datetime',
             'confirmation_sent_at' => 'datetime',
+            'checked_in_at' => 'datetime',
         ];
     }
 

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AnalyticsController;
+use App\Http\Controllers\Api\Admin\AttendanceAdminController;
+use App\Http\Controllers\Api\Admin\AttendanceExportController;
 use App\Http\Controllers\Api\Admin\ChairmanAdminController;
 use App\Http\Controllers\Api\Admin\EventAdminController;
 use App\Http\Controllers\Api\Admin\GoogleFormAdminController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\Api\Admin\SurveyAdminController;
 use App\Http\Controllers\Api\Admin\SurveyExportController;
 use App\Http\Controllers\Api\Admin\SurveyQuestionAdminController;
 use App\Http\Controllers\Api\Admin\SurveyRespondentController;
+use App\Http\Controllers\Api\CheckInController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\GoogleFormIntakeController;
 use App\Http\Controllers\Api\PageViewController;
@@ -53,6 +56,10 @@ Route::post('/registrations', [RegistrationController::class, 'store'])
 // The attendee side of a survey. Named limiters (AppServiceProvider), each
 // on its own counter, because a hall full of people shares one Wi-Fi address.
 Route::post('/survey/identify', [SurveyController::class, 'identify'])->middleware('throttle:survey-identify');
+
+// Self check-in from the QR poster at the entrance.
+Route::get('/checkin', [CheckInController::class, 'status'])->middleware('throttle:checkin');
+Route::post('/checkin', [CheckInController::class, 'store'])->middleware('throttle:checkin');
 Route::get('/survey/{link}', [SurveyController::class, 'show'])->middleware('throttle:survey-read');
 Route::post('/survey/questions/{question}/answer', [SurveyController::class, 'answer'])->middleware('throttle:survey-answer');
 
@@ -159,6 +166,12 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/surveys/{survey}/questions/reorder', [SurveyQuestionAdminController::class, 'reorder']);
     Route::put('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'update']);
     Route::delete('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'destroy']);
+
+    // Attendance on the day: the tracker, staff check-in, and opening check-in.
+    Route::get('/attendance', [AttendanceAdminController::class, 'index']);
+    Route::put('/attendance/settings', [AttendanceAdminController::class, 'settings']);
+    Route::post('/attendance/{registration:reference}', [AttendanceAdminController::class, 'store']);
+    Route::delete('/attendance/{registration:reference}', [AttendanceAdminController::class, 'destroy']);
 });
 
 /*
@@ -169,6 +182,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 Route::middleware(EnsureAdminToken::class)->prefix('admin')->group(function () {
     Route::get('/registrations', RegistrationExportController::class);
     Route::get('/surveys/{survey}/export', SurveyExportController::class);
+    Route::get('/attendance/export', AttendanceExportController::class);
 });
 
 /*
