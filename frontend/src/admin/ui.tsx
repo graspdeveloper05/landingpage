@@ -227,7 +227,7 @@ export function AdminButton({
   children: ReactNode
   onClick?: () => void
   type?: 'button' | 'submit'
-  variant?: 'primary' | 'quiet' | 'danger'
+  variant?: 'primary' | 'quiet' | 'danger' | 'success'
   disabled?: boolean
   className?: string
 }) {
@@ -235,6 +235,8 @@ export function AdminButton({
     primary: 'bg-navy-900 text-cream hover:bg-navy-800',
     quiet: 'border border-[#DDDCD8] bg-white text-navy-900 hover:border-navy-600',
     danger: 'border border-red-200 bg-white text-red-700 hover:border-red-400 hover:bg-red-50',
+    // Starting something attendees will see, e.g. opening a survey.
+    success: 'bg-green-700 text-white hover:bg-green-800',
   }[variant]
 
   return (
