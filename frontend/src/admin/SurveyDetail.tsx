@@ -153,7 +153,6 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
         <AdminButton variant="quiet" onClick={() => setEditingDetails(true)}>
           Edit details
         </AdminButton>
-        <StatusChip status={survey.status} />
         {survey.status === 'open' ? (
           <AdminButton variant="danger" onClick={() => setSurveyStatus('closed')}>
             Close survey
