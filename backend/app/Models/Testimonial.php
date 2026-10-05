@@ -12,7 +12,7 @@ class Testimonial extends Model
 
     public const STATUSES = ['pending', 'approved', 'hidden'];
 
-    protected $fillable = ['quote', 'credit', 'name', 'organisation', 'status', 'display_order'];
+    protected $fillable = ['survey_id', 'email', 'quote', 'credit', 'name', 'organisation', 'status', 'display_order'];
 
     protected $casts = ['display_order' => 'integer'];
 

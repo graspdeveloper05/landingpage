@@ -58,6 +58,7 @@ Route::post('/registrations', [RegistrationController::class, 'store'])
 Route::get('/testimonials', [TestimonialController::class, 'index']);
 
 Route::get('/survey/{link}', [SurveyController::class, 'show'])->middleware('throttle:survey-read');
+Route::post('/survey/{link}/testimonial', [SurveyController::class, 'testimonial'])->middleware('throttle:survey-answer');
 Route::post('/survey/questions/{question}/answer', [SurveyController::class, 'answer'])->middleware('throttle:survey-answer');
 
 /*

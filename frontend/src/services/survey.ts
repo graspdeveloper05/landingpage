@@ -28,6 +28,17 @@ export interface Identity {
   mobile: string
 }
 
+export type TestimonialCredit = 'anonymous' | 'first_name' | 'full_name' | 'full_name_org'
+
+/** The testimonial part every feedback form ends with. */
+export interface TestimonialEntry {
+  quote: string
+  credit: TestimonialCredit
+  name: string
+  organisation: string
+  consent: boolean
+}
+
 export class SurveyError extends Error {
   constructor(
     message: string,
@@ -97,6 +108,11 @@ export const surveyApi = {
       'GET',
       `/survey/${encodeURIComponent(surveyId)}?email=${encodeURIComponent(email ?? '')}`,
     ),
+  testimonial: (surveyId: string, who: Identity, entry: TestimonialEntry) =>
+    call<{ message: string }>('POST', `/survey/${encodeURIComponent(surveyId)}/testimonial`, {
+      ...who,
+      ...entry,
+    }),
   answer: (questionId: number, who: Identity, answer: string) =>
     call<{ message: string }>('POST', `/survey/questions/${questionId}/answer`, { ...who, answer }),
 }

@@ -13,6 +13,8 @@ import {
   type Identity,
   type PublicQuestion,
   type PublicSurvey,
+  type TestimonialCredit,
+  type TestimonialEntry,
 } from '@/services/survey'
 
 /**
@@ -115,6 +117,8 @@ export function Survey() {
                 <Notice>{t('survey.wait')}</Notice>
               ) : (
                 <AnswerForm
+                  surveyLink={id}
+                  isFeedback={survey.form_type === 'feedback'}
                   questions={survey.questions}
                   who={identity}
                   onDone={load}
@@ -253,12 +257,17 @@ const PAGE_SIZE = 10
  * question does not wipe what has been chosen for the others.
  */
 function AnswerForm({
+  surveyLink,
+  isFeedback,
   questions,
   who,
   onDone,
   onForget,
   onSubmitted,
 }: {
+  surveyLink: string
+  /** Feedback forms end with the testimonial section. */
+  isFeedback: boolean
   questions: PublicQuestion[]
   who: Identity
   onDone: () => void
@@ -274,6 +283,12 @@ function AnswerForm({
   const [busy, setBusy] = useState(false)
 
   const [page, setPage] = useState(0)
+  const [testimonial, setTestimonial] = useState<TestimonialEntry>(EMPTY_TESTIMONIAL)
+  const [testimonialErrors, setTestimonialErrors] = useState<TestimonialErrors>({})
+
+  // A testimonial is sent only when written and permitted; without either,
+  // the feedback goes on its own, as the form promises.
+  const sharing = isFeedback && testimonial.quote.trim() !== '' && testimonial.consent
 
   const isDone = (q: PublicQuestion) => q.answered || sent.has(q.id)
   const pending = questions.filter((q) => !isDone(q))
@@ -326,6 +341,15 @@ function AnswerForm({
       return
     }
 
+    if (sharing) {
+      const problems = checkTestimonial(testimonial, t)
+      setTestimonialErrors(problems)
+      if (Object.keys(problems).length > 0) {
+        setError(t('survey.testimonialCheck'))
+        return
+      }
+    }
+
     setBusy(true)
     setErrors({})
     const failed: Record<number, string> = {}
@@ -345,14 +369,29 @@ function AnswerForm({
       }
     }
 
+    // The testimonial after the answers, so feedback is never lost to it.
+    let testimonialFailed = false
+    if (sharing && Object.keys(failed).length === 0) {
+      try {
+        await surveyApi.testimonial(surveyLink, who, testimonial)
+      } catch (err) {
+        if (!(err instanceof SurveyError && err.status === 409)) testimonialFailed = true
+      }
+    }
+
     setSent(done)
     setErrors(failed)
     setBusy(false)
+    if (testimonialFailed) {
+      setError(t('survey.error'))
+      return
+    }
     if (Object.keys(failed).length > 0) {
       setError(t('survey.error'))
       onDone()
     } else {
       setAnswers({})
+      setTestimonial(EMPTY_TESTIMONIAL)
       onSubmitted()
     }
   }
@@ -381,6 +420,17 @@ function AnswerForm({
           />
         ))}
       </ol>
+
+      {isFeedback && lastPage && (
+        <TestimonialFields
+          value={testimonial}
+          errors={testimonialErrors}
+          onChange={(next) => {
+            setTestimonial(next)
+            setTestimonialErrors({})
+          }}
+        />
+      )}
 
       <div className="mt-8 flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p aria-live="polite" className="text-small text-slate">
@@ -614,5 +664,171 @@ function QuestionField({
         )}
       </fieldset>
     </li>
+  )
+}
+
+const EMPTY_TESTIMONIAL: TestimonialEntry = {
+  quote: '',
+  credit: 'anonymous',
+  name: '',
+  organisation: '',
+  consent: false,
+}
+
+type TestimonialErrors = Partial<Record<'name' | 'organisation', string>>
+
+/** A credit that shows a name needs one; with organisation, that too. */
+function checkTestimonial(entry: TestimonialEntry, t: (key: string) => string): TestimonialErrors {
+  const errors: TestimonialErrors = {}
+  if (entry.credit !== 'anonymous' && !entry.name.trim()) errors.name = t('survey.nameNeeded')
+  if (entry.credit === 'full_name_org' && !entry.organisation.trim()) {
+    errors.organisation = t('survey.organisationNeeded')
+  }
+  return errors
+}
+
+const CREDITS: TestimonialCredit[] = ['anonymous', 'first_name', 'full_name', 'full_name_org']
+
+/**
+ * The testimonial section every feedback form ends with, as the organising
+ * team's form sets it out: an optional reflection, how to credit it (with
+ * only the fields that credit needs), and an unticked permission box.
+ */
+function TestimonialFields({
+  value,
+  errors,
+  onChange,
+}: {
+  value: TestimonialEntry
+  errors: TestimonialErrors
+  onChange: (next: TestimonialEntry) => void
+}) {
+  const { t } = useI18n()
+  const set = (patch: Partial<TestimonialEntry>) => onChange({ ...value, ...patch })
+  const input = (invalid: boolean) =>
+    cn(
+      'mt-2 block min-h-[48px] w-full rounded-sm border bg-white px-4 text-body text-navy-950',
+      'transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold-500/40',
+      invalid
+        ? 'border-red-400 bg-red-50'
+        : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
+    )
+
+  return (
+    <section aria-labelledby="testimonial-heading" className="mt-10 space-y-6">
+      <div>
+        <h2 id="testimonial-heading" className="font-display text-[1.35rem] text-navy-950">
+          {t('survey.testimonialHeading')}{' '}
+          <span className="font-sans text-small text-slate">({t('survey.optional')})</span>
+        </h2>
+        <p className="mt-1 text-small text-slate">{t('survey.testimonialIntro')}</p>
+      </div>
+
+      <label className="block">
+        <span className="font-semibold text-navy-950">{t('survey.testimonialQuestion')}</span>
+        <span className="block text-small text-slate">{t('survey.testimonialHint')}</span>
+        <textarea
+          value={value.quote}
+          onChange={(e) => set({ quote: e.target.value })}
+          maxLength={1000}
+          rows={4}
+          className="mt-2 block w-full rounded-sm border border-navy-900/15 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gold-500/40"
+        />
+      </label>
+
+      <fieldset>
+        <legend className="font-semibold text-navy-950">{t('survey.creditQuestion')}</legend>
+        <p className="text-small text-slate">{t('survey.creditHint')}</p>
+        <div className="mt-3 space-y-2.5">
+          {CREDITS.map((credit) => {
+            const checked = value.credit === credit
+            return (
+              <label
+                key={credit}
+                className={cn(
+                  'flex min-h-[52px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-3 text-body transition-colors duration-200',
+                  'focus-within:ring-2 focus-within:ring-gold-500/60',
+                  checked
+                    ? 'border-gold-500 bg-gold-500/10 text-navy-950'
+                    : 'border-navy-900/15 bg-white text-navy-900 hover:border-gold-500/60',
+                )}
+              >
+                <input
+                  type="radio"
+                  name="testimonial-credit"
+                  checked={checked}
+                  onChange={() => set({ credit })}
+                  className="sr-only"
+                />
+                <span
+                  aria-hidden
+                  className={cn(
+                    'grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors',
+                    checked ? 'border-gold-500' : 'border-navy-900/30',
+                  )}
+                >
+                  {checked && <span className="block h-2.5 w-2.5 rounded-full bg-gold-500" />}
+                </span>
+                {t(`survey.credit_${credit}`)}
+              </label>
+            )
+          })}
+        </div>
+
+        {/* Only the fields the chosen credit needs. */}
+        {value.credit !== 'anonymous' && (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-micro font-medium uppercase tracking-[0.08em] text-slate">
+                {t('survey.creditName')}
+              </span>
+              <input
+                value={value.name}
+                onChange={(e) => set({ name: e.target.value })}
+                autoComplete="name"
+                aria-invalid={errors.name ? true : undefined}
+                className={input(!!errors.name)}
+              />
+              {errors.name && (
+                <span className="mt-1.5 block text-micro text-red-700">{errors.name}</span>
+              )}
+            </label>
+            {value.credit === 'full_name_org' && (
+              <label className="block">
+                <span className="text-micro font-medium uppercase tracking-[0.08em] text-slate">
+                  {t('survey.creditOrganisation')}
+                </span>
+                <input
+                  value={value.organisation}
+                  onChange={(e) => set({ organisation: e.target.value })}
+                  autoComplete="organization"
+                  aria-invalid={errors.organisation ? true : undefined}
+                  className={input(!!errors.organisation)}
+                />
+                {errors.organisation && (
+                  <span className="mt-1.5 block text-micro text-red-700">
+                    {errors.organisation}
+                  </span>
+                )}
+              </label>
+            )}
+          </div>
+        )}
+      </fieldset>
+
+      <div>
+        <p className="font-semibold text-navy-950">{t('survey.consentHeading')}</p>
+        <label className="mt-2 flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={value.consent}
+            onChange={(e) => set({ consent: e.target.checked })}
+            className="mt-1 h-5 w-5 shrink-0 accent-[#C9A227]"
+          />
+          <span className="text-body text-navy-900">{t('survey.consentText')}</span>
+        </label>
+        <p className="mt-3 text-small text-slate">{t('survey.consentNote')}</p>
+      </div>
+    </section>
   )
 }
