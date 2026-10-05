@@ -6,6 +6,7 @@ import { adminApi, AdminError, reachable, type AttendancePage, type AttendanceRo
 import { AdminButton, AdminCard, CopyText, Notice } from './ui'
 import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
+import { ImportAttendees } from './ImportAttendees'
 
 type Filter = 'all' | 'arrived' | 'waiting'
 
@@ -308,96 +309,6 @@ function Poster() {
           )}
         </div>
       </div>
-    </AdminCard>
-  )
-}
-
-interface ImportResult {
-  added: number
-  skipped: number
-  errors: { row: number; message: string }[]
-}
-
-/**
- * Bulk-adds attendees who did not register on the website (e.g. ministry
- * staff) from a CSV or Excel file. They are marked Imported, are not held to
- * the seat limit, and are not arrived unless the file says so.
- */
-function ImportAttendees({ onImported }: { onImported: () => void }) {
-  const [file, setFile] = useState<File | null>(null)
-  const [result, setResult] = useState<ImportResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  async function upload() {
-    if (!file) return
-    setBusy(true)
-    setError(null)
-    setResult(null)
-    try {
-      const body = new FormData()
-      body.append('file', file)
-      setResult(await adminApi.post<ImportResult>('/admin/attendance/import', body))
-      onImported()
-    } catch (e) {
-      setError(
-        e instanceof AdminError ? (e.fields.file ?? e.message) : 'Could not upload that file.',
-      )
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <AdminCard className="space-y-3">
-      <div>
-        <p className="text-[0.85rem] font-semibold text-navy-950">Import attendees</p>
-        <p className="text-micro text-slate">
-          Add people who did not register on the website from a CSV or Excel (.xlsx) file, with the
-          columns name, email, mobile, organisation and designation. An optional “arrived” column
-          set to yes marks them arrived; otherwise they are not. Emails already registered are
-          skipped.{' '}
-          <a href="/samples/attendees-import.csv" download className="font-semibold underline">
-            Download sample CSV
-          </a>
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <input
-          type="file"
-          accept=".csv,.xlsx"
-          onChange={(e) => {
-            setFile(e.target.files?.[0] ?? null)
-            setResult(null)
-            setError(null)
-          }}
-          className="text-[0.8rem] file:mr-3 file:rounded-sm file:border file:border-[#DDDCD8] file:bg-white file:px-3 file:py-1.5 file:text-[0.78rem] file:font-semibold file:text-navy-900"
-        />
-        <AdminButton onClick={upload} disabled={!file || busy}>
-          {busy ? 'Importing…' : 'Import'}
-        </AdminButton>
-      </div>
-
-      {error && <Notice kind="error">{error}</Notice>}
-
-      {result && (
-        <div className="space-y-2">
-          <Notice kind="success">
-            Added {result.added}. Skipped {result.skipped} already registered.
-            {result.errors.length > 0 && ` ${result.errors.length} rows need fixing.`}
-          </Notice>
-          {result.errors.length > 0 && (
-            <ul className="max-h-48 space-y-1 overflow-y-auto text-micro text-red-700">
-              {result.errors.map((e) => (
-                <li key={e.row}>
-                  Row {e.row}: {e.message}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
     </AdminCard>
   )
 }

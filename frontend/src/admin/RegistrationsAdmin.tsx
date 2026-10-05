@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { API_BASE } from '@/services/api'
 import { adminApi, reachable } from './client'
+import { ImportAttendees } from './ImportAttendees'
 import { useToast } from './Toast'
 import { AdminButton, AdminCard, AdminField, Notice } from './ui'
 import { SkeletonRows } from './Loading'
@@ -250,6 +251,7 @@ export function RegistrationsAdmin() {
   const [reloads, setReloads] = useState(0)
   // Stable, so the sync's polling effect is not restarted on every render.
   const refresh = useCallback(() => setReloads((n) => n + 1), [])
+  const [importing, setImporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // Sequence number for in-flight requests; see the note in the effect.
   const latest = useRef(0)
@@ -365,6 +367,9 @@ export function RegistrationsAdmin() {
         <div className="flex flex-wrap items-center justify-end gap-3">
           {/* Only once the form's script is set up to send responses. */}
           {meta?.handoff && <SyncNow onProgress={refresh} />}
+          <AdminButton variant="quiet" onClick={() => setImporting((v) => !v)}>
+            {importing ? 'Close import' : 'Import attendees'}
+          </AdminButton>
           <a
             href={`${API_BASE}/api/admin/registrations?${exportQuery}`}
             // Styled to match AdminButton rather than reusing it: this has to
@@ -376,6 +381,12 @@ export function RegistrationsAdmin() {
           </a>
         </div>
       </div>
+
+      {importing && (
+        <div className="mb-4">
+          <ImportAttendees onImported={refresh} />
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 flex flex-wrap items-center gap-3">
