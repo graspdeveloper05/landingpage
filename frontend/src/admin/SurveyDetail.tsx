@@ -150,7 +150,7 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
         </p>
       )}
 
-      <SurveyShare />
+      <SurveyShare surveyId={survey.id} />
 
       <section>
         <div className="mb-2 flex items-center justify-between gap-3">

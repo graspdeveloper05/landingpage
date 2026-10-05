@@ -45,32 +45,38 @@ class SurveyController extends Controller
         ]);
     }
 
-    public function index(Request $request): JsonResponse
+    /**
+     * One survey, at its own link. A survey that is not open still shows its
+     * title, so someone scanning an old QR code learns it has closed rather
+     * than meeting a dead page.
+     */
+    public function show(Request $request, Survey $survey): JsonResponse
     {
         $registration = $this->fromToken((string) $request->query('token', ''));
 
-        $surveys = Survey::query()
-            ->where('status', 'open')
-            ->with(['questions' => fn ($q) => $q->where('status', 'open')])
-            ->orderBy('id')
-            ->get();
-
-        $answered = $registration
-            ? SurveyResponse::where('registration_id', $registration->id)->pluck('survey_question_id')->flip()
+        $questions = $survey->isOpen()
+            ? $survey->questions()->where('status', 'open')->get()
             : collect();
 
-        return response()->json(['surveys' => $surveys->map(fn (Survey $s) => [
-            'id' => $s->id,
-            'title' => $s->title,
-            'description' => $s->description,
-            'questions' => $s->questions->map(fn (SurveyQuestion $q) => [
+        $answered = $registration
+            ? SurveyResponse::where('registration_id', $registration->id)
+                ->whereIn('survey_question_id', $questions->pluck('id'))
+                ->pluck('survey_question_id')->flip()
+            : collect();
+
+        return response()->json([
+            'id' => $survey->id,
+            'title' => $survey->title,
+            'description' => $survey->description,
+            'status' => $survey->status,
+            'questions' => $questions->map(fn (SurveyQuestion $q) => [
                 'id' => $q->id,
                 'type' => $q->type,
                 'question' => $q->question,
                 'options' => $q->options,
                 'answered' => $answered->has($q->id),
             ])->values(),
-        ])->values()]);
+        ]);
     }
 
     public function answer(Request $request, SurveyQuestion $question): JsonResponse

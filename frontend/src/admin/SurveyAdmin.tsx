@@ -13,6 +13,7 @@ import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
 import { SurveyDetail } from './SurveyDetail'
 import { StatusChip } from './SurveyResults'
+import { surveyUrl } from './SurveyShare'
 
 /** Surveys run during and after the event, answered by registered attendees. */
 export function SurveyAdmin() {
@@ -82,8 +83,8 @@ export function SurveyAdmin() {
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[0.78rem] text-slate">
-          Attendees answer at <span className="font-semibold">/survey</span> with the email or
-          mobile they registered with.
+          Each survey has its own link. Attendees answer with the email or mobile they registered
+          with.
         </p>
         <AdminButton onClick={() => setEditing('new')}>Add survey</AdminButton>
       </div>
@@ -111,7 +112,8 @@ export function SurveyAdmin() {
               <div className="min-w-[12rem] flex-1">
                 <p className="text-[0.88rem] font-semibold text-navy-950">{s.title.en}</p>
                 <p className="text-micro text-slate">
-                  {s.questions_count ?? 0} questions · {s.responses_count ?? 0} answers
+                  {s.questions_count ?? 0} questions · {s.responses_count ?? 0} answers ·{' '}
+                  <span className="break-all">{surveyUrl(s.id)}</span>
                 </p>
               </div>
               <StatusChip status={s.status} />

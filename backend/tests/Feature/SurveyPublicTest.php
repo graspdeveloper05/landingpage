@@ -82,23 +82,43 @@ class SurveyPublicTest extends TestCase
         $this->postJson('/api/survey/identify', ['contact' => 'aisyah@example.com'])->assertUnprocessable();
     }
 
-    public function test_listing_shows_only_open_questions_of_open_surveys_and_what_was_answered(): void
+    public function test_each_survey_has_its_own_url_showing_only_its_open_questions(): void
     {
         $q = $this->openQuestion();
         $q->survey->questions()->create(['type' => 'text', 'question' => ['en' => 'Draft'], 'status' => 'draft']);
-        Survey::create(['title' => ['en' => 'Hidden'], 'status' => 'draft']);
+        $other = $this->openQuestion();
         $token = $this->token();
+        $url = "/api/survey/{$q->survey_id}?token=".urlencode($token);
 
-        $this->getJson('/api/survey?token='.urlencode($token))
+        $this->getJson($url)
             ->assertOk()
-            ->assertJsonCount(1, 'surveys')
-            ->assertJsonCount(1, 'surveys.0.questions')
-            ->assertJsonPath('surveys.0.questions.0.answered', false);
+            ->assertJsonPath('id', $q->survey_id)
+            ->assertJsonPath('status', 'open')
+            ->assertJsonCount(1, 'questions')
+            ->assertJsonPath('questions.0.id', $q->id)
+            ->assertJsonPath('questions.0.answered', false);
 
         $this->postJson("/api/survey/questions/{$q->id}/answer", ['token' => $token, 'answer' => '2'])->assertCreated();
 
-        $this->getJson('/api/survey?token='.urlencode($token))
-            ->assertJsonPath('surveys.0.questions.0.answered', true);
+        $this->getJson($url)->assertJsonPath('questions.0.answered', true);
+        $this->getJson("/api/survey/{$other->survey_id}")->assertJsonPath('questions.0.id', $other->id);
+    }
+
+    public function test_a_survey_that_is_not_open_shows_its_title_but_no_questions(): void
+    {
+        $q = $this->openQuestion();
+        $q->survey->update(['status' => 'draft']);
+
+        $this->getJson("/api/survey/{$q->survey_id}")
+            ->assertOk()
+            ->assertJsonPath('title.en', 'Live poll')
+            ->assertJsonPath('status', 'draft')
+            ->assertJsonCount(0, 'questions');
+    }
+
+    public function test_an_unknown_survey_is_404(): void
+    {
+        $this->getJson('/api/survey/999')->assertNotFound();
     }
 
     public function test_each_type_accepts_a_valid_answer(): void
@@ -156,7 +176,7 @@ class SurveyPublicTest extends TestCase
     {
         $q = $this->openQuestion();
         $this->postJson("/api/survey/questions/{$q->id}/answer", ['token' => 'forged', 'answer' => '0'])->assertUnauthorized();
-        $this->getJson('/api/survey?token=forged')->assertOk()->assertJsonPath('surveys.0.questions.0.answered', false);
+        $this->getJson("/api/survey/{$q->survey_id}?token=forged")->assertOk()->assertJsonPath('questions.0.answered', false);
     }
 
     public function test_a_token_for_a_deleted_registration_is_401(): void

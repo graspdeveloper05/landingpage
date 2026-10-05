@@ -3,9 +3,14 @@ import QRCode from 'qrcode'
 import { AdminButton, AdminCard } from './ui'
 import { useToast } from './Toast'
 
+/** The survey's own link. Each survey has one, so a live poll and the post-event survey can be shared apart. */
+export function surveyUrl(surveyId: number) {
+  return `${window.location.origin}/survey/${surveyId}`
+}
+
 /** The QR code and link to show on the hall screen. */
-export function SurveyShare() {
-  const url = `${window.location.origin}/survey`
+export function SurveyShare({ surveyId }: { surveyId: number }) {
+  const url = surveyUrl(surveyId)
   const [src, setSrc] = useState<string | null>(null)
   const toast = useToast()
 
@@ -38,7 +43,7 @@ export function SurveyShare() {
           {src && (
             <a
               href={src}
-              download="survey-qr.png"
+              download={`survey-${surveyId}-qr.png`}
               className="inline-flex min-h-[34px] items-center rounded-sm border border-[#DDDCD8] bg-white px-3 text-[0.78rem] font-semibold text-navy-900 hover:border-navy-600"
             >
               Download QR
