@@ -1,4 +1,3 @@
-import { cn } from '@/lib/cn'
 import { useCallback, useEffect, useState } from 'react'
 import { API_BASE } from '@/services/api'
 import {
@@ -225,12 +224,12 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
                   >
                     ↓
                   </button>
-                  <IconButton label="Edit question" onClick={() => setEditing(q)}>
-                    <PencilIcon />
-                  </IconButton>
-                  <IconButton label="Remove question" danger onClick={() => remove(q)}>
-                    <BinIcon />
-                  </IconButton>
+                  <AdminButton variant="quiet" onClick={() => setEditing(q)}>
+                    Edit
+                  </AdminButton>
+                  <AdminButton variant="danger" onClick={() => remove(q)}>
+                    Remove
+                  </AdminButton>
                 </div>
               </div>
             </AdminCard>
@@ -257,69 +256,5 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
         <SurveyResults surveyId={survey.id} live={survey.status === 'open'} />
       </section>
     </div>
-  )
-}
-
-/** A square icon-only button; the label is read out and shown on hover. */
-function IconButton({
-  label,
-  danger,
-  onClick,
-  children,
-}: {
-  label: string
-  danger?: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className={cn(
-        'grid h-10 w-10 place-items-center rounded-sm border bg-white transition-colors',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/35',
-        danger
-          ? 'border-red-200 text-red-700 hover:border-red-400 hover:bg-red-50'
-          : 'border-hair text-navy-800 hover:border-navy-600',
-      )}
-    >
-      {children}
-    </button>
-  )
-}
-
-function PencilIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden>
-      <path
-        d="M10.5 2.5l3 3L5 14H2v-3l8.5-8.5Z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <path d="M9 4l3 3" stroke="currentColor" strokeWidth="1.4" />
-    </svg>
-  )
-}
-
-function BinIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden>
-      <path
-        d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6.7 6.5v4.5M9.3 6.5v4.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-    </svg>
   )
 }
