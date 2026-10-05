@@ -193,6 +193,9 @@ function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void
   )
 }
 
+/** Questions shown per page of the answer form. */
+const PAGE_SIZE = 10
+
 /**
  * Every open question with one Submit at the foot. Answers are kept here,
  * keyed by question, so the ten-second refresh that brings in a newly opened
@@ -219,20 +222,55 @@ function AnswerForm({
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
+  const [page, setPage] = useState(0)
+
   const isDone = (q: PublicQuestion) => q.answered || sent.has(q.id)
   const pending = questions.filter((q) => !isDone(q))
   const filled = pending.filter((q) => answers[q.id]?.trim()).length
+
+  // Ten to a page. Clamped, because a question the moderator closes while
+  // someone is on the last page can leave that page empty.
+  const pages = Math.max(1, Math.ceil(pending.length / PAGE_SIZE))
+  const current = Math.min(page, pages - 1)
+  const onPage = pending.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE)
+  const lastPage = current === pages - 1
+  const blank = (q: PublicQuestion) => !answers[q.id]?.trim()
+
+  const goTo = (next: number) => {
+    setPage(next)
+    setError(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  /** Marks the unanswered questions and says so; true when there were none. */
+  const check = (list: PublicQuestion[], message: string) => {
+    const missing = list.filter(blank)
+    if (missing.length === 0) return true
+    setErrors(Object.fromEntries(missing.map((q) => [q.id, t('survey.required')])))
+    setError(message)
+    return false
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
+    // Each page is answered in full before the next one opens.
+    if (!lastPage) {
+      if (check(onPage, t('survey.answerPage'))) goTo(current + 1)
+      return
+    }
+
     // Every question is required: a half-answered survey is sent as nothing,
-    // with the gaps marked, rather than as a partial set.
-    const missing = pending.filter((q) => !answers[q.id]?.trim())
-    if (missing.length > 0) {
-      setErrors(Object.fromEntries(missing.map((q) => [q.id, t('survey.required')])))
-      setError(t('survey.answerAll'))
+    // with the gaps marked, rather than as a partial set. A gap on an earlier
+    // page (a question opened there since) takes them back to it.
+    if (!check(pending, t('survey.answerAll'))) {
+      const first = pending.findIndex(blank)
+      const firstPage = Math.floor(first / PAGE_SIZE)
+      if (firstPage !== current) {
+        setPage(firstPage)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
       return
     }
 
@@ -286,10 +324,10 @@ function AnswerForm({
   return (
     <form onSubmit={submit} noValidate>
       <ol className="divide-y divide-navy-900/10 border-y border-navy-900/10">
-        {pending.map((q, i) => (
+        {onPage.map((q, i) => (
           <QuestionField
             key={q.id}
-            number={i + 1}
+            number={current * PAGE_SIZE + i + 1}
             question={q}
             done={false}
             value={answers[q.id] ?? ''}
@@ -310,12 +348,31 @@ function AnswerForm({
               {error}
             </span>
           ) : (
-            t('survey.progress', { done: filled, total: pending.length })
+            <>
+              {pages > 1 && (
+                <span className="block font-medium text-navy-900">
+                  {t('survey.page', { page: current + 1, pages })}
+                </span>
+              )}
+              {t('survey.progress', { done: filled, total: pending.length })}
+            </>
           )}
         </p>
-        <Button type="submit" disabled={busy} withArrow className="w-full sm:w-auto">
-          {t('survey.submit')}
-        </Button>
+        <div className="flex flex-col-reverse gap-3 sm:flex-row">
+          {current > 0 && (
+            <Button
+              type="button"
+              variant="outlineNavy"
+              onClick={() => goTo(current - 1)}
+              className="w-full sm:w-auto"
+            >
+              {t('survey.back')}
+            </Button>
+          )}
+          <Button type="submit" disabled={busy} withArrow className="w-full sm:w-auto">
+            {lastPage ? t('survey.submit') : t('survey.next')}
+          </Button>
+        </div>
       </div>
     </form>
   )
@@ -386,12 +443,12 @@ function QuestionField({
                       <span
                         aria-hidden
                         className={cn(
-                          'grid h-4 w-4 shrink-0 place-items-center border transition-colors',
-                          checked
-                            ? 'rotate-45 border-gold-400 bg-gold-500'
-                            : 'rotate-45 border-navy-900/35',
+                          'grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors',
+                          checked ? 'border-gold-500' : 'border-navy-900/30',
                         )}
-                      />
+                      >
+                        {checked && <span className="block h-2.5 w-2.5 rounded-full bg-gold-500" />}
+                      </span>
                       {pick(o, locale)}
                     </label>
                   )

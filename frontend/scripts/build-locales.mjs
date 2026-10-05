@@ -558,6 +558,15 @@ const src = {
       'உங்கள் பதிலுக்கு நன்றி.',
     ),
     goBack: L('Go back', 'Kembali', '返回', 'திரும்பிச் செல்'),
+    next: L('Next', 'Seterusnya', '下一页', 'அடுத்து'),
+    back: L('Back', 'Sebelumnya', '上一页', 'முந்தையது'),
+    page: L('Page {{page}} of {{pages}}', 'Halaman {{page}} daripada {{pages}}', '第 {{page}} 页，共 {{pages}} 页', 'பக்கம் {{page}} / {{pages}}'),
+    answerPage: L(
+      'Please answer every question on this page to continue.',
+      'Sila jawab semua soalan di halaman ini untuk meneruskan.',
+      '请回答本页所有问题后继续。',
+      'தொடர, இந்தப் பக்கத்திலுள்ள அனைத்து கேள்விகளுக்கும் பதிலளிக்கவும்.',
+    ),
     stars: L('{{n}} out of 5', '{{n}} daripada 5', '5 分中的 {{n}} 分', '5 இல் {{n}}'),
     wait: L('Please wait for the next question.', 'Sila tunggu soalan seterusnya.', '请等待下一个问题。', 'அடுத்த கேள்விக்காக காத்திருக்கவும்.'),
     notOpen: L(
