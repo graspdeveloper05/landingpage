@@ -234,6 +234,9 @@
     "submit": "提交",
     "required": "请回答此问题。",
     "answerAll": "提交前请回答所有问题。",
+    "thanksTitle": "谢谢！",
+    "thanksBody": "您的回答已被记录。",
+    "ok": "好",
     "thanks": "感谢您的回答。",
     "typeHere": "请输入您的回答",
     "error": "出错了，请重试。"

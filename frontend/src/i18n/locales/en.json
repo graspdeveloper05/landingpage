@@ -234,6 +234,9 @@
     "submit": "Submit",
     "required": "Please answer this question.",
     "answerAll": "Please answer every question before submitting.",
+    "thanksTitle": "Thank you!",
+    "thanksBody": "Your responses have been recorded.",
+    "ok": "OK",
     "thanks": "Thank you for your answer.",
     "typeHere": "Type your answer",
     "error": "Something went wrong. Please try again."

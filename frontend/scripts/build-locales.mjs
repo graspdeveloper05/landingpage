@@ -569,6 +569,14 @@ const src = {
       '提交前请回答所有问题。',
       'சமர்ப்பிக்கும் முன் அனைத்து கேள்விகளுக்கும் பதிலளிக்கவும்.',
     ),
+    thanksTitle: L('Thank you!', 'Terima kasih!', '谢谢！', 'நன்றி!'),
+    thanksBody: L(
+      'Your responses have been recorded.',
+      'Jawapan anda telah direkodkan.',
+      '您的回答已被记录。',
+      'உங்கள் பதில்கள் பதிவு செய்யப்பட்டன.',
+    ),
+    ok: L('OK', 'OK', '好', 'சரி'),
     thanks: L('Thank you for your answer.', 'Terima kasih atas jawapan anda.', '感谢您的回答。', 'உங்கள் பதிலுக்கு நன்றி.'),
     typeHere: L('Type your answer', 'Taip jawapan anda', '请输入您的回答', 'உங்கள் பதிலை தட்டச்சு செய்யவும்'),
     error: L(

@@ -35,17 +35,37 @@ export function Survey() {
     [id, identity?.token],
   )
 
-  // Every ten seconds, so a question the moderator opens appears by itself.
   useEffect(() => {
     load()
-    const timer = window.setInterval(load, 10000)
-    return () => window.clearInterval(timer)
   }, [load])
 
-  const forget = () => {
+  // Every ten seconds while the survey is open and on screen, so a question
+  // the moderator opens appears by itself. A closed survey, or a tab in the
+  // background, asks nothing: a hall of phones shares one Wi-Fi address.
+  const live = survey?.status === 'open' && !missing
+  useEffect(() => {
+    if (!live) return
+    const timer = window.setInterval(() => {
+      if (!document.hidden) load()
+    }, 10000)
+    return () => window.clearInterval(timer)
+  }, [live, load])
+
+  const [thanked, setThanked] = useState(false)
+
+  const forget = useCallback(() => {
     saveIdentity(null)
     setIdentity(null)
-  }
+  }, [])
+
+  // After submitting, thank them and return to the sign-in step, so the
+  // next person can answer on the same phone or tablet. Stable, so the
+  // popup's auto-close timer is not restarted by a re-render.
+  const finish = useCallback(() => {
+    setThanked(false)
+    forget()
+    window.scrollTo({ top: 0 })
+  }, [forget])
 
   return (
     <section className="mx-auto min-h-[70vh] max-w-xl px-5 pb-20 pt-28 sm:pt-32">
@@ -83,13 +103,57 @@ export function Survey() {
                   token={identity.token}
                   onDone={load}
                   onForget={forget}
+                  onSubmitted={() => setThanked(true)}
                 />
               )}
             </div>
           )
         )}
       </div>
+
+      {thanked && <ThankYou onClose={finish} />}
     </section>
+  )
+}
+
+/** Shown after a successful submit; closes itself after a few seconds. */
+function ThankYou({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n()
+
+  useEffect(() => {
+    const timer = window.setTimeout(onClose, 5000)
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-navy-950/60 px-5" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="survey-thanks-title"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-sm bg-white p-6 text-center shadow-xl"
+      >
+        <p aria-hidden className="text-3xl text-gold-600">✓</p>
+        <h2 id="survey-thanks-title" className="mt-2 font-display text-[1.5rem] text-navy-950">
+          {t('survey.thanksTitle')}
+        </h2>
+        <p className="mt-2 text-slate">{t('survey.thanksBody')}</p>
+        <button
+          type="button"
+          autoFocus
+          onClick={onClose}
+          className="mt-5 rounded-sm bg-navy-900 px-6 py-2.5 font-semibold text-cream hover:bg-navy-800"
+        >
+          {t('survey.ok')}
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -160,11 +224,14 @@ function AnswerForm({
   token,
   onDone,
   onForget,
+  onSubmitted,
 }: {
   questions: PublicQuestion[]
   token: string
   onDone: () => void
   onForget: () => void
+  /** Every answer was recorded. */
+  onSubmitted: () => void
 }) {
   const { t } = useI18n()
   const [answers, setAnswers] = useState<Record<number, string>>({})
@@ -212,9 +279,14 @@ function AnswerForm({
 
     setSent(done)
     setErrors(failed)
-    if (Object.keys(failed).length > 0) setError(t('survey.error'))
     setBusy(false)
-    onDone()
+    if (Object.keys(failed).length > 0) {
+      setError(t('survey.error'))
+      onDone()
+    } else {
+      setAnswers({})
+      onSubmitted()
+    }
   }
 
   return (
