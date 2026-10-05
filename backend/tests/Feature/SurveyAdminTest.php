@@ -95,20 +95,20 @@ class SurveyAdminTest extends TestCase
             ->assertJsonPath('0.responses_count', 0);
     }
 
-    public function test_a_question_is_required_unless_marked_optional(): void
+    public function test_a_question_is_optional_unless_marked_required(): void
     {
         $survey = $this->survey();
 
         $this->admin()->postJson("/api/admin/surveys/{$survey->id}/questions", [
             'type' => 'rating',
             'question' => ['en' => 'Rate it'],
-        ])->assertCreated()->assertJsonPath('is_required', true);
+        ])->assertCreated()->assertJsonPath('is_required', false);
 
         $this->postJson("/api/admin/surveys/{$survey->id}/questions", [
             'type' => 'text',
             'question' => ['en' => 'Anything else?'],
-            'is_required' => false,
-        ])->assertCreated()->assertJsonPath('is_required', false);
+            'is_required' => true,
+        ])->assertCreated()->assertJsonPath('is_required', true);
     }
 
     public function test_skipped_optional_answers_are_left_out_of_results(): void

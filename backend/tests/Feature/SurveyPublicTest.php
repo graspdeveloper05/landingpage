@@ -26,6 +26,9 @@ class SurveyPublicTest extends TestCase
             'type' => $type,
             'question' => ['en' => 'Q?', 'ms' => 'S?'],
             'options' => in_array($type, ['choice', 'checkbox'], true) ? [['en' => 'A'], ['en' => 'B'], ['en' => 'C']] : null,
+            // Required, so the tests of what a valid answer is cannot be
+            // passed by skipping; the optional cases switch it off.
+            'is_required' => true,
             'status' => 'open',
         ]);
     }

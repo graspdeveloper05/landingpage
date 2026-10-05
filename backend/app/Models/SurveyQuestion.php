@@ -24,7 +24,7 @@ class SurveyQuestion extends Model
         'closed_at' => 'datetime',
     ];
 
-    protected $attributes = ['status' => 'draft', 'is_required' => true];
+    protected $attributes = ['status' => 'draft', 'is_required' => false];
 
     public function survey(): BelongsTo
     {

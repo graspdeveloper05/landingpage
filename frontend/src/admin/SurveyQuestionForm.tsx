@@ -43,7 +43,7 @@ export function SurveyQuestionForm({
   const [options, setOptions] = useState<Localized[]>(
     question?.options?.map(toLocalized) ?? [toLocalized(null), toLocalized(null)],
   )
-  const [required, setRequired] = useState(question?.is_required ?? true)
+  const [required, setRequired] = useState(question?.is_required ?? false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -144,7 +144,7 @@ export function SurveyQuestionForm({
           <span className="text-small text-navy-800">
             Required
             <span className="block text-micro text-slate">
-              Untick to let attendees skip this question.
+              Tick if attendees must answer this question before submitting.
             </span>
           </span>
         </label>
