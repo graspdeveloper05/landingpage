@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Admin\SurveyAdminController;
 use App\Http\Controllers\Api\Admin\SurveyExportController;
 use App\Http\Controllers\Api\Admin\SurveyQuestionAdminController;
 use App\Http\Controllers\Api\Admin\SurveyRespondentController;
+use App\Http\Controllers\Api\Admin\TestimonialAdminController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\GoogleFormIntakeController;
 use App\Http\Controllers\Api\PageViewController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Controllers\Api\SpeakerController;
 use App\Http\Controllers\Api\SponsorController;
 use App\Http\Controllers\Api\SurveyController;
+use App\Http\Controllers\Api\TestimonialController;
 use App\Http\Middleware\EnsureAdminToken;
 use Illuminate\Support\Facades\Route;
 
@@ -52,6 +54,9 @@ Route::post('/registrations', [RegistrationController::class, 'store'])
 
 // The attendee side of a survey. Named limiters (AppServiceProvider), each
 // on its own counter, because a hall full of people shares one Wi-Fi address.
+// Approved testimonials for the homepage.
+Route::get('/testimonials', [TestimonialController::class, 'index']);
+
 Route::get('/survey/{link}', [SurveyController::class, 'show'])->middleware('throttle:survey-read');
 Route::post('/survey/questions/{question}/answer', [SurveyController::class, 'answer'])->middleware('throttle:survey-answer');
 
@@ -146,6 +151,13 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/google-form/sync', [GoogleFormAdminController::class, 'syncStatus']);
 
     // Surveys the team runs during and after the event.
+    // Testimonials, reviewed before they appear on the homepage.
+    Route::get('/testimonials', [TestimonialAdminController::class, 'index']);
+    Route::post('/testimonials', [TestimonialAdminController::class, 'store']);
+    Route::post('/testimonials/reorder', [TestimonialAdminController::class, 'reorder']);
+    Route::put('/testimonials/{testimonial}', [TestimonialAdminController::class, 'update']);
+    Route::delete('/testimonials/{testimonial}', [TestimonialAdminController::class, 'destroy']);
+
     Route::get('/surveys', [SurveyAdminController::class, 'index']);
     Route::post('/surveys', [SurveyAdminController::class, 'store']);
     Route::get('/surveys/{survey}', [SurveyAdminController::class, 'show']);
