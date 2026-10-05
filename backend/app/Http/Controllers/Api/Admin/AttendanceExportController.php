@@ -15,7 +15,7 @@ class AttendanceExportController extends Controller
 
         return response()->streamDownload(function () {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Reference', 'Name', 'Email', 'Mobile', 'Organisation', 'Arrived', 'Arrived at', 'Checked in by']);
+            fputcsv($out, ['Reference', 'Name', 'Email', 'Mobile', 'Organisation', 'Category', 'Arrived', 'Arrived at', 'Checked in by']);
 
             Registration::forEdition((int) config('event.edition'))
                 ->orderBy('reference')
@@ -27,6 +27,7 @@ class AttendanceExportController extends Controller
                             $r->email,
                             $r->mobile,
                             $r->organisation,
+                            $r->category === 'ministry_staff' ? 'Ministry staff' : 'Participant',
                             $r->checked_in_at ? 'Yes' : 'No',
                             $r->checked_in_at?->timezone('Asia/Kuala_Lumpur')->format('Y-m-d H:i'),
                             match ($r->checked_in_via) {

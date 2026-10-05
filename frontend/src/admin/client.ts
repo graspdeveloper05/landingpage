@@ -264,6 +264,7 @@ export interface AttendanceRow {
   checkedInVia: 'self' | 'staff' | null
   /** website, google_form, or import (the organisers' own list). */
   source: string
+  category: 'participant' | 'ministry_staff'
 }
 
 export interface AttendancePage {

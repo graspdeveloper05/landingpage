@@ -29,7 +29,13 @@ class Registration extends Model
         'confirmation_sent_at',
         'checked_in_at',
         'checked_in_via',
+        'category',
     ];
+
+    /** Who someone is at the event: a participant, or ministry staff. */
+    public const CATEGORIES = ['participant', 'ministry_staff'];
+
+    protected $attributes = ['category' => 'participant'];
 
     protected function casts(): array
     {

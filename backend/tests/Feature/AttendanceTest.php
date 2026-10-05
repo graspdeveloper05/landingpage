@@ -170,8 +170,8 @@ class AttendanceTest extends TestCase
 
         $csv = $this->admin()->get('/api/admin/attendance/export')->assertOk()->streamedContent();
 
-        $this->assertStringContainsString('Reference,Name,Email,Mobile,Organisation,Arrived,"Arrived at","Checked in by"', $csv);
+        $this->assertStringContainsString('Reference,Name,Email,Mobile,Organisation,Category,Arrived,"Arrived at","Checked in by"', $csv);
         $this->assertStringContainsString('SND26-0001,"Aisyah Rahman",aisyah@example.com', $csv);
-        $this->assertMatchesRegularExpression('/"Raj Kumar".*,No,,/', $csv);
+        $this->assertMatchesRegularExpression('/"Raj Kumar".*,Participant,No,,/', $csv);
     }
 }
