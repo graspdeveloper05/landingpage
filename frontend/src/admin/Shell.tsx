@@ -22,7 +22,7 @@ const NAV = [
   { to: '/admin/sponsors', label: 'Sponsors', icon: BadgeIcon, hint: 'Partner logos' },
   { to: '/admin/registrations', label: 'Registrations', icon: TicketIcon, hint: 'Attendees and export' },
   { to: '/admin/analytics', label: 'Analytics', icon: ChartIcon, hint: 'Visitors and pages' },
-  { to: '/admin/survey', label: 'Survey', icon: SurveyIcon, hint: 'Questions and results' },
+  { to: '/admin/survey', label: 'Survey / Feedback', icon: SurveyIcon, hint: 'Questions and results' },
   { to: '/admin/attendance', label: 'Attendance', icon: CheckInIcon, hint: 'Check-in and arrivals' },
 ]
 
