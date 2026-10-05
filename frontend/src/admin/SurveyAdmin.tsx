@@ -215,7 +215,7 @@ export function SurveyForm({
     setError(null)
     setFieldErrors({})
     try {
-      const payload = { title, description, status }
+      const payload = survey ? { title, description, status } : { title, description }
       const saved = survey
         ? await adminApi.put<AdminSurvey>(`/admin/surveys/${survey.id}`, payload)
         : await adminApi.post<AdminSurvey>('/admin/surveys', payload)
@@ -257,32 +257,35 @@ export function SurveyForm({
           multiline
         />
 
-        <fieldset>
-          <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">Status</legend>
-          <p className="mb-2 text-[0.7rem] text-slate">
-            Attendees can answer only while the survey is open. Questions are opened one by one on
-            the survey's page.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {STATUS_CHOICES.map((s) => (
-              <button
-                key={s.value}
-                type="button"
-                onClick={() => setStatus(s.value)}
-                aria-pressed={status === s.value}
-                className={cn(
-                  'rounded-sm border px-3 py-1.5 text-left',
-                  status === s.value
-                    ? 'border-navy-900 bg-navy-900 text-cream'
-                    : 'border-[#DDDCD8] bg-white text-navy-900 hover:border-gold-500',
-                )}
-              >
-                <span className="block text-[0.78rem] font-semibold">{s.label}</span>
-                <span className="block text-micro opacity-75">{s.hint}</span>
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        {/* A new survey starts as a draft; status is chosen once it exists. */}
+        {survey && (
+          <fieldset>
+            <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">Status</legend>
+            <p className="mb-2 text-[0.7rem] text-slate">
+              Attendees can answer only while the survey is open. Questions are opened one by one on
+              the survey's page.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {STATUS_CHOICES.map((s) => (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => setStatus(s.value)}
+                  aria-pressed={status === s.value}
+                  className={cn(
+                    'rounded-sm border px-3 py-1.5 text-left',
+                    status === s.value
+                      ? 'border-navy-900 bg-navy-900 text-cream'
+                      : 'border-[#DDDCD8] bg-white text-navy-900 hover:border-gold-500',
+                  )}
+                >
+                  <span className="block text-[0.78rem] font-semibold">{s.label}</span>
+                  <span className="block text-micro opacity-75">{s.hint}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
       </AdminCard>
 
       <div className="sticky bottom-0 -mx-4 -mb-4 mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-[#DDDCD8] bg-white px-4 py-3 shadow-[0_-6px_16px_-8px_rgba(11,33,64,0.25)] sm:-mx-6 sm:-mb-6 sm:px-6">
