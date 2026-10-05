@@ -461,6 +461,63 @@ function QuestionField({
               </div>
             )}
 
+            {question.type === 'checkbox' && (
+              <div className="space-y-2.5">
+                <p className="text-small text-slate">{t('survey.selectAll')}</p>
+                {question.options?.map((o, i) => {
+                  // The answer is the ticked option numbers, e.g. "0,2".
+                  const ticked = value ? value.split(',') : []
+                  const checked = ticked.includes(String(i))
+                  const toggle = () =>
+                    onChange(
+                      (checked ? ticked.filter((v) => v !== String(i)) : [...ticked, String(i)])
+                        .map(Number)
+                        .sort((a, b) => a - b)
+                        .join(','),
+                    )
+                  return (
+                    <label
+                      key={i}
+                      className={cn(
+                        'flex min-h-[52px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-3 text-body transition-colors duration-200',
+                        'focus-within:ring-2 focus-within:ring-gold-500/60',
+                        checked
+                          ? 'border-gold-500 bg-gold-500/10 text-navy-950'
+                          : 'border-navy-900/15 bg-white text-navy-900 hover:border-gold-500/60',
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={toggle}
+                        className="sr-only"
+                      />
+                      <span
+                        aria-hidden
+                        className={cn(
+                          'grid h-5 w-5 shrink-0 place-items-center rounded-sm border-2 transition-colors',
+                          checked ? 'border-gold-500 bg-gold-500 text-white' : 'border-navy-900/30',
+                        )}
+                      >
+                        {checked && (
+                          <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
+                            <path
+                              d="M3 8.5l3 3 7-7"
+                              stroke="currentColor"
+                              strokeWidth="2.2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </span>
+                      {pick(o, locale)}
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+
             {question.type === 'rating' && (
               <div role="radiogroup" aria-label={text} className="flex gap-1.5 sm:gap-2">
                 {[1, 2, 3, 4, 5].map((n) => {

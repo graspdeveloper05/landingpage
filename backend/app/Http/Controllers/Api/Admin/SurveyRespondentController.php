@@ -70,16 +70,11 @@ class SurveyRespondentController extends Controller
                     'type' => $q->type,
                     'question' => $q->question,
                     'is_required' => $q->is_required,
-                    'answer' => $r === null || $skipped ? null : $this->label($q, $r->answer),
+                    'answer' => $r === null || $skipped ? null : $q->label($r->answer),
                     'skipped' => $skipped,
                     'answered_at' => $r?->created_at,
                 ];
             })->values(),
         ]);
-    }
-
-    private function label(SurveyQuestion $q, string $answer): string
-    {
-        return $q->type === 'choice' ? ($q->options[(int) $answer]['en'] ?? $answer) : $answer;
     }
 }

@@ -29,11 +29,9 @@ class SurveyExportController extends Controller
                 ->chunk(200, function ($rows) use ($out, $questions) {
                     foreach ($rows as $r) {
                         $q = $questions[$r->survey_question_id];
-                        // A choice is stored as its option number; the file
-                        // shows the English label so it reads on its own.
-                        $answer = $q->type === 'choice'
-                            ? ($q->options[(int) $r->answer]['en'] ?? $r->answer)
-                            : $r->answer;
+                        // Options are stored by number; the file shows the
+                        // English labels so it reads on its own.
+                        $answer = $q->label($r->answer);
 
                         fputcsv($out, array_map(fn ($v) => $this->guard((string) $v), [
                             $r->registration?->reference,

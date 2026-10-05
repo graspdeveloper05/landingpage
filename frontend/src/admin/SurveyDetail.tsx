@@ -16,7 +16,12 @@ import { SurveyResults } from './SurveyResults'
 import { SurveyShare } from './SurveyShare'
 import { SurveyForm } from './SurveyAdmin'
 
-const TYPE_LABEL = { choice: 'Multiple choice', rating: 'Rating 1–5', text: 'Text' }
+const TYPE_LABEL = {
+  choice: 'Multiple choice',
+  checkbox: 'Checkboxes',
+  rating: 'Rating 1–5',
+  text: 'Text',
+}
 
 export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void }) {
   const [survey, setSurvey] = useState<AdminSurvey | null>(null)

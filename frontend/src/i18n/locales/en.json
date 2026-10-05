@@ -243,6 +243,7 @@
     "goBack": "Go back",
     "next": "Next",
     "optional": "optional",
+    "selectAll": "Select all that apply.",
     "back": "Back",
     "page": "Page {{page}} of {{pages}}",
     "answerPage": "Please answer every question on this page to continue.",

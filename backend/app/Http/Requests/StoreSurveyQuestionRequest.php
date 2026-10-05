@@ -21,7 +21,10 @@ class StoreSurveyQuestionRequest extends FormRequest
             'question.zh' => ['nullable', 'string', 'max:300'],
             'question.ta' => ['nullable', 'string', 'max:300'],
 
-            'options' => ['exclude_unless:type,choice', 'required', 'array', 'min:2', 'max:10'],
+            'options' => [
+                Rule::excludeIf(! in_array($this->input('type'), SurveyQuestion::WITH_OPTIONS, true)),
+                'required', 'array', 'min:2', 'max:10',
+            ],
             'options.*' => ['array'],
             'options.*.en' => ['required', 'string', 'max:150'],
             'options.*.ms' => ['nullable', 'string', 'max:150'],
@@ -60,7 +63,7 @@ class StoreSurveyQuestionRequest extends FormRequest
                 $validator->errors()->add('type', 'People have answered this question, so its type cannot change.');
             }
 
-            if ($question->type === 'choice') {
+            if ($question->hasOptions()) {
                 $before = array_map(fn ($o) => $o['en'] ?? '', $question->options ?? []);
                 $after = array_map(fn ($o) => $o['en'] ?? '', (array) $this->input('options', []));
                 if (count($before) !== count($after) || $this->reordered($before, $after)) {
@@ -87,7 +90,9 @@ class StoreSurveyQuestionRequest extends FormRequest
     public function toQuestion(): array
     {
         $data = $this->validated();
-        $data['options'] = $data['type'] === 'choice' ? array_values($data['options']) : null;
+        $data['options'] = in_array($data['type'], SurveyQuestion::WITH_OPTIONS, true)
+            ? array_values($data['options'])
+            : null;
 
         return $data;
     }

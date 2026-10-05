@@ -212,7 +212,7 @@ export interface AdminProgrammeItem {
 }
 
 export type SurveyStatus = 'draft' | 'open' | 'closed'
-export type SurveyQuestionType = 'choice' | 'rating' | 'text'
+export type SurveyQuestionType = 'choice' | 'checkbox' | 'rating' | 'text'
 /** Only English is required; other languages may be empty or missing. */
 export type PartialLocalized = { en: string } & Partial<Record<Exclude<Locale, 'en'>, string | null>>
 
