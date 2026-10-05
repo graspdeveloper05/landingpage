@@ -13,6 +13,7 @@ import { Speakers } from '@/routes/Speakers'
 import { Programme } from '@/routes/Programme'
 import { Rsvp } from '@/routes/Rsvp'
 import { Survey } from '@/routes/Survey'
+import { CheckIn } from '@/routes/CheckIn'
 import { useEventStatus } from '@/lib/useEventStatus'
 import { usePageViews } from '@/lib/analytics'
 import { useI18n } from '@/i18n'
@@ -74,6 +75,7 @@ function PublicSite() {
           <Route path="/programme" element={<Programme />} />
           <Route path="/rsvp" element={<Rsvp status={status} refresh={refresh} />} />
           <Route path="/survey/:id" element={<Survey />} />
+          <Route path="/checkin" element={<CheckIn />} />
           {/* Anything else lands on the homepage rather than a dead end. */}
           <Route path="*" element={<Home status={status} refresh={refresh} />} />
         </Routes>

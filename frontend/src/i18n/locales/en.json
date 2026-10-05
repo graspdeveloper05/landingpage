@@ -219,6 +219,17 @@
     "privacy": "Privacy notice",
     "rights": "Seri Negara Dialogue"
   },
+  "checkin": {
+    "title": "Event check-in",
+    "intro": "Enter the email or mobile number you registered with.",
+    "submit": "Check in",
+    "done": "You're checked in. Welcome!",
+    "already": "Already checked in at {{time}}.",
+    "next": "Check in someone else",
+    "notFound": "We could not find that registration.",
+    "register": "Register now",
+    "closed": "Check-in is not open yet."
+  },
   "survey": {
     "title": "Survey",
     "contact": "Email or mobile number",

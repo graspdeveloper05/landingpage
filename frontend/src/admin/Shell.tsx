@@ -23,6 +23,7 @@ const NAV = [
   { to: '/admin/registrations', label: 'Registrations', icon: TicketIcon, hint: 'Attendees and export' },
   { to: '/admin/analytics', label: 'Analytics', icon: ChartIcon, hint: 'Visitors and pages' },
   { to: '/admin/survey', label: 'Survey', icon: SurveyIcon, hint: 'Questions and results' },
+  { to: '/admin/attendance', label: 'Attendance', icon: CheckInIcon, hint: 'Check-in and arrivals' },
 ]
 
 export function Shell({
@@ -246,6 +247,17 @@ function BusyBar() {
 /* -------------------------------------------------------------------------- */
 /* Icons — 16px, 1.4 stroke, drawn on the same grid so the rail reads evenly.  */
 /* -------------------------------------------------------------------------- */
+
+function CheckInIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden>
+      <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="1.5" y="9.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="9.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M9.5 12l1.8 1.8L14.5 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 function SurveyIcon({ className }: { className?: string }) {
   return (

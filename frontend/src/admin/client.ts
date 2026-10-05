@@ -252,6 +252,28 @@ export interface SurveyResult {
   answers?: { answer: string; name: string | null; reference: string | null; at: string }[]
 }
 
+export interface AttendanceRow {
+  reference: string
+  fullName: string
+  email: string | null
+  mobile: string | null
+  organisation: string | null
+  checkedInAt: string | null
+  checkedInVia: 'self' | 'staff' | null
+}
+
+export interface AttendancePage {
+  data: AttendanceRow[]
+  meta: {
+    registered: number
+    arrived: number
+    checkinOpen: boolean
+    page: number
+    lastPage: number
+    total: number
+  }
+}
+
 export interface SurveyRespondent {
   id: number
   reference: string | null

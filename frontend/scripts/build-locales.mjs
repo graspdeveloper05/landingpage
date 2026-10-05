@@ -534,6 +534,38 @@ const src = {
     rights: L('Seri Negara Dialogue', 'Dialog Seri Negara', '斯里尼加拉对话', 'சேரி நெகாரா உரையாடல்'),
   },
 
+  checkin: {
+    title: L('Event check-in', 'Daftar masuk acara', '活动签到', 'நிகழ்வு வருகைப் பதிவு'),
+    intro: L(
+      'Enter the email or mobile number you registered with.',
+      'Masukkan e-mel atau nombor telefon bimbit yang anda daftarkan.',
+      '请输入您报名时使用的电子邮件或手机号码。',
+      'நீங்கள் பதிவு செய்த மின்னஞ்சல் அல்லது கைபேசி எண்ணை உள்ளிடவும்.',
+    ),
+    submit: L('Check in', 'Daftar masuk', '签到', 'வருகையைப் பதிவு செய்'),
+    done: L("You're checked in. Welcome!", 'Anda telah mendaftar masuk. Selamat datang!', '签到成功，欢迎！', 'உங்கள் வருகை பதிவு செய்யப்பட்டது. வருக!'),
+    already: L(
+      'Already checked in at {{time}}.',
+      'Telah mendaftar masuk pada {{time}}.',
+      '已于 {{time}} 签到。',
+      '{{time}} மணிக்கு ஏற்கனவே பதிவு செய்யப்பட்டது.',
+    ),
+    next: L('Check in someone else', 'Daftar masuk orang lain', '为他人签到', 'வேறொருவரைப் பதிவு செய்'),
+    notFound: L(
+      'We could not find that registration.',
+      'Pendaftaran itu tidak ditemui.',
+      '找不到该报名记录。',
+      'அந்தப் பதிவைக் கண்டறிய முடியவில்லை.',
+    ),
+    register: L('Register now', 'Daftar sekarang', '立即报名', 'இப்போதே பதிவு செய்'),
+    closed: L(
+      'Check-in is not open yet.',
+      'Pendaftaran masuk belum dibuka.',
+      '签到尚未开始。',
+      'வருகைப் பதிவு இன்னும் திறக்கப்படவில்லை.',
+    ),
+  },
+
   survey: {
     title: L('Survey', 'Tinjauan', '问卷', 'கருத்துக்கணிப்பு'),
     contact: L('Email or mobile number', 'E-mel atau nombor telefon bimbit', '电子邮件或手机号码', 'மின்னஞ்சல் அல்லது கைபேசி எண்'),

@@ -219,6 +219,17 @@
     "privacy": "Notis privasi",
     "rights": "Dialog Seri Negara"
   },
+  "checkin": {
+    "title": "Daftar masuk acara",
+    "intro": "Masukkan e-mel atau nombor telefon bimbit yang anda daftarkan.",
+    "submit": "Daftar masuk",
+    "done": "Anda telah mendaftar masuk. Selamat datang!",
+    "already": "Telah mendaftar masuk pada {{time}}.",
+    "next": "Daftar masuk orang lain",
+    "notFound": "Pendaftaran itu tidak ditemui.",
+    "register": "Daftar sekarang",
+    "closed": "Pendaftaran masuk belum dibuka."
+  },
   "survey": {
     "title": "Tinjauan",
     "contact": "E-mel atau nombor telefon bimbit",

@@ -219,6 +219,17 @@
     "privacy": "隐私声明",
     "rights": "斯里尼加拉对话"
   },
+  "checkin": {
+    "title": "活动签到",
+    "intro": "请输入您报名时使用的电子邮件或手机号码。",
+    "submit": "签到",
+    "done": "签到成功，欢迎！",
+    "already": "已于 {{time}} 签到。",
+    "next": "为他人签到",
+    "notFound": "找不到该报名记录。",
+    "register": "立即报名",
+    "closed": "签到尚未开始。"
+  },
   "survey": {
     "title": "问卷",
     "contact": "电子邮件或手机号码",
