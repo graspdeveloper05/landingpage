@@ -562,6 +562,13 @@ const src = {
     ),
     missing: L('Survey not found.', 'Tinjauan tidak ditemui.', '未找到问卷。', 'கருத்துக்கணிப்பு கிடைக்கவில்லை.'),
     submit: L('Submit', 'Hantar', '提交', 'சமர்ப்பி'),
+    required: L('Please answer this question.', 'Sila jawab soalan ini.', '请回答此问题。', 'இந்தக் கேள்விக்குப் பதிலளிக்கவும்.'),
+    answerAll: L(
+      'Please answer every question before submitting.',
+      'Sila jawab semua soalan sebelum menghantar.',
+      '提交前请回答所有问题。',
+      'சமர்ப்பிக்கும் முன் அனைத்து கேள்விகளுக்கும் பதிலளிக்கவும்.',
+    ),
     thanks: L('Thank you for your answer.', 'Terima kasih atas jawapan anda.', '感谢您的回答。', 'உங்கள் பதிலுக்கு நன்றி.'),
     typeHere: L('Type your answer', 'Taip jawapan anda', '请输入您的回答', 'உங்கள் பதிலை தட்டச்சு செய்யவும்'),
     error: L(

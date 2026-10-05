@@ -75,10 +75,16 @@ export function Survey() {
                   {t('survey.notYou')}
                 </button>
               </p>
-              {survey.questions.length === 0 && <Message>{t('survey.wait')}</Message>}
-              {survey.questions.map((q) => (
-                <QuestionCard key={q.id} question={q} token={identity.token} onDone={load} onForget={forget} />
-              ))}
+              {survey.questions.length === 0 ? (
+                <Message>{t('survey.wait')}</Message>
+              ) : (
+                <AnswerForm
+                  questions={survey.questions}
+                  token={identity.token}
+                  onDone={load}
+                  onForget={forget}
+                />
+              )}
             </div>
           )
         )}
@@ -144,121 +150,193 @@ function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void
   )
 }
 
-function QuestionCard({
-  question,
+/**
+ * Every open question with one Submit at the foot. Answers are kept here,
+ * keyed by question, so the ten-second refresh that brings in a newly opened
+ * question does not wipe what has been chosen for the others.
+ */
+function AnswerForm({
+  questions,
   token,
   onDone,
   onForget,
 }: {
-  question: PublicQuestion
+  questions: PublicQuestion[]
   token: string
   onDone: () => void
   onForget: () => void
 }) {
-  const { t, locale } = useI18n()
-  const [answer, setAnswer] = useState('')
-  const [done, setDone] = useState(false)
+  const { t } = useI18n()
+  const [answers, setAnswers] = useState<Record<number, string>>({})
+  const [errors, setErrors] = useState<Record<number, string>>({})
+  const [sent, setSent] = useState<Set<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
+  const isDone = (q: PublicQuestion) => q.answered || sent.has(q.id)
+  const pending = questions.filter((q) => !isDone(q))
+
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!answer.trim()) return
-    setBusy(true)
     setError(null)
-    try {
-      await surveyApi.answer(question.id, token, answer)
-      setDone(true)
-      onDone()
-    } catch (err) {
-      if (err instanceof SurveyError && err.status === 401) return onForget()
-      if (err instanceof SurveyError && err.status === 409) return setDone(true)
-      setError(err instanceof SurveyError && err.message ? err.message : t('survey.error'))
-    } finally {
-      setBusy(false)
+
+    // Every question is required: a half-answered survey is sent as nothing,
+    // with the gaps marked, rather than as a partial set.
+    const missing = pending.filter((q) => !answers[q.id]?.trim())
+    if (missing.length > 0) {
+      setErrors(Object.fromEntries(missing.map((q) => [q.id, t('survey.required')])))
+      setError(t('survey.answerAll'))
+      return
     }
+
+    setBusy(true)
+    setErrors({})
+    const failed: Record<number, string> = {}
+    const done = new Set(sent)
+
+    // One request per answer, so a question that closed meanwhile fails on
+    // its own and the rest still count.
+    for (const q of pending) {
+      try {
+        await surveyApi.answer(q.id, token, answers[q.id])
+        done.add(q.id)
+      } catch (err) {
+        if (err instanceof SurveyError && err.status === 401) {
+          setBusy(false)
+          return onForget()
+        }
+        if (err instanceof SurveyError && err.status === 409) done.add(q.id)
+        else failed[q.id] = err instanceof SurveyError && err.message ? err.message : t('survey.error')
+      }
+    }
+
+    setSent(done)
+    setErrors(failed)
+    if (Object.keys(failed).length > 0) setError(t('survey.error'))
+    setBusy(false)
+    onDone()
   }
 
   return (
-    <form onSubmit={submit} className="rounded-sm border border-hair bg-white p-4">
-      <p className="font-semibold text-navy-950">{pick(question.question, locale)}</p>
+    <form onSubmit={submit} className="space-y-4">
+      {questions.map((q) => (
+        <QuestionField
+          key={q.id}
+          question={q}
+          done={isDone(q)}
+          value={answers[q.id] ?? ''}
+          error={errors[q.id]}
+          onChange={(v) => setAnswers((all) => ({ ...all, [q.id]: v }))}
+        />
+      ))}
 
-      {done || question.answered ? (
-        <p className="mt-3 text-small text-green-800">✓ {t('survey.thanks')}</p>
-      ) : (
-        <>
-          <div className="mt-3">
-            {question.type === 'choice' && (
-              <div className="space-y-2">
-                {question.options?.map((o, i) => (
-                  <label
-                    key={i}
-                    className={cn(
-                      'flex cursor-pointer items-center gap-3 rounded-sm border px-3 py-2.5',
-                      answer === String(i) ? 'border-navy-900 bg-navy-900/5' : 'border-hair',
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name={`q${question.id}`}
-                      checked={answer === String(i)}
-                      onChange={() => setAnswer(String(i))}
-                      className="accent-[#0B2140]"
-                    />
-                    {pick(o, locale)}
-                  </label>
-                ))}
-              </div>
-            )}
-
-            {question.type === 'rating' && (
-              <div className="flex gap-2" role="radiogroup">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    role="radio"
-                    aria-checked={answer === String(n)}
-                    aria-label={String(n)}
-                    onClick={() => setAnswer(String(n))}
-                    className={cn(
-                      'h-11 w-11 rounded-sm border text-xl',
-                      Number(answer) >= n ? 'border-gold-500 bg-gold-500/15 text-gold-700' : 'border-hair text-slate',
-                    )}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {question.type === 'text' && (
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                maxLength={1000}
-                rows={4}
-                placeholder={t('survey.typeHere')}
-                className="block w-full rounded-sm border border-hair px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gold-500/40"
-              />
-            )}
-          </div>
-
+      {pending.length > 0 && (
+        <div className="space-y-2">
           {error && (
-            <p role="alert" className="mt-2 text-small text-red-700">
+            <p role="alert" className="text-small text-red-700">
               {error}
             </p>
           )}
-
           <button
             type="submit"
-            disabled={busy || !answer.trim()}
-            className="mt-3 rounded-sm bg-navy-900 px-5 py-2 font-semibold text-cream hover:bg-navy-800 disabled:opacity-40"
+            disabled={busy}
+            className="rounded-sm bg-navy-900 px-6 py-2.5 font-semibold text-cream hover:bg-navy-800 disabled:opacity-40"
           >
             {t('survey.submit')}
           </button>
-        </>
+        </div>
       )}
     </form>
+  )
+}
+
+function QuestionField({
+  question,
+  done,
+  value,
+  error,
+  onChange,
+}: {
+  question: PublicQuestion
+  done: boolean
+  value: string
+  error?: string
+  onChange: (value: string) => void
+}) {
+  const { t, locale } = useI18n()
+
+  return (
+    <fieldset
+      className={cn('rounded-sm border bg-white p-4', error ? 'border-red-400' : 'border-hair')}
+      aria-invalid={error ? true : undefined}
+    >
+      <legend className="sr-only">{pick(question.question, locale)}</legend>
+      <p aria-hidden className="font-semibold text-navy-950">
+        {pick(question.question, locale)}
+      </p>
+
+      {done ? (
+        <p className="mt-3 text-small text-green-800">✓ {t('survey.thanks')}</p>
+      ) : (
+        <div className="mt-3">
+          {question.type === 'choice' && (
+            <div className="space-y-2">
+              {question.options?.map((o, i) => (
+                <label
+                  key={i}
+                  className={cn(
+                    'flex cursor-pointer items-center gap-3 rounded-sm border px-3 py-2.5',
+                    value === String(i) ? 'border-navy-900 bg-navy-900/5' : 'border-hair',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name={`q${question.id}`}
+                    checked={value === String(i)}
+                    onChange={() => onChange(String(i))}
+                    className="accent-[#0B2140]"
+                  />
+                  {pick(o, locale)}
+                </label>
+              ))}
+            </div>
+          )}
+
+          {question.type === 'rating' && (
+            <div className="flex gap-2" role="radiogroup">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={value === String(n)}
+                  aria-label={String(n)}
+                  onClick={() => onChange(String(n))}
+                  className={cn(
+                    'h-11 w-11 rounded-sm border text-xl',
+                    Number(value) >= n ? 'border-gold-500 bg-gold-500/15 text-gold-700' : 'border-hair text-slate',
+                  )}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+          )}
+
+          {question.type === 'text' && (
+            <textarea
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              maxLength={1000}
+              rows={4}
+              placeholder={t('survey.typeHere')}
+              className="block w-full rounded-sm border border-hair px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gold-500/40"
+            />
+          )}
+
+          {error && <p className="mt-2 text-small text-red-700">{error}</p>}
+        </div>
+      )}
+    </fieldset>
   )
 }

@@ -52,7 +52,7 @@ Route::post('/registrations', [RegistrationController::class, 'store'])
 // The attendee side of a survey. Limits are higher than registration's
 // because a hall full of people shares one Wi-Fi address.
 Route::post('/survey/identify', [SurveyController::class, 'identify'])->middleware('throttle:30,1');
-Route::get('/survey/{survey}', [SurveyController::class, 'show'])->middleware('throttle:120,1');
+Route::get('/survey/{link}', [SurveyController::class, 'show'])->middleware('throttle:120,1');
 Route::post('/survey/questions/{question}/answer', [SurveyController::class, 'answer'])->middleware('throttle:120,1');
 
 /*

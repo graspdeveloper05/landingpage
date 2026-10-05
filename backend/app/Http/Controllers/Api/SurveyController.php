@@ -50,8 +50,16 @@ class SurveyController extends Controller
      * title, so someone scanning an old QR code learns it has closed rather
      * than meeting a dead page.
      */
-    public function show(Request $request, Survey $survey): JsonResponse
+    public function show(Request $request, string $link): JsonResponse
     {
+        // Links read "live-poll-12": the title for people, the id for us. Only
+        // the id is looked up, so a survey renamed after its QR code went to
+        // print still opens from the old link.
+        if (! preg_match('/(?:^|-)(\d+)$/', $link, $m)) {
+            abort(404);
+        }
+        $survey = Survey::findOrFail((int) $m[1]);
+
         $registration = $this->fromToken((string) $request->query('token', ''));
 
         $questions = $survey->isOpen()

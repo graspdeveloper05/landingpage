@@ -132,6 +132,19 @@ class SurveyPublicTest extends TestCase
     public function test_an_unknown_survey_is_404(): void
     {
         $this->getJson('/api/survey/999')->assertNotFound();
+        $this->getJson('/api/survey/live-poll-999')->assertNotFound();
+        $this->getJson('/api/survey/live-poll')->assertNotFound();
+    }
+
+    /** Links read "title-id"; the id decides, so a renamed survey's old link still works. */
+    public function test_a_survey_link_is_its_title_and_id(): void
+    {
+        $q = $this->openQuestion();
+        $id = $q->survey_id;
+
+        $this->getJson("/api/survey/live-poll-{$id}")->assertOk()->assertJsonPath('id', $id);
+        $this->getJson("/api/survey/old-title-{$id}")->assertOk()->assertJsonPath('id', $id);
+        $this->getJson("/api/survey/{$id}")->assertOk()->assertJsonPath('id', $id);
     }
 
     public function test_each_type_accepts_a_valid_answer(): void

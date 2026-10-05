@@ -115,7 +115,7 @@ export function SurveyAdmin() {
                 <p className="text-[0.88rem] font-semibold text-navy-950">{s.title.en}</p>
                 <p className="text-micro text-slate">
                   {s.questions_count ?? 0} questions · {s.responses_count ?? 0} answers ·{' '}
-                  <span className="break-all">{surveyUrl(s.id)}</span>
+                  <span className="break-all">{surveyUrl(s)}</span>
                 </p>
               </div>
               <StatusChip status={s.status} />

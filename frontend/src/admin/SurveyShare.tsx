@@ -1,16 +1,29 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
+import type { AdminSurvey } from './client'
 import { AdminButton, AdminCard } from './ui'
 import { useToast } from './Toast'
 
-/** The survey's own link. Each survey has one, so a live poll and the post-event survey can be shared apart. */
-export function surveyUrl(surveyId: number) {
-  return `${window.location.origin}/survey/${surveyId}`
+/**
+ * The survey's own link, "title-id": readable on a slide, and unique by the
+ * id. The API looks up only the id, so editing the title later does not
+ * break a QR code already printed.
+ */
+export function surveyUrl(survey: Pick<AdminSurvey, 'id' | 'title'>) {
+  const slug = survey.title.en
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+    .replace(/-+$/, '')
+  return `${window.location.origin}/survey/${slug ? `${slug}-` : ''}${survey.id}`
 }
 
 /** The QR code and link to show on the hall screen. */
-export function SurveyShare({ surveyId }: { surveyId: number }) {
-  const url = surveyUrl(surveyId)
+export function SurveyShare({ survey }: { survey: AdminSurvey }) {
+  const url = surveyUrl(survey)
+  const surveyId = survey.id
   const [src, setSrc] = useState<string | null>(null)
   const toast = useToast()
 
