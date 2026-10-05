@@ -143,6 +143,32 @@ class AttendeeImportTest extends TestCase
         $this->assertNotNull($r->checked_in_at);
     }
 
+    /** Excel stores 0123456789 as the number 123456789; the 0 comes back. */
+    public function test_a_mobile_excel_turned_into_a_number_gets_its_leading_zero_back(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'att').'.xlsx';
+        $writer = new Writer();
+        $writer->openToFile($path);
+        $writer->addRow(Row::fromValues(['name', 'email', 'mobile', 'organisation', 'designation']));
+        $writer->addRow(Row::fromValues(['Num', 'num@example.com', 123456789, 'O', 'D']));
+        $writer->addRow(Row::fromValues(['Num Ten', 'num10@example.com', 1123456789, 'O', 'D']));
+        $writer->close();
+
+        $this->import(new UploadedFile($path, 'staff.xlsx', null, null, true))->assertJsonPath('added', 2);
+
+        $this->assertSame('0123456789', Registration::where('email', 'num@example.com')->value('mobile'));
+        $this->assertSame('01123456789', Registration::where('email', 'num10@example.com')->value('mobile'));
+    }
+
+    public function test_the_templates_are_there_to_download(): void
+    {
+        foreach (['attendees-template.csv', 'attendees-template.xlsx'] as $file) {
+            $this->assertFileExists(base_path("../frontend/public/samples/{$file}"));
+        }
+        $csv = file_get_contents(base_path('../frontend/public/samples/attendees-template.csv'));
+        $this->assertSame('name,email,mobile,organisation,designation,arrived', trim($csv));
+    }
+
     public function test_only_csv_or_excel_files_are_taken(): void
     {
         $this->import(UploadedFile::fake()->create('notes.pdf', 10, 'application/pdf'))

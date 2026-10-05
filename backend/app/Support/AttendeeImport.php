@@ -120,11 +120,20 @@ class AttendeeImport
         return [
             'name' => $value('name'),
             'email' => $value('email'),
-            'mobile' => $value('mobile'),
+            'mobile' => self::mobile($value('mobile')),
             'organisation' => $value('organisation'),
             'designation' => $value('designation'),
             'arrived' => $value('arrived'),
         ];
+    }
+
+    /**
+     * Excel keeps 0123456789 as the number 123456789. A Malaysian mobile that
+     * arrives as bare digits starting 1 has lost its 0; put it back.
+     */
+    private static function mobile(string $typed): string
+    {
+        return preg_match('/^1\d{8,9}$/', $typed) ? '0'.$typed : $typed;
     }
 
     private function blank(array $person): bool

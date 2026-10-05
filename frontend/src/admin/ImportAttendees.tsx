@@ -46,11 +46,32 @@ export function ImportAttendees({ onImported }: { onImported: () => void }) {
           Add people who did not register on the website from a CSV or Excel (.xlsx) file, with the
           columns name, email, mobile, organisation and designation. An optional “arrived” column
           set to yes marks them arrived; otherwise they are not. Emails already registered are
-          skipped.{' '}
-          <a href="/samples/attendees-import.csv" download className="font-semibold underline">
-            Download sample CSV
-          </a>
+          skipped.
         </p>
+        {/* Blank templates to fill in, and one filled in to show the shape. */}
+        <div className="mt-2 flex flex-wrap gap-2">
+          <a
+            href="/samples/attendees-template.xlsx"
+            download
+            className="inline-flex min-h-[34px] items-center rounded-sm border border-[#DDDCD8] bg-white px-3 text-[0.78rem] font-semibold text-navy-900 hover:border-navy-600"
+          >
+            Download Excel template
+          </a>
+          <a
+            href="/samples/attendees-template.csv"
+            download
+            className="inline-flex min-h-[34px] items-center rounded-sm border border-[#DDDCD8] bg-white px-3 text-[0.78rem] font-semibold text-navy-900 hover:border-navy-600"
+          >
+            Download CSV template
+          </a>
+          <a
+            href="/samples/attendees-import.csv"
+            download
+            className="inline-flex min-h-[34px] items-center px-1 text-[0.78rem] font-semibold text-slate underline underline-offset-4 hover:text-navy-900"
+          >
+            See an example
+          </a>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
