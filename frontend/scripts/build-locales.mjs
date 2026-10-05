@@ -537,16 +537,8 @@ const src = {
   survey: {
     title: L('Survey', 'Tinjauan', '问卷', 'கருத்துக்கணிப்பு'),
     contact: L('Email or mobile number', 'E-mel atau nombor telefon bimbit', '电子邮件或手机号码', 'மின்னஞ்சல் அல்லது கைபேசி எண்'),
-    contactHint: L(
-      'The one you registered with.',
-      'Yang anda gunakan semasa mendaftar.',
-      '即您报名时使用的。',
-      'நீங்கள் பதிவு செய்தபோது பயன்படுத்தியது.',
-    ),
     continue: L('Continue', 'Teruskan', '继续', 'தொடரவும்'),
     notFound: L('User not found.', 'Pengguna tidak ditemui.', '未找到用户。', 'பயனர் கிடைக்கவில்லை.'),
-    welcome: L('Welcome, {{name}}', 'Selamat datang, {{name}}', '欢迎，{{name}}', 'வரவேற்கிறோம், {{name}}'),
-    notYou: L('Not you?', 'Bukan anda?', '不是您？', 'நீங்கள் இல்லையா?'),
     signIn: L(
       'Enter the email or mobile number you registered with to begin.',
       'Masukkan e-mel atau nombor telefon bimbit yang anda daftarkan untuk bermula.',
@@ -559,6 +551,13 @@ const src = {
       '已回答 {{done}}/{{total}}',
       '{{total}} இல் {{done}} பதிலளிக்கப்பட்டது',
     ),
+    alreadyDone: L(
+      'Thank you for your response.',
+      'Terima kasih atas maklum balas anda.',
+      '感谢您的回复。',
+      'உங்கள் பதிலுக்கு நன்றி.',
+    ),
+    goBack: L('Go back', 'Kembali', '返回', 'திரும்பிச் செல்'),
     stars: L('{{n}} out of 5', '{{n}} daripada 5', '5 分中的 {{n}} 分', '5 இல் {{n}}'),
     wait: L('Please wait for the next question.', 'Sila tunggu soalan seterusnya.', '请等待下一个问题。', 'அடுத்த கேள்விக்காக காத்திருக்கவும்.'),
     notOpen: L(
