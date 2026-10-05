@@ -24,7 +24,6 @@ export interface PublicSurvey {
 
 /** What the person types before answering; kept with each answer. */
 export interface Identity {
-  name: string
   email: string
   mobile: string
 }
@@ -39,22 +38,38 @@ export class SurveyError extends Error {
   }
 }
 
-const IDENTITY_KEY = 'snd.survey'
+/**
+ * Details are remembered per survey, so each survey or feedback form opens on
+ * its own details step, while a reload part-way through does not lose them.
+ */
+const identityKey = (surveyId: string) => `snd.survey.${surveyId}`
 
-/** The details typed on this phone, so they are entered once per visit. */
-export function savedIdentity(): Identity | null {
+const isIdentity = (v: unknown): v is Identity =>
+  !!v &&
+  typeof v === 'object' &&
+  ['email', 'mobile'].every(
+    (k) =>
+      typeof (v as Record<string, unknown>)[k] === 'string' &&
+      (v as Record<string, string>)[k].trim() !== '',
+  )
+
+/** The details typed for this survey on this phone, if both are there. */
+export function savedIdentity(surveyId: string): Identity | null {
   try {
-    const raw = localStorage.getItem(IDENTITY_KEY)
-    return raw ? (JSON.parse(raw) as Identity) : null
+    // The sign-in used to keep a token under one shared key; it means nothing now.
+    localStorage.removeItem('snd.survey')
+    const raw = localStorage.getItem(identityKey(surveyId))
+    const parsed: unknown = raw ? JSON.parse(raw) : null
+    return isIdentity(parsed) ? parsed : null
   } catch {
     return null
   }
 }
 
-export function saveIdentity(identity: Identity | null) {
+export function saveIdentity(surveyId: string, identity: Identity | null) {
   try {
-    if (identity) localStorage.setItem(IDENTITY_KEY, JSON.stringify(identity))
-    else localStorage.removeItem(IDENTITY_KEY)
+    if (identity) localStorage.setItem(identityKey(surveyId), JSON.stringify(identity))
+    else localStorage.removeItem(identityKey(surveyId))
   } catch {
     // Private browsing: the details are typed again on the next visit.
   }

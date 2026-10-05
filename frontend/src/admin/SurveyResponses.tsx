@@ -117,7 +117,7 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
                       }}
                       className="font-semibold text-navy-950 underline decoration-[#DDDCD8] underline-offset-4 hover:decoration-gold-500"
                     >
-                      {r.name ?? '—'}
+                      {r.name || r.email}
                     </button>
                   </td>
                   <td className="px-3 py-2.5 text-navy-800">{r.email}</td>
@@ -172,7 +172,9 @@ function Respondent({
       {data && (
         <>
           <AdminCard>
-            <p className="text-[0.95rem] font-semibold text-navy-950">{data.respondent.name}</p>
+            <p className="text-[0.95rem] font-semibold text-navy-950">
+              {data.respondent.name || data.respondent.email}
+            </p>
             <dl className="mt-2 grid gap-x-6 gap-y-1 text-[0.8rem] sm:grid-cols-2">
               <Item label="Email" value={data.respondent.email} />
               <Item label="Mobile" value={data.respondent.mobile} />

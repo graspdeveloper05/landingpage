@@ -554,10 +554,8 @@ const src = {
       '请填写您的资料以开始。',
       'தொடங்க, உங்கள் விவரங்களைப் பகிரவும்.',
     ),
-    name: L('Name', 'Nama', '姓名', 'பெயர்'),
     email: L('Email', 'E-mel', '电子邮件', 'மின்னஞ்சல்'),
     mobile: L('Phone number', 'Nombor telefon', '电话号码', 'தொலைபேசி எண்'),
-    nameRequired: L('Enter your name.', 'Masukkan nama anda.', '请输入您的姓名。', 'உங்கள் பெயரை உள்ளிடவும்.'),
     emailInvalid: L(
       'Enter a valid email address.',
       'Masukkan alamat e-mel yang sah.',

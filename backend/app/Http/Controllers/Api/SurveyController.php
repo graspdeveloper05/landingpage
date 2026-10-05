@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 /**
  * The attendee side of a survey. There is no sign-in and no link to the
- * registration list: the form asks for a name, email and phone, which are
+ * registration list: the form asks for an email and phone, which are
  * kept with each answer. One answer per email per question.
  */
 class SurveyController extends Controller
@@ -73,7 +73,8 @@ class SurveyController extends Controller
         // answer, so the question counts as done and is not asked again; the
         // results leave empty answers out.
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
+            // The form asks only for email and phone; a name is kept if sent.
+            'name' => ['nullable', 'string', 'max:120'],
             'email' => ['required', 'email:rfc,filter', 'max:190'],
             // Malaysian and international numbers, as the RSVP form accepts.
             'mobile' => ['required', 'string', 'regex:/^\+?[0-9\s\-]{8,16}$/'],
@@ -89,7 +90,7 @@ class SurveyController extends Controller
         try {
             SurveyResponse::create([
                 'survey_question_id' => $question->id,
-                'name' => trim($data['name']),
+                'name' => isset($data['name']) ? trim($data['name']) : null,
                 'email' => $this->email($data['email']),
                 'mobile' => preg_replace('/\s+/', ' ', trim($data['mobile'])),
                 'answer' => $answer,

@@ -25,7 +25,7 @@ import {
 export function Survey() {
   const { id = '' } = useParams()
   const { t, locale } = useI18n()
-  const [identity, setIdentity] = useState(savedIdentity)
+  const [identity, setIdentity] = useState(() => savedIdentity(id))
   const [survey, setSurvey] = useState<PublicSurvey | null>(null)
   const [missing, setMissing] = useState(false)
   const [thanked, setThanked] = useState(false)
@@ -61,9 +61,14 @@ export function Survey() {
   }, [live, load])
 
   const forget = useCallback(() => {
-    saveIdentity(null)
+    saveIdentity(id, null)
     setIdentity(null)
-  }, [])
+  }, [id])
+
+  // Moving to another survey's link: its own details, or the details step.
+  useEffect(() => {
+    setIdentity(savedIdentity(id))
+  }, [id])
 
   // "Back to survey" after the thank-you: the sign-in step again, so the next
   // person can answer on the same phone or tablet.
@@ -100,7 +105,7 @@ export function Survey() {
             ) : !identity ? (
               <Identify
                 onIdentified={(next) => {
-                  saveIdentity(next)
+                  saveIdentity(id, next)
                   setIdentity(next)
                 }}
               />
@@ -169,13 +174,12 @@ function Notice({ children }: { children: React.ReactNode }) {
  */
 function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void }) {
   const { t } = useI18n()
-  const [values, setValues] = useState<Identity>({ name: '', email: '', mobile: '' })
+  const [values, setValues] = useState<Identity>({ email: '', mobile: '' })
   const [errors, setErrors] = useState<Partial<Record<keyof Identity, string>>>({})
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
     const next: Partial<Record<keyof Identity, string>> = {}
-    if (!values.name.trim()) next.name = t('survey.nameRequired')
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim()))
       next.email = t('survey.emailInvalid')
     // Malaysian and international numbers, as the RSVP form accepts.
@@ -183,7 +187,6 @@ function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void
     setErrors(next)
     if (Object.keys(next).length > 0) return
     onIdentified({
-      name: values.name.trim(),
       email: values.email.trim().toLowerCase(),
       mobile: values.mobile.trim(),
     })
@@ -230,7 +233,6 @@ function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void
       <p className="text-body text-navy-900/80">{t('survey.signIn')}</p>
 
       <div className="mt-8 space-y-5">
-        {field('name', 'text', 'name')}
         {field('email', 'email', 'email')}
         {field('mobile', 'tel', 'tel')}
       </div>

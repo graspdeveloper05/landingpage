@@ -92,7 +92,7 @@ export function SurveyResults({ surveyId, live }: { surveyId: number; live: bool
                 >
                   {a.answer}
                   <span className="block text-micro text-slate">
-                    {a.name} · {a.email}
+                    {[a.name, a.email].filter(Boolean).join(' · ')}
                   </span>
                 </li>
               ))}
