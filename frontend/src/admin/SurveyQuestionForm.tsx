@@ -13,6 +13,7 @@ import { AdminButton, AdminCard, LocalizedFieldset, Notice } from './ui'
 
 const TYPES: { value: SurveyQuestionType; label: string; hint: string }[] = [
   { value: 'choice', label: 'Multiple choice', hint: 'Pick one option' },
+  { value: 'checkbox', label: 'Checkboxes', hint: 'Pick any options' },
   { value: 'rating', label: 'Rating', hint: '1 to 5 stars' },
   { value: 'text', label: 'Text', hint: 'A written answer' },
 ]
@@ -32,6 +33,7 @@ export function SurveyQuestionForm({
   // point at different options. The API refuses it too; this just says so first.
   const locked = (question?.responses_count ?? 0) > 0
   const [type, setType] = useState<SurveyQuestionType>(question?.type ?? 'choice')
+  const hasOptions = type === 'choice' || type === 'checkbox'
   const [text, setText] = useState<Localized>(toLocalized(question?.question))
   const [options, setOptions] = useState<Localized[]>(
     question?.options?.map(toLocalized) ?? [toLocalized(null), toLocalized(null)],
@@ -57,7 +59,7 @@ export function SurveyQuestionForm({
       const payload = {
         type,
         question: text,
-        options: type === 'choice' ? options : null,
+        options: hasOptions ? options : null,
         is_required: required,
         ...(question ? { status: question.status } : {}),
       }
@@ -142,7 +144,7 @@ export function SurveyQuestionForm({
           </span>
         </label>
 
-        {type === 'choice' && (
+        {hasOptions && (
           <div className="space-y-3">
             {options.map((opt, i) => (
               <div key={i} className="flex items-start gap-2">

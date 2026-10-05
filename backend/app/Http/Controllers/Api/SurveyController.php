@@ -102,15 +102,20 @@ class SurveyController extends Controller
         // An optional question may be skipped. The skip is stored as an empty
         // answer, so the question counts as done and is not asked again; the
         // results leave empty answers out.
-        $answer = (string) $request->validate([
+        $answer = trim((string) $request->validate([
             'answer' => [$question->is_required ? 'required' : 'nullable', 'string', ...$this->rulesFor($question)],
-        ])['answer'];
+        ])['answer']);
+
+        // Ticked boxes in option order, each once: "2,0,2" is stored "0,2".
+        if ($question->type === 'checkbox' && $answer !== '') {
+            $answer = collect(explode(',', $answer))->map(fn ($i) => (int) $i)->unique()->sort()->implode(',');
+        }
 
         try {
             SurveyResponse::create([
                 'survey_question_id' => $question->id,
                 'registration_id' => $registration->id,
-                'answer' => trim($answer),
+                'answer' => $answer,
             ]);
         } catch (UniqueConstraintViolationException) {
             return response()->json(['message' => 'You have already answered this question.'], 409);
@@ -124,6 +129,20 @@ class SurveyController extends Controller
     {
         return match ($question->type) {
             'choice' => ['regex:/^\d+$/', 'integer', 'min:0', 'max:'.(count($question->options ?? []) - 1)],
+            // Option numbers separated by commas, each one an existing option.
+            'checkbox' => [
+                'regex:/^\d+(,\d+)*$/',
+                function (string $attribute, mixed $value, \Closure $fail) use ($question) {
+                    $last = count($question->options ?? []) - 1;
+                    foreach (explode(',', (string) $value) as $i) {
+                        if ((int) $i > $last) {
+                            $fail('Choose from the options shown.');
+
+                            return;
+                        }
+                    }
+                },
+            ],
             'rating' => ['regex:/^[1-5]$/'],
             default => ['max:1000'],
         };

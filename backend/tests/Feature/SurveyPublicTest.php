@@ -38,7 +38,7 @@ class SurveyPublicTest extends TestCase
         return $survey->questions()->create([
             'type' => $type,
             'question' => ['en' => 'Q?', 'ms' => 'S?'],
-            'options' => $type === 'choice' ? [['en' => 'A'], ['en' => 'B'], ['en' => 'C']] : null,
+            'options' => in_array($type, ['choice', 'checkbox'], true) ? [['en' => 'A'], ['en' => 'B'], ['en' => 'C']] : null,
             'status' => 'open',
         ]);
     }
@@ -206,6 +206,30 @@ class SurveyPublicTest extends TestCase
 
         $this->postJson("/api/survey/questions/{$q->id}/answer", ['token' => $this->token(), 'answer' => ''])
             ->assertUnprocessable();
+    }
+
+    public function test_a_checkbox_question_takes_several_options_stored_in_order(): void
+    {
+        $q = $this->openQuestion('checkbox');
+
+        $this->postJson("/api/survey/questions/{$q->id}/answer", ['token' => $this->token(), 'answer' => '2,0,2'])
+            ->assertCreated();
+
+        $this->assertSame('0,2', $q->responses()->value('answer'));
+    }
+
+    /** @dataProvider invalidCheckboxAnswers */
+    public function test_a_checkbox_answer_outside_the_options_is_refused(string $answer): void
+    {
+        $q = $this->openQuestion('checkbox');
+
+        $this->postJson("/api/survey/questions/{$q->id}/answer", ['token' => $this->token(), 'answer' => $answer])
+            ->assertUnprocessable();
+    }
+
+    public static function invalidCheckboxAnswers(): array
+    {
+        return [['3'], ['0,3'], ['a,b'], ['0,,1'], ['-1'], ['']];
     }
 
     public function test_a_second_answer_is_refused_not_overwritten(): void

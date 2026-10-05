@@ -183,6 +183,46 @@ class SurveyAdminTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_checkbox_questions_count_each_ticked_option(): void
+    {
+        $survey = $this->survey();
+
+        $this->admin()->postJson("/api/admin/surveys/{$survey->id}/questions", [
+            'type' => 'checkbox',
+            'question' => ['en' => 'Which sessions did you attend?'],
+            'options' => [['en' => 'Opening'], ['en' => 'Panel'], ['en' => 'Q&A']],
+        ])->assertCreated()->assertJsonPath('options.1.en', 'Panel');
+
+        $q = $survey->questions()->first();
+        $amy = $this->registration(['full_name' => 'Amy Tan']);
+        $raj = $this->registration();
+        $q->responses()->create(['registration_id' => $amy->id, 'answer' => '0,1']);
+        $q->responses()->create(['registration_id' => $raj->id, 'answer' => '1']);
+
+        $this->getJson("/api/admin/surveys/{$survey->id}/results")
+            ->assertJsonPath('questions.0.total', 2)
+            ->assertJsonPath('questions.0.options.0', ['label' => 'Opening', 'count' => 1])
+            ->assertJsonPath('questions.0.options.1', ['label' => 'Panel', 'count' => 2])
+            ->assertJsonPath('questions.0.options.2', ['label' => 'Q&A', 'count' => 0]);
+
+        $this->getJson("/api/admin/surveys/{$survey->id}/respondents/{$amy->id}")
+            ->assertJsonPath('answers.0.answer', 'Opening; Panel');
+
+        $csv = $this->get("/api/admin/surveys/{$survey->id}/export")->streamedContent();
+        $this->assertStringContainsString('"Opening; Panel"', $csv);
+    }
+
+    public function test_a_checkbox_question_needs_two_options(): void
+    {
+        $survey = $this->survey();
+
+        $this->admin()->postJson("/api/admin/surveys/{$survey->id}/questions", [
+            'type' => 'checkbox',
+            'question' => ['en' => 'Pick any'],
+            'options' => [['en' => 'Only one']],
+        ])->assertUnprocessable()->assertJsonValidationErrors('options');
+    }
+
     public function test_english_is_required_and_a_choice_needs_two_options(): void
     {
         $this->admin()->postJson('/api/admin/surveys', ['title' => ['en' => '']])

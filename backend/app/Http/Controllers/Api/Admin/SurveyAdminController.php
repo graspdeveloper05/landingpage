@@ -68,8 +68,9 @@ class SurveyAdminController extends Controller
             'total' => $answers->count(),
         ];
 
-        if ($q->type === 'choice') {
-            $counts = $answers->countBy();
+        if ($q->hasOptions()) {
+            // A checkbox answer ("0,2") counts once for each option ticked.
+            $counts = $answers->flatMap(fn ($a) => explode(',', $a))->countBy();
 
             return $base + ['options' => collect($q->options)->map(fn ($o, $i) => [
                 'label' => $o['en'] ?? '',

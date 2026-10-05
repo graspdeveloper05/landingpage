@@ -5,7 +5,7 @@ export type Text = { en: string } & Partial<Record<'ms' | 'zh' | 'ta', string | 
 
 export interface PublicQuestion {
   id: number
-  type: 'choice' | 'rating' | 'text'
+  type: 'choice' | 'checkbox' | 'rating' | 'text'
   question: Text
   options: Text[] | null
   /** Optional questions can be left blank; the skip is still sent. */

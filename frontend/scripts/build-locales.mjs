@@ -560,6 +560,12 @@ const src = {
     goBack: L('Go back', 'Kembali', '返回', 'திரும்பிச் செல்'),
     next: L('Next', 'Seterusnya', '下一页', 'அடுத்து'),
     optional: L('optional', 'pilihan', '选填', 'விருப்பத்தேர்வு'),
+    selectAll: L(
+      'Select all that apply.',
+      'Pilih semua yang berkenaan.',
+      '可多选。',
+      'பொருந்தும் அனைத்தையும் தேர்ந்தெடுக்கவும்.',
+    ),
     back: L('Back', 'Sebelumnya', '上一页', 'முந்தையது'),
     page: L('Page {{page}} of {{pages}}', 'Halaman {{page}} daripada {{pages}}', '第 {{page}} 页，共 {{pages}} 页', 'பக்கம் {{page}} / {{pages}}'),
     answerPage: L(
