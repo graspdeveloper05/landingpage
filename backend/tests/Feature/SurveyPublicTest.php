@@ -10,13 +10,13 @@ use Tests\TestCase;
 
 /**
  * The attendee side of a survey. No sign-in and no link to registrations:
- * the form asks for a name, email and phone and keeps them with each answer.
+ * the form asks for an email and phone and keeps them with each answer.
  */
 class SurveyPublicTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const PERSON = ['name' => 'Aisyah Rahman', 'email' => 'Aisyah@Example.com', 'mobile' => '+60 12 345 6789'];
+    private const PERSON = ['email' => 'Aisyah@Example.com', 'mobile' => '+60 12 345 6789'];
 
     private function openQuestion(string $type = 'choice'): SurveyQuestion
     {
@@ -52,7 +52,7 @@ class SurveyPublicTest extends TestCase
         $this->answer($q, '1')->assertCreated();
 
         $row = SurveyResponse::firstOrFail();
-        $this->assertSame('Aisyah Rahman', $row->name);
+        $this->assertNull($row->name);
         $this->assertSame('aisyah@example.com', $row->email);
         $this->assertSame('+60 12 345 6789', $row->mobile);
         $this->assertSame('1', $row->answer);
@@ -60,7 +60,7 @@ class SurveyPublicTest extends TestCase
     }
 
     /** @dataProvider badDetails */
-    public function test_name_email_and_phone_are_required_and_checked(array $person, string $field): void
+    public function test_email_and_phone_are_required_and_checked(array $person, string $field): void
     {
         $q = $this->openQuestion();
 
@@ -71,11 +71,10 @@ class SurveyPublicTest extends TestCase
     public static function badDetails(): array
     {
         return [
-            'no name' => [['name' => '', 'email' => 'a@b.com', 'mobile' => '0123456789'], 'name'],
-            'no email' => [['name' => 'A', 'email' => '', 'mobile' => '0123456789'], 'email'],
-            'bad email' => [['name' => 'A', 'email' => 'not-an-email', 'mobile' => '0123456789'], 'email'],
-            'no phone' => [['name' => 'A', 'email' => 'a@b.com', 'mobile' => ''], 'mobile'],
-            'bad phone' => [['name' => 'A', 'email' => 'a@b.com', 'mobile' => 'call me'], 'mobile'],
+            'no email' => [['email' => '', 'mobile' => '0123456789'], 'email'],
+            'bad email' => [['email' => 'not-an-email', 'mobile' => '0123456789'], 'email'],
+            'no phone' => [['email' => 'a@b.com', 'mobile' => ''], 'mobile'],
+            'bad phone' => [['email' => 'a@b.com', 'mobile' => 'call me'], 'mobile'],
         ];
     }
 
@@ -216,7 +215,7 @@ class SurveyPublicTest extends TestCase
         $q = $this->openQuestion();
 
         $this->answer($q, '0')->assertCreated();
-        $this->answer($q, '1', ['name' => 'Raj', 'email' => 'raj@example.com', 'mobile' => '0198765432'])->assertCreated();
+        $this->answer($q, '1', ['email' => 'raj@example.com', 'mobile' => '0198765432'])->assertCreated();
 
         $this->assertSame(2, $q->responses()->count());
     }
