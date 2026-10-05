@@ -7,6 +7,7 @@ use App\Models\EventSetting;
 use App\Models\Registration;
 use App\Services\GoogleFormHandoff;
 use Illuminate\Http\JsonResponse;
+use App\Support\Seats;
 use Illuminate\Http\Request;
 
 /** §9 — "participant list/database", readable from the panel. */
@@ -28,6 +29,8 @@ class RegistrationAdminController extends Controller
             // A range that ends before it starts returns nothing and looks
             // like an empty list rather than a mistake, so it is refused.
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
+            // Confirmed seats, or the waiting list past the seat limit.
+            'status' => ['nullable', 'in:confirmed,not_confirmed'],
         ]);
 
         $editions = $this->editions();
@@ -66,7 +69,15 @@ class RegistrationAdminController extends Controller
             });
         }
 
+        $confirmed = Seats::confirmedIds($edition);
+        if (($filters['status'] ?? null) === Seats::CONFIRMED) {
+            $query->whereIn('id', $confirmed->keys());
+        } elseif (($filters['status'] ?? null) === Seats::NOT_CONFIRMED) {
+            $query->whereNotIn('id', $confirmed->keys());
+        }
+
         $page = $query->paginate(25)->withQueryString();
+        $editionTotal = Registration::forEdition($edition)->count();
 
         return response()->json([
             'data' => collect($page->items())->map(fn (Registration $r) => [
@@ -88,6 +99,7 @@ class RegistrationAdminController extends Controller
                 // Whether the form has it: a response id is recorded when the
                 // script on the form accepts a site registration.
                 'inGoogleForm' => $r->external_id !== null,
+                'seatStatus' => $confirmed->has($r->id) ? Seats::CONFIRMED : Seats::NOT_CONFIRMED,
             ]),
             'meta' => [
                 'total' => $page->total(),
@@ -103,7 +115,9 @@ class RegistrationAdminController extends Controller
                 // The unfiltered size of this edition, so the caption can say
                 // "12 of 47" while a range is applied. Without it the panel
                 // cannot tell a narrow range from an empty edition.
-                'editionTotal' => Registration::forEdition($edition)->count(),
+                'editionTotal' => $editionTotal,
+                'confirmed' => $confirmed->count(),
+                'notConfirmed' => $editionTotal - $confirmed->count(),
                 // The panel renders dates in this zone rather than the
                 // viewer's. The date filter resolves its bounds in Kuala
                 // Lumpur, so a browser in another timezone would print a

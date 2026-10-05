@@ -25,6 +25,8 @@ interface Row {
   source: 'website' | 'google_form' | 'import'
   /** Whether the Google Form has it. */
   inGoogleForm: boolean
+  /** Within the seat limit (confirmed) or past it (the waiting list). */
+  seatStatus: 'confirmed' | 'not_confirmed'
 }
 
 interface Edition {
@@ -46,6 +48,8 @@ interface Page {
     edition: number
     editions: Edition[]
     editionTotal: number
+    confirmed: number
+    notConfirmed: number
     timezone: string
     /** True when site registrations are handed to the Google Form. */
     handoff: boolean
@@ -138,7 +142,11 @@ function Pagination({
       className="mt-4 flex flex-wrap items-center justify-between gap-3"
     >
       <p className="tnum text-small text-slate">
-        Showing <strong className="text-navy-900">{first}–{last}</strong> of {total}
+        Showing{' '}
+        <strong className="text-navy-900">
+          {first}–{last}
+        </strong>{' '}
+        of {total}
       </p>
       <div className="flex flex-wrap items-center gap-1.5">
         <button
@@ -186,7 +194,11 @@ function Pagination({
 
 function editionLabel(e: Edition): string {
   const when = e.date
-    ? new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    ? new Date(e.date).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
     : `${e.edition}`
   const seats = e.registrations === 1 ? '1 registration' : `${e.registrations} registrations`
   return `${e.edition} — ${when} · ${seats}${e.isPast ? ' · past' : ''}`
@@ -196,6 +208,7 @@ function editionLabel(e: Edition): string {
 export function RegistrationsAdmin() {
   const [page, setPage] = useState<Page | null>(null)
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<'' | 'confirmed' | 'not_confirmed'>('')
   const [current, setCurrent] = useState(1)
   // One row open at a time; the reference of the row whose form answers show.
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -270,6 +283,7 @@ export function RegistrationsAdmin() {
       if (edition !== null) params.set('edition', String(edition))
       if (from) params.set('from', from)
       if (to) params.set('to', to)
+      if (status) params.set('status', status)
       setError(null)
       adminApi
         .get<Page>(`/admin/registrations/list?${params}`)
@@ -298,6 +312,8 @@ export function RegistrationsAdmin() {
               edition: edition ?? 0,
               editions: prev?.meta.editions ?? [],
               editionTotal: 0,
+              confirmed: 0,
+              notConfirmed: 0,
               timezone: prev?.meta.timezone ?? 'UTC',
               handoff: prev?.meta.handoff ?? false,
             },
@@ -306,7 +322,7 @@ export function RegistrationsAdmin() {
         })
     }, 250)
     return () => clearTimeout(timer)
-  }, [search, current, reloads, edition, from, to])
+  }, [search, current, reloads, edition, from, to, status])
 
   const meta = page?.meta
   // Search is deliberately not counted: it is a lookup, not a filter, and
@@ -339,15 +355,18 @@ export function RegistrationsAdmin() {
                    edition's real total beside it. */
                 <>
                   <strong className="text-navy-900">{meta.total}</strong> shown
-                  <span className="text-slate"> · {meta.editionTotal} in {meta.edition}</span>
+                  <span className="text-slate">
+                    {' '}
+                    · {meta.editionTotal} in {meta.edition}
+                  </span>
                 </>
               ) : (
                 <>
-                  <strong className="text-navy-900">{meta.total}</strong> of {meta.capacity} seats
-                  taken
-                  {meta.total >= meta.capacity && (
-                    <span className="ml-2 font-semibold text-red-700">
-                      — registration is closed
+                  <strong className="text-navy-900">{meta.confirmed}</strong> of {meta.capacity}{' '}
+                  seats confirmed
+                  {meta.notConfirmed > 0 && (
+                    <span className="ml-2 font-semibold text-amber-800">
+                      · {meta.notConfirmed} not confirmed (waiting list)
                     </span>
                   )}
                 </>
@@ -458,6 +477,22 @@ export function RegistrationsAdmin() {
           </AdminButton>
         )}
 
+        <label className="flex flex-col">
+          <span className="block text-[0.78rem] font-semibold text-navy-900">Status</span>
+          <select
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value as typeof status)
+              setCurrent(1)
+            }}
+            className="mt-1 block min-h-[34px] rounded-sm border border-[#DDDCD8] bg-white px-2 text-[0.85rem] text-navy-950 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/35"
+          >
+            <option value="">All</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="not_confirmed">Not confirmed</option>
+          </select>
+        </label>
+
         <div className="min-w-[16rem] max-w-sm grow">
           <AdminField
             label="Search"
@@ -518,14 +553,25 @@ export function RegistrationsAdmin() {
                     <tr className={open ? 'border-b-0' : 'border-b border-hair last:border-0'}>
                       <td className="tnum whitespace-nowrap px-3 py-2 font-semibold text-navy-900">
                         {row.reference}
-                        {row.source === 'website' && !row.confirmationSent && (
-                          <span
-                            title="The confirmation email did not send"
-                            className="ml-1.5 text-red-600"
-                          >
-                            !
-                          </span>
-                        )}
+                        {row.source === 'website' &&
+                          row.seatStatus === 'confirmed' &&
+                          !row.confirmationSent && (
+                            <span
+                              title="The confirmation email did not send"
+                              className="ml-1.5 text-red-600"
+                            >
+                              !
+                            </span>
+                          )}
+                        <span
+                          className={
+                            row.seatStatus === 'confirmed'
+                              ? 'mt-1 block w-fit rounded-full border border-green-300 bg-green-50 px-1.5 text-micro font-semibold text-green-800'
+                              : 'mt-1 block w-fit rounded-full border border-amber-300 bg-amber-50 px-1.5 text-micro font-semibold text-amber-800'
+                          }
+                        >
+                          {row.seatStatus === 'confirmed' ? 'Confirmed' : 'Not confirmed'}
+                        </span>
                         {row.source === 'google_form' && (
                           <span className="mt-0.5 block text-micro font-normal text-slate">
                             Google Form
@@ -538,7 +584,9 @@ export function RegistrationsAdmin() {
                         )}
                         {meta?.handoff && row.source === 'website' && !row.inGoogleForm && (
                           <span className="mt-1 block font-normal">
-                            <span className="block text-micro text-red-700">Not in Google Form</span>
+                            <span className="block text-micro text-red-700">
+                              Not in Google Form
+                            </span>
                             <button
                               type="button"
                               disabled={resending === row.reference}
@@ -761,7 +809,9 @@ function RegistrationView({
             {rows.map(([label, value]) => (
               <Fragment key={label}>
                 <dt className="text-[0.78rem] text-slate">{label}</dt>
-                <dd className="whitespace-pre-line break-words text-[0.88rem] text-navy-950">{value}</dd>
+                <dd className="whitespace-pre-line break-words text-[0.88rem] text-navy-950">
+                  {value}
+                </dd>
               </Fragment>
             ))}
           </dl>

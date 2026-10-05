@@ -398,6 +398,20 @@ const src = {
       referenceLabel: L('Your reference', 'Nombor rujukan anda', '您的参考编号', 'உங்கள் குறிப்பு எண்'),
       addAnother: L('Register someone else', 'Daftar orang lain', '为他人报名', 'மற்றொருவரைப் பதிவு செய்க'),
     },
+    waitlist: {
+      title: L(
+        'You are on the waiting list.',
+        'Anda dalam senarai menunggu.',
+        '您已列入候补名单。',
+        'நீங்கள் காத்திருப்புப் பட்டியலில் உள்ளீர்கள்.',
+      ),
+      body: L(
+        'All seats are taken, so your registration is not confirmed yet. Keep your reference: the organising team will contact you if a seat becomes available.',
+        'Semua tempat telah penuh, jadi pendaftaran anda belum disahkan. Simpan nombor rujukan anda: pihak penganjur akan menghubungi anda jika ada tempat kosong.',
+        '所有席位已满，您的报名尚未确认。请保留您的参考编号；如有空位，主办方将与您联系。',
+        'எல்லா இருக்கைகளும் நிரம்பிவிட்டன, எனவே உங்கள் பதிவு இன்னும் உறுதி செய்யப்படவில்லை. உங்கள் குறிப்பு எண்ணை வைத்திருங்கள்; இருக்கை கிடைத்தால் ஏற்பாட்டுக் குழு உங்களைத் தொடர்புகொள்ளும்.',
+      ),
+    },
     full: {
       title: L('Registration is closed.', 'Pendaftaran telah ditutup.', '报名已截止。', 'பதிவு முடிவடைந்தது.'),
       body: L(

@@ -16,19 +16,30 @@ export function SuccessPanel({
 }) {
   const { t } = useI18n()
 
+  const waiting = record.seatStatus === 'not_confirmed'
+
   return (
     <div role="status" className="anim-rise mx-auto max-w-xl text-center">
+      {/* Past the seat limit: registered, but on the waiting list. */}
       <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-gold-500 text-gold-500">
         <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden fill="none">
-          <path d="M4 12.5l5.2 5.2L20 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M4 12.5l5.2 5.2L20 7"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </span>
 
       <h2 className="mt-6 font-display text-section font-semibold text-cream">
-        {t('rsvp.success.title')}
+        {t(waiting ? 'rsvp.waitlist.title' : 'rsvp.success.title')}
       </h2>
       <Ornament className="mt-4" tone="light" />
-      <p className="mx-auto mt-5 max-w-measure text-body text-cream/70">{t('rsvp.success.body')}</p>
+      <p className="mx-auto mt-5 max-w-measure text-body text-cream/70">
+        {t(waiting ? 'rsvp.waitlist.body' : 'rsvp.success.body')}
+      </p>
 
       <div className="mt-8 rounded-sm border border-gold-500/35 bg-navy-950/40 py-7">
         <p className="text-micro font-medium uppercase tracking-[0.16em] text-cream/70">

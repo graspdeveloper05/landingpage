@@ -145,10 +145,8 @@ class EventSetting extends Model
             return 'closed';
         }
 
-        if ($registered >= $this->capacity) {
-            return 'full';
-        }
-
+        // No 'full': past the seat limit people still register, as not
+        // confirmed (a waiting list). See App\Support\Seats.
         return null;
     }
 

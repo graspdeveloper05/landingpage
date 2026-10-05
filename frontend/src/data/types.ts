@@ -185,4 +185,6 @@ export interface Registration {
 export interface RegistrationRecord extends Registration {
   reference: string
   submittedAt: string
+  /** Past the seat limit a registration is taken but not confirmed (a waiting list). */
+  seatStatus?: 'confirmed' | 'not_confirmed'
 }

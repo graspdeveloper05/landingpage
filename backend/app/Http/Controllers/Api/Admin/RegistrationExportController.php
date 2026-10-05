@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
+use App\Support\Seats;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -53,12 +54,14 @@ class RegistrationExportController extends Controller
             fputcsv($handle, [
                 ...array_values(Registration::EXPORT_COLUMNS),
                 ...array_values(Registration::ANSWER_LABELS),
+                'Status',
             ]);
+            $confirmed = Seats::confirmedIds($edition);
 
             Registration::forEdition($edition)
                 ->registeredBetween($from, $to)
                 ->orderBy('id')
-                ->chunk(200, function ($rows) use ($handle) {
+                ->chunk(200, function ($rows) use ($handle, $confirmed) {
                     foreach ($rows as $row) {
                         fputcsv($handle, [
                             ...array_map(
@@ -69,6 +72,7 @@ class RegistrationExportController extends Controller
                                 fn (string $key) => $this->guard((string) ($row->answers[$key] ?? '')),
                                 array_keys(Registration::ANSWER_LABELS),
                             ),
+                            $confirmed->has($row->id) ? 'Confirmed' : 'Not confirmed',
                         ]);
                     }
                 });

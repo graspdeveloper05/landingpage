@@ -9,6 +9,7 @@ use App\Models\EventSetting;
 use App\Models\Registration;
 use App\Services\GoogleFormHandoff;
 use App\Support\Reference;
+use App\Support\Seats;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,8 +23,9 @@ class RegistrationController extends Controller
     /**
      * §9 — registration is an essential Phase 1 function.
      *
-     * Returns 201 with the reference, 409 when the event is full, or 422 on
-     * validation failure. The frontend already handles all three.
+     * Returns 201 with the reference and the seat status, or 422 on
+     * validation failure. Past the seat limit the registration is still taken,
+     * as not confirmed (a waiting list); see Seats.
      */
     public function store(StoreRegistrationRequest $request): JsonResponse
     {
@@ -53,25 +55,10 @@ class RegistrationController extends Controller
         }
 
         try {
-            $registration = DB::transaction(function () use ($request, $edition, $capacity) {
-                /*
-                 * The capacity check and the insert must be one atomic step.
-                 * Counting outside a transaction lets two simultaneous requests
-                 * both read 199 and both insert, putting the room over its
-                 * limit — which for a 200-seat venue is a real-world problem,
-                 * not a theoretical one.
-                 *
-                 * lockForUpdate() holds a row lock for the duration, so the
-                 * second request waits and then sees the true count.
-                 */
-                $taken = Registration::query()
-                    ->where('edition', $edition)
-                    ->lockForUpdate()
-                    ->count();
-
-                if ($taken >= $capacity) {
-                    return null;
-                }
+            $registration = DB::transaction(function () use ($request, $edition) {
+                // Locked so references and seat order follow arrival exactly:
+                // whether someone holds a seat is decided by that order.
+                Registration::query()->where('edition', $edition)->lockForUpdate()->count();
 
                 return Registration::create([
                     ...$request->toRegistration(),
@@ -89,18 +76,16 @@ class RegistrationController extends Controller
             ], 500);
         }
 
-        if ($registration === null) {
-            return response()->json([
-                'message' => 'All seats for this edition are taken.',
-                'reason' => 'full',
-            ], 409);
-        }
+        $seat = Seats::statusOf($registration);
 
         // After the response has gone, like the copy to the Google Form below.
         // The seat is booked; a slow or refusing mail server must not keep
         // the attendee waiting, nor turn their booking into an error message
-        // that sends them back to register a second time.
-        defer(fn () => $this->sendConfirmation($registration));
+        // that sends them back to register a second time. Only a confirmed
+        // seat is confirmed by email; the waiting list hears from the team.
+        if ($seat === Seats::CONFIRMED) {
+            defer(fn () => $this->sendConfirmation($registration));
+        }
 
         // To the script on the organising team's form, after the response
         // has gone, so the attendee never waits on Google.
@@ -111,6 +96,7 @@ class RegistrationController extends Controller
             'fullName' => $registration->full_name,
             'email' => $registration->email,
             'submittedAt' => $registration->created_at->toIso8601String(),
+            'seatStatus' => $seat,
         ], 201);
     }
 
