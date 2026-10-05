@@ -59,15 +59,6 @@ class AttendeeImport
                 'organisation' => ['required', 'string', 'max:150'],
                 'designation' => ['required', 'string', 'max:150'],
             ]);
-            // Blank is a participant; "Ministry staff" in any spelling the
-            // organisers are likely to type is ministry staff.
-            $category = self::category($person['category']);
-            if ($category === null) {
-                $this->errors[] = ['row' => $line, 'message' => 'Category must be Participant or Ministry staff.'];
-
-                continue;
-            }
-
             if ($check->fails()) {
                 $this->errors[] = ['row' => $line, 'message' => $check->errors()->first()];
 
@@ -95,7 +86,6 @@ class AttendeeImport
                 'designation' => $person['designation'],
                 'edition' => $edition,
                 'source' => 'import',
-                'category' => $category,
                 'checked_in_at' => $arrived ? now() : null,
                 'checked_in_via' => $arrived ? 'staff' : null,
             ]));
@@ -134,20 +124,7 @@ class AttendeeImport
             'organisation' => $value('organisation'),
             'designation' => $value('designation'),
             'arrived' => $value('arrived'),
-            'category' => $value('category'),
         ];
-    }
-
-    /** participant, ministry_staff, or null when it is neither. */
-    private static function category(string $typed): ?string
-    {
-        $key = preg_replace('/[^a-z]+/', '_', strtolower(trim($typed)));
-
-        return match (trim((string) $key, '_')) {
-            '', 'participant', 'participants' => 'participant',
-            'ministry_staff', 'ministry', 'staff' => 'ministry_staff',
-            default => null,
-        };
     }
 
     private function blank(array $person): bool

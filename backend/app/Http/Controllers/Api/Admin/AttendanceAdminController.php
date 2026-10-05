@@ -50,7 +50,6 @@ class AttendanceAdminController extends Controller
                 'checkedInVia' => $r->checked_in_via,
                 // website, google_form, or import (the organisers' own list).
                 'source' => $r->source,
-                'category' => $r->category,
             ])->values(),
             'meta' => [
                 'registered' => $registered,

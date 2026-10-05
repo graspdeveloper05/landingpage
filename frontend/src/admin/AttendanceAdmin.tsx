@@ -164,11 +164,6 @@ export function AttendanceAdmin() {
                 <tr key={r.reference} className="border-b border-[#EEEDEA] last:border-0">
                   <td className="px-3 py-2.5">
                     <span className="font-semibold text-navy-950">{r.fullName}</span>
-                    {r.category === 'ministry_staff' && (
-                      <span className="ml-2 rounded-full border border-navy-200 bg-navy-50 px-1.5 py-0.5 align-middle text-micro font-semibold text-navy-800">
-                        Ministry staff
-                      </span>
-                    )}
                     {r.source === 'import' && (
                       <span className="ml-2 rounded-full border border-[#DDDCD8] px-1.5 py-0.5 align-middle text-micro font-semibold text-slate">
                         Imported
@@ -359,9 +354,9 @@ function ImportAttendees({ onImported }: { onImported: () => void }) {
         <p className="text-[0.85rem] font-semibold text-navy-950">Import attendees</p>
         <p className="text-micro text-slate">
           Add people who did not register on the website from a CSV or Excel (.xlsx) file, with the
-          columns name, email, mobile, organisation and designation. An optional “category” column
-          takes Participant (the default) or Ministry staff. An optional “arrived” column set to yes
-          marks them arrived; otherwise they are not. Emails already registered are skipped.{' '}
+          columns name, email, mobile, organisation and designation. An optional “arrived” column
+          set to yes marks them arrived; otherwise they are not. Emails already registered are
+          skipped.{' '}
           <a href="/samples/attendees-import.csv" download className="font-semibold underline">
             Download sample CSV
           </a>

@@ -150,46 +150,6 @@ class AttendeeImportTest extends TestCase
             ->assertJsonValidationErrors('file');
     }
 
-    public function test_category_is_participant_unless_the_file_says_ministry_staff(): void
-    {
-        $file = UploadedFile::fake()->createWithContent('a.csv', implode("
-", [
-            'name,email,mobile,organisation,designation,category',
-            'Staff One,staff1@example.com,0123456781,KPN,Officer,Ministry staff',
-            'Staff Two,staff2@example.com,0123456782,KPN,Officer,ministry_staff',
-            'Guest,guest@example.com,0123456783,UM,Lecturer,',
-            'Guest Two,guest2@example.com,0123456784,UM,Lecturer,participant',
-        ])."
-");
-
-        $this->import($file)->assertJsonPath('added', 4);
-
-        $this->assertSame('ministry_staff', Registration::where('email', 'staff1@example.com')->value('category'));
-        $this->assertSame('ministry_staff', Registration::where('email', 'staff2@example.com')->value('category'));
-        $this->assertSame('participant', Registration::where('email', 'guest@example.com')->value('category'));
-        $this->assertSame('participant', Registration::where('email', 'guest2@example.com')->value('category'));
-    }
-
-    public function test_an_unknown_category_is_reported(): void
-    {
-        $file = UploadedFile::fake()->createWithContent('a.csv', "name,email,mobile,organisation,designation,category
-X,x@example.com,0123456789,O,D,VIP
-");
-
-        $this->import($file)->assertJsonPath('added', 0)->assertJsonPath('errors.0.row', 2);
-    }
-
-    public function test_website_registrations_are_participants(): void
-    {
-        $r = Registration::create([
-            'reference' => 'SND26-0001', 'full_name' => 'A', 'email' => 'a@example.com', 'mobile' => '0123456789',
-            'organisation' => 'O', 'designation' => 'D', 'pdpa_accepted' => true, 'edition' => 2026,
-        ]);
-
-        $this->assertSame('participant', $r->fresh()->category);
-        $this->admin()->getJson('/api/admin/attendance')->assertJsonPath('data.0.category', 'participant');
-    }
-
     public function test_import_needs_a_session(): void
     {
         $this->post('/api/admin/attendance/import', ['file' => $this->csv()], ['Accept' => 'application/json'])
