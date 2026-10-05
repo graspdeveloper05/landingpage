@@ -585,14 +585,9 @@ const src = {
       '已回答 {{done}}/{{total}}',
       '{{total}} இல் {{done}} பதிலளிக்கப்பட்டது',
     ),
-    alreadyDone: L(
-      'Thank you for your response.',
-      'Terima kasih atas maklum balas anda.',
-      '感谢您的回复。',
-      'உங்கள் பதிலுக்கு நன்றி.',
-    ),
-    goBack: L('Go back', 'Kembali', '返回', 'திரும்பிச் செல்'),
     next: L('Next', 'Seterusnya', '下一页', 'அடுத்து'),
+    viewProgramme: L('View programme', 'Lihat atur cara', '查看议程', 'நிகழ்ச்சி நிரலைப் பார்'),
+    backToSurvey: L('Back to survey', 'Kembali ke tinjauan', '返回问卷', 'கருத்துக்கணிப்புக்குத் திரும்பு'),
     optional: L('optional', 'pilihan', '选填', 'விருப்பத்தேர்வு'),
     selectAll: L(
       'Select all that apply.',
@@ -632,7 +627,6 @@ const src = {
       '您的回答已被记录。',
       'உங்கள் பதில்கள் பதிவு செய்யப்பட்டன.',
     ),
-    ok: L('OK', 'OK', '好', 'சரி'),
     thanks: L('Thank you for your answer.', 'Terima kasih atas jawapan anda.', '感谢您的回答。', 'உங்கள் பதிலுக்கு நன்றி.'),
     typeHere: L('Type your answer', 'Taip jawapan anda', '请输入您的回答', 'உங்கள் பதிலை தட்டச்சு செய்யவும்'),
     error: L(

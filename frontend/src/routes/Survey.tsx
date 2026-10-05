@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
-import { Button } from '@/components/ui/Button'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { Ornament } from '@/components/ui/Ornament'
 import {
   pick,
@@ -65,9 +65,8 @@ export function Survey() {
     setIdentity(null)
   }, [])
 
-  // After submitting, thank them and return to the sign-in step, so the
-  // next person can answer on the same phone or tablet. Stable, so the
-  // popup's auto-close timer is not restarted by a re-render.
+  // "Back to survey" after the thank-you: the sign-in step again, so the next
+  // person can answer on the same phone or tablet.
   const finish = useCallback(() => {
     setThanked(false)
     forget()
@@ -92,7 +91,9 @@ export function Survey() {
               <Ornament className="mt-6" />
             </header>
 
-            {missing ? (
+            {thanked ? (
+              <Thanks onBack={finish} />
+            ) : missing ? (
               <Notice>{t('survey.missing')}</Notice>
             ) : survey && survey.status !== 'open' ? (
               <Notice>{t('survey.notOpen')}</Notice>
@@ -113,16 +114,47 @@ export function Survey() {
                   token={identity.token}
                   onDone={load}
                   onForget={forget}
-                  onSubmitted={() => setThanked(true)}
+                  onSubmitted={() => {
+                    setThanked(true)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
                 />
               ))
             )}
           </div>
         </div>
       </section>
-
-      {thanked && <ThankYou onClose={finish} />}
     </>
+  )
+}
+
+/**
+ * The card's closing state, after submitting or on returning to a survey
+ * already finished: a thank-you, the way on to the programme, and the way
+ * back to the start for the next person.
+ */
+function Thanks({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n()
+
+  return (
+    <div role="status" className="text-center">
+      <span
+        aria-hidden
+        className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-700 text-[2rem] text-white"
+      >
+        ✓
+      </span>
+      <h2 className="mt-5 font-display text-[1.75rem] text-navy-950">{t('survey.thanksTitle')}</h2>
+      <p className="mt-2 text-body text-slate">{t('survey.thanksBody')}</p>
+      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <ButtonLink to="/programme" withArrow>
+          {t('survey.viewProgramme')}
+        </ButtonLink>
+        <Button type="button" variant="outlineNavy" onClick={onBack}>
+          {t('survey.backToSurvey')}
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -310,17 +342,10 @@ function AnswerForm({
     }
   }
 
-  // Someone who has answered everything open sees only a thank-you and a
-  // way back to the sign-in step, not their finished questions again.
+  // Someone who has answered everything open sees the same thank-you, not
+  // their finished questions again.
   if (pending.length === 0) {
-    return (
-      <div className="text-center">
-        <p className="font-display text-h3 text-navy-950">{t('survey.alreadyDone')}</p>
-        <Button type="button" variant="outlineNavy" onClick={onForget} className="mt-8">
-          {t('survey.goBack')}
-        </Button>
-      </div>
-    )
+    return <Thanks onBack={onForget} />
   }
 
   return (
@@ -571,44 +596,5 @@ function QuestionField({
         )}
       </fieldset>
     </li>
-  )
-}
-
-/** Shown after a successful submit; closes itself after a few seconds. */
-function ThankYou({ onClose }: { onClose: () => void }) {
-  const { t } = useI18n()
-
-  useEffect(() => {
-    const timer = window.setTimeout(onClose, 5000)
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.clearTimeout(timer)
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [onClose])
-
-  return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-navy-950/70 px-5 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="survey-thanks-title"
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm border border-gold-500/40 bg-navy-900 px-8 py-10 text-center shadow-xl"
-      >
-        <h2 id="survey-thanks-title" className="font-display text-[2rem] text-cream">
-          {t('survey.thanksTitle')}
-        </h2>
-        <Ornament className="mt-4" tone="light" />
-        <p className="mt-5 text-body text-cream/75">{t('survey.thanksBody')}</p>
-        <Button type="button" autoFocus onClick={onClose} className="mt-8 w-full">
-          {t('survey.ok')}
-        </Button>
-      </div>
-    </div>
   )
 }
