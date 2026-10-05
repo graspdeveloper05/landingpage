@@ -267,7 +267,6 @@ export interface AttendancePage {
   meta: {
     registered: number
     arrived: number
-    checkinOpen: boolean
     page: number
     lastPage: number
     total: number

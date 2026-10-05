@@ -3,7 +3,7 @@ import QRCode from 'qrcode'
 import { cn } from '@/lib/cn'
 import { API_BASE } from '@/services/api'
 import { adminApi, AdminError, reachable, type AttendancePage, type AttendanceRow } from './client'
-import { AdminButton, AdminCard, Notice } from './ui'
+import { AdminButton, AdminCard, CopyText, Notice } from './ui'
 import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
 
@@ -51,25 +51,13 @@ export function AttendanceAdmin() {
     return () => window.clearTimeout(timer)
   }, [load, search])
 
-  // Live while check-in is open, so the count moves as people arrive.
-  const live = page?.meta.checkinOpen ?? false
+  // Every ten seconds while on screen, so the count moves as people arrive.
   useEffect(() => {
-    if (!live) return
     const timer = window.setInterval(() => {
       if (!document.hidden) load()
     }, 10000)
     return () => window.clearInterval(timer)
-  }, [live, load])
-
-  async function setOpen(open: boolean) {
-    try {
-      await adminApi.put('/admin/attendance/settings', { checkinOpen: open })
-      toast.success(open ? 'Check-in is open.' : 'Check-in is closed.')
-      load()
-    } catch (e) {
-      toast.error(e instanceof AdminError ? e.message : 'Could not change check-in.')
-    }
-  }
+  }, [load])
 
   async function mark(row: AttendanceRow) {
     try {
@@ -96,29 +84,6 @@ export function AttendanceAdmin() {
         <Stat label="Arrived" value={meta?.arrived} accent />
         <Stat label="Arrived (%)" value={meta ? `${percent}%` : undefined} />
       </div>
-
-      <AdminCard className="flex flex-wrap items-center gap-4">
-        <div className="min-w-[14rem] flex-1">
-          <p className="text-[0.85rem] font-semibold text-navy-950">
-            Check-in is {meta?.checkinOpen ? 'open' : 'closed'}
-          </p>
-          <p className="text-micro text-slate">
-            {meta?.checkinOpen
-              ? 'Guests can check themselves in from the QR poster. The list updates every 10 seconds.'
-              : 'Open it on the event day. Until then the poster says check-in has not started.'}
-          </p>
-        </div>
-        {meta &&
-          (meta.checkinOpen ? (
-            <AdminButton variant="danger" onClick={() => setOpen(false)}>
-              Close check-in
-            </AdminButton>
-          ) : (
-            <AdminButton variant="success" onClick={() => setOpen(true)}>
-              Open check-in
-            </AdminButton>
-          ))}
-      </AdminCard>
 
       <Poster />
 
@@ -201,7 +166,9 @@ export function AttendanceAdmin() {
                       <span className="block text-micro text-slate">{r.organisation}</span>
                     )}
                   </td>
-                  <td className="tnum px-3 py-2.5 text-navy-800">{r.reference}</td>
+                  <td className="tnum px-3 py-2.5 text-navy-800">
+                    {r.reference && <CopyText text={r.reference} />}
+                  </td>
                   <td className="px-3 py-2.5 text-slate">
                     {r.email}
                     {r.mobile && <span className="block">{r.mobile}</span>}

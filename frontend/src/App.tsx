@@ -75,7 +75,7 @@ function PublicSite() {
           <Route path="/programme" element={<Programme />} />
           <Route path="/rsvp" element={<Rsvp status={status} refresh={refresh} />} />
           <Route path="/survey/:id" element={<Survey />} />
-          <Route path="/checkin" element={<CheckIn />} />
+          <Route path="/checkin" element={<CheckIn status={status} />} />
           {/* Anything else lands on the homepage rather than a dead end. */}
           <Route path="*" element={<Home status={status} refresh={refresh} />} />
         </Routes>

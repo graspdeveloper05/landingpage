@@ -32,6 +32,5 @@ async function call<T>(method: 'GET' | 'POST', body?: object): Promise<T> {
 }
 
 export const checkInApi = {
-  status: () => call<{ open: boolean }>('GET'),
   checkIn: (contact: string) => call<CheckInResult>('POST', { contact }),
 }

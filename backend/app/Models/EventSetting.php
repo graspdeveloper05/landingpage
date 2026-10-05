@@ -21,7 +21,6 @@ class EventSetting extends Model
         'chairman_message', 'chairman_quote', 'chairman_letter', 'chairman_portrait',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
         'registration_open', 'google_form_url', 'google_form', 'registration_mode', 'google_sync_secret', 'google_webapp_url',
-        'checkin_open',
     ];
 
     protected $casts = [
@@ -36,7 +35,6 @@ class EventSetting extends Model
         'capacity' => 'integer',
         'edition' => 'integer',
         'registration_open' => 'boolean',
-        'checkin_open' => 'boolean',
         'google_form' => 'array',
     ];
 

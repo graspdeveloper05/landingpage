@@ -19,13 +19,6 @@ class AttendanceTest extends TestCase
     {
         parent::setUp();
         config(['event.edition' => 2026]);
-        EventSetting::create([
-            'edition' => 2026, 'date' => '2026-10-08', 'start_time' => '13:30',
-            'date_label' => ['en' => '8 Oct'], 'time_label' => ['en' => '1.30 PM'],
-            'venue' => 'Muzium Negara', 'venue_address' => 'KL', 'maps_url' => 'x',
-            'map_embed_url' => 'x', 'capacity' => 200, 'registration_open' => true,
-            'checkin_open' => true,
-        ]);
         $this->guest = $this->registration(['full_name' => 'Aisyah Rahman', 'email' => 'aisyah@example.com', 'mobile' => '+60 12 345 6789']);
     }
 
@@ -87,13 +80,36 @@ class AttendanceTest extends TestCase
             ->assertJsonPath('message', 'User not found.');
     }
 
-    public function test_check_in_refuses_while_closed(): void
+    /** There is no open/close switch: check-in is always available. */
+    public function test_check_in_needs_no_switch_turned_on(): void
     {
-        EventSetting::current()->update(['checkin_open' => false]);
+        $this->assertNull(EventSetting::current());
 
-        $this->getJson('/api/checkin')->assertOk()->assertJsonPath('open', false);
-        $this->postJson('/api/checkin', ['contact' => 'aisyah@example.com'])->assertStatus(423);
-        $this->assertNull($this->guest->fresh()->checked_in_at);
+        $this->postJson('/api/checkin', ['contact' => 'aisyah@example.com'])->assertOk();
+        $this->assertNotNull($this->guest->fresh()->checked_in_at);
+    }
+
+    /** @dataProvider eventDays */
+    public function test_check_in_closes_once_the_event_day_is_over(string $date, int $status): void
+    {
+        EventSetting::create([
+            'edition' => 2026, 'date' => $date, 'start_time' => '13:30',
+            'date_label' => ['en' => 'x'], 'time_label' => ['en' => 'x'],
+            'venue' => 'Muzium Negara', 'venue_address' => 'KL', 'maps_url' => 'x',
+            'map_embed_url' => 'x', 'capacity' => 200, 'registration_open' => true,
+        ]);
+
+        $this->postJson('/api/checkin', ['contact' => 'aisyah@example.com'])->assertStatus($status);
+        $this->assertSame($status === 200, $this->guest->fresh()->checked_in_at !== null);
+    }
+
+    public static function eventDays(): array
+    {
+        return [
+            'event is today' => [now('Asia/Kuala_Lumpur')->toDateString(), 200],
+            'event is next week' => [now('Asia/Kuala_Lumpur')->addWeek()->toDateString(), 200],
+            'event was yesterday' => [now('Asia/Kuala_Lumpur')->subDay()->toDateString(), 410],
+        ];
     }
 
     public function test_check_in_is_exempt_from_csrf_like_the_rsvp_form(): void
@@ -120,7 +136,7 @@ class AttendanceTest extends TestCase
             ->assertOk()
             ->assertJsonPath('meta.registered', 3)
             ->assertJsonPath('meta.arrived', 1)
-            ->assertJsonPath('meta.checkinOpen', true)
+            ->assertJsonMissingPath('meta.checkinOpen')
             ->assertJsonCount(3, 'data');
 
         $this->getJson('/api/admin/attendance?filter=arrived')
@@ -146,14 +162,6 @@ class AttendanceTest extends TestCase
         $this->assertNull($this->guest->fresh()->checked_in_via);
     }
 
-    public function test_staff_open_and_close_check_in(): void
-    {
-        $this->admin()->putJson('/api/admin/attendance/settings', ['checkinOpen' => false])
-            ->assertOk()
-            ->assertJsonPath('checkinOpen', false);
-
-        $this->assertFalse(EventSetting::current()->checkin_open);
-    }
 
     public function test_the_export_lists_everyone_with_their_arrival(): void
     {

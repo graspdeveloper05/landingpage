@@ -6,7 +6,7 @@ import {
   type SurveyRespondent,
   type SurveyRespondentDetail,
 } from './client'
-import { AdminButton, AdminCard, Notice } from './ui'
+import { AdminButton, AdminCard, CopyText, Notice } from './ui'
 import { SkeletonRows } from './Loading'
 
 const when = (iso: string | null) =>
@@ -122,7 +122,9 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
                       {r.name ?? '—'}
                     </button>
                   </td>
-                  <td className="tnum px-3 py-2.5 text-navy-800">{r.reference}</td>
+                  <td className="tnum px-3 py-2.5 text-navy-800">
+                    {r.reference && <CopyText text={r.reference} />}
+                  </td>
                   <td className="px-3 py-2.5 text-slate">
                     {r.email}
                     {r.mobile && <span className="block">{r.mobile}</span>}

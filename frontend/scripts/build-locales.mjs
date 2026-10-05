@@ -558,12 +558,14 @@ const src = {
       'அந்தப் பதிவைக் கண்டறிய முடியவில்லை.',
     ),
     register: L('Register now', 'Daftar sekarang', '立即报名', 'இப்போதே பதிவு செய்'),
-    closed: L(
-      'Check-in is not open yet.',
-      'Pendaftaran masuk belum dibuka.',
-      '签到尚未开始。',
-      'வருகைப் பதிவு இன்னும் திறக்கப்படவில்லை.',
+    ended: L(
+      'Check-in has closed. The event has ended.',
+      'Pendaftaran masuk telah ditutup. Acara telah tamat.',
+      '签到已结束，活动已经结束。',
+      'வருகைப் பதிவு மூடப்பட்டது. நிகழ்வு முடிவடைந்தது.',
     ),
+    copy: L('Copy', 'Salin', '复制', 'நகலெடு'),
+    copied: L('Copied', 'Disalin', '已复制', 'நகலெடுக்கப்பட்டது'),
   },
 
   survey: {

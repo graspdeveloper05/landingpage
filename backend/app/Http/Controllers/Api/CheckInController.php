@@ -16,16 +16,11 @@ use Illuminate\Validation\ValidationException;
  */
 class CheckInController extends Controller
 {
-    /** Whether check-in is open, so the page can say so before anyone types. */
-    public function status(): JsonResponse
-    {
-        return response()->json(['open' => $this->open()]);
-    }
-
     public function store(Request $request): JsonResponse
     {
-        if (! $this->open()) {
-            return response()->json(['message' => 'Check-in is not open yet.'], 423);
+        // Once the event day is over (in Kuala Lumpur), nobody arrives late.
+        if (EventSetting::current()?->hasPassed()) {
+            return response()->json(['message' => 'Check-in has closed. The event has ended.'], 410);
         }
 
         $contact = (string) $request->validate([
@@ -51,10 +46,5 @@ class CheckInController extends Controller
             'alreadyCheckedIn' => $already,
             'checkedInAt' => $registration->checked_in_at->toIso8601String(),
         ]);
-    }
-
-    private function open(): bool
-    {
-        return (bool) EventSetting::current()?->checkin_open;
     }
 }

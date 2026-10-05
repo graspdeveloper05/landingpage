@@ -58,7 +58,6 @@ Route::post('/registrations', [RegistrationController::class, 'store'])
 Route::post('/survey/identify', [SurveyController::class, 'identify'])->middleware('throttle:survey-identify');
 
 // Self check-in from the QR poster at the entrance.
-Route::get('/checkin', [CheckInController::class, 'status'])->middleware('throttle:checkin');
 Route::post('/checkin', [CheckInController::class, 'store'])->middleware('throttle:checkin');
 Route::get('/survey/{link}', [SurveyController::class, 'show'])->middleware('throttle:survey-read');
 Route::post('/survey/questions/{question}/answer', [SurveyController::class, 'answer'])->middleware('throttle:survey-answer');
@@ -167,9 +166,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'update']);
     Route::delete('/survey-questions/{question}', [SurveyQuestionAdminController::class, 'destroy']);
 
-    // Attendance on the day: the tracker, staff check-in, and opening check-in.
+    // Attendance on the day: the tracker, and staff check-in and undo.
     Route::get('/attendance', [AttendanceAdminController::class, 'index']);
-    Route::put('/attendance/settings', [AttendanceAdminController::class, 'settings']);
     Route::post('/attendance/{registration:reference}', [AttendanceAdminController::class, 'store']);
     Route::delete('/attendance/{registration:reference}', [AttendanceAdminController::class, 'destroy']);
 });

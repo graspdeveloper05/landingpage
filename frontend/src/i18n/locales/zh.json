@@ -228,7 +228,9 @@
     "next": "为他人签到",
     "notFound": "找不到该报名记录。",
     "register": "立即报名",
-    "closed": "签到尚未开始。"
+    "ended": "签到已结束，活动已经结束。",
+    "copy": "复制",
+    "copied": "已复制"
   },
   "survey": {
     "title": "问卷",

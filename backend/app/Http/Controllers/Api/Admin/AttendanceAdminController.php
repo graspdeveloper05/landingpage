@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\EventSetting;
 use App\Models\Registration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,7 +50,6 @@ class AttendanceAdminController extends Controller
             'meta' => [
                 'registered' => $registered,
                 'arrived' => $arrived,
-                'checkinOpen' => (bool) EventSetting::current()?->checkin_open,
                 'page' => $rows->currentPage(),
                 'lastPage' => $rows->lastPage(),
                 'total' => $rows->total(),
@@ -75,16 +73,5 @@ class AttendanceAdminController extends Controller
         $registration->forceFill(['checked_in_at' => null, 'checked_in_via' => null])->save();
 
         return response()->json(['checkedInAt' => null]);
-    }
-
-    public function settings(Request $request): JsonResponse
-    {
-        $data = $request->validate(['checkinOpen' => ['required', 'boolean']]);
-
-        $settings = EventSetting::current();
-        abort_unless($settings, 409, 'Save the event details first.');
-        $settings->update(['checkin_open' => $data['checkinOpen']]);
-
-        return response()->json(['checkinOpen' => $settings->checkin_open]);
     }
 }

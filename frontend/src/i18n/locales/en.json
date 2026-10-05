@@ -228,7 +228,9 @@
     "next": "Check in someone else",
     "notFound": "We could not find that registration.",
     "register": "Register now",
-    "closed": "Check-in is not open yet."
+    "ended": "Check-in has closed. The event has ended.",
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "survey": {
     "title": "Survey",

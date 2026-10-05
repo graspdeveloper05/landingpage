@@ -5,6 +5,7 @@ import { cn } from '@/lib/cn'
 import { Button } from '@/components/ui/Button'
 import { Ornament } from '@/components/ui/Ornament'
 import { REGISTRATION_PATH } from '@/lib/registration'
+import type { EventStatus } from '@/services/api'
 import { checkInApi, CheckInError, type CheckInResult } from '@/services/checkin'
 
 /** How long the tick stays up before the page is ready for the next guest. */
@@ -14,17 +15,14 @@ const RESET_AFTER_MS = 8000
  * Self check-in, opened from the QR poster at the entrance. The guest types
  * the email or mobile they registered with and shows the usher the tick.
  */
-export function CheckIn() {
+export function CheckIn({ status }: { status: EventStatus | null }) {
   const { t } = useI18n()
-  const [open, setOpen] = useState<boolean | null>(null)
   const [result, setResult] = useState<CheckInResult | null>(null)
+  const [refused, setRefused] = useState(false)
 
-  useEffect(() => {
-    checkInApi
-      .status()
-      .then((s) => setOpen(s.open))
-      .catch(() => setOpen(true))
-  }, [])
+  // The event's own status says when the day is over, so nobody types their
+  // email only to be told; the API refuses as well, for a page left open.
+  const ended = refused || status?.closedReason === 'past'
 
   // Back to the empty form for the next person in the queue.
   useEffect(() => {
@@ -43,12 +41,12 @@ export function CheckIn() {
           <Ornament className="mt-6" />
 
           <div className="mt-8">
-            {open === null ? null : !open ? (
-              <p className="font-display text-h3 text-navy-950">{t('checkin.closed')}</p>
+            {ended ? (
+              <p className="font-display text-h3 text-navy-950">{t('checkin.ended')}</p>
             ) : result ? (
               <Done result={result} onNext={() => setResult(null)} />
             ) : (
-              <Form onCheckedIn={setResult} onClosed={() => setOpen(false)} />
+              <Form onCheckedIn={setResult} onEnded={() => setRefused(true)} />
             )}
           </div>
         </div>
@@ -59,10 +57,10 @@ export function CheckIn() {
 
 function Form({
   onCheckedIn,
-  onClosed,
+  onEnded,
 }: {
   onCheckedIn: (result: CheckInResult) => void
-  onClosed: () => void
+  onEnded: () => void
 }) {
   const { t } = useI18n()
   const [contact, setContact] = useState('')
@@ -77,7 +75,7 @@ function Form({
     try {
       onCheckedIn(await checkInApi.checkIn(contact.trim()))
     } catch (err) {
-      if (err instanceof CheckInError && err.status === 423) return onClosed()
+      if (err instanceof CheckInError && err.status === 410) return onEnded()
       setError(err instanceof CheckInError && err.status === 422 ? 'notFound' : 'error')
     } finally {
       setBusy(false)
@@ -135,6 +133,12 @@ function Form({
 /** The screen the guest turns round to show the usher. */
 function Done({ result, onNext }: { result: CheckInResult; onNext: () => void }) {
   const { t } = useI18n()
+  const [copied, setCopied] = useState(false)
+  const copy = () =>
+    navigator.clipboard.writeText(result.reference).then(() => {
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1500)
+    })
   const time = new Date(result.checkedInAt).toLocaleTimeString('en-MY', {
     timeZone: 'Asia/Kuala_Lumpur',
     hour: 'numeric',
@@ -152,7 +156,16 @@ function Done({ result, onNext }: { result: CheckInResult; onNext: () => void })
       <p className="mt-6 font-display text-[1.75rem] leading-tight text-navy-950">
         {result.fullName}
       </p>
-      <p className="tnum mt-1 text-body text-slate">{result.reference}</p>
+      <p className="tnum mt-1 inline-flex items-center gap-2 text-body text-slate">
+        <span className="select-all">{result.reference}</span>
+        <button
+          type="button"
+          onClick={copy}
+          className="rounded-sm border border-navy-900/15 px-2 py-0.5 text-micro font-semibold text-navy-900 transition-colors hover:border-gold-500"
+        >
+          {copied ? t('checkin.copied') : t('checkin.copy')}
+        </button>
+      </p>
       <p className="mt-5 text-lead font-semibold text-green-800">
         {result.alreadyCheckedIn ? t('checkin.already', { time }) : t('checkin.done')}
       </p>

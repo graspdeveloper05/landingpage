@@ -228,7 +228,9 @@
     "next": "Daftar masuk orang lain",
     "notFound": "Pendaftaran itu tidak ditemui.",
     "register": "Daftar sekarang",
-    "closed": "Pendaftaran masuk belum dibuka."
+    "ended": "Pendaftaran masuk telah ditutup. Acara telah tamat.",
+    "copy": "Salin",
+    "copied": "Disalin"
   },
   "survey": {
     "title": "Tinjauan",

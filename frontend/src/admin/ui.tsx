@@ -22,7 +22,14 @@ function EyeIcon({ off }: { off: boolean }) {
         strokeLinejoin="round"
       />
       <circle cx="10" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.3" />
-      {off && <path d="M3.5 16.5 16.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />}
+      {off && (
+        <path
+          d="M3.5 16.5 16.5 3.5"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+        />
+      )}
     </svg>
   )
 }
@@ -266,6 +273,59 @@ export function AdminButton({
     >
       {children}
     </motion.button>
+  )
+}
+
+/**
+ * A value with a copy button beside it, for references the team pastes into
+ * emails and spreadsheets. Says "Copied" for a moment so the click registers.
+ */
+export function CopyText({ text, className }: { text: string; className?: string }) {
+  const [copied, setCopied] = useState(false)
+
+  return (
+    <span className={cn('inline-flex items-center gap-1.5', className)}>
+      <span className="select-all">{text}</span>
+      <button
+        type="button"
+        onClick={(e) => {
+          // Rows that open on click (survey responses) must not open too.
+          e.stopPropagation()
+          navigator.clipboard.writeText(text).then(() => {
+            setCopied(true)
+            window.setTimeout(() => setCopied(false), 1500)
+          })
+        }}
+        aria-label={copied ? `Copied ${text}` : `Copy ${text}`}
+        title={copied ? 'Copied' : 'Copy'}
+        className="grid h-6 w-6 place-items-center rounded-sm text-slate transition-colors hover:bg-[#F1F1EF] hover:text-navy-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/35"
+      >
+        {copied ? (
+          <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5 text-green-700" aria-hidden>
+            <path
+              d="M3 8.5l3 3 7-7"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" aria-hidden>
+            <rect
+              x="5"
+              y="5"
+              width="8.5"
+              height="8.5"
+              rx="1"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            />
+            <path d="M3 10.5V3.5a1 1 0 0 1 1-1h6.5" stroke="currentColor" strokeWidth="1.4" />
+          </svg>
+        )}
+      </button>
+    </span>
   )
 }
 
