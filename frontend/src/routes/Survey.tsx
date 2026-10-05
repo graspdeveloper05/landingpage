@@ -104,7 +104,7 @@ export function Survey() {
               <Notice>{t('survey.missing')}</Notice>
             ) : survey && survey.status !== 'open' ? (
               <Notice>{t('survey.notOpen')}</Notice>
-            ) : !identity ? (
+            ) : !survey ? null : survey.form_type !== 'feedback' && !identity ? (
               <Identify
                 onIdentified={(next) => {
                   saveIdentity(id, next)
@@ -120,7 +120,8 @@ export function Survey() {
                   surveyLink={id}
                   isFeedback={survey.form_type === 'feedback'}
                   questions={survey.questions}
-                  who={identity}
+                  // Feedback forms are anonymous: no details step, none sent.
+                  who={identity ?? ANONYMOUS}
                   onDone={load}
                   onForget={forget}
                   onSubmitted={() => {
@@ -166,6 +167,9 @@ function Thanks({ onBack }: { onBack: () => void }) {
     </div>
   )
 }
+
+/** Who answers a feedback form: nobody in particular. */
+const ANONYMOUS: Identity = { email: '', mobile: '' }
 
 /** A closed, missing or waiting state, in the RSVP section's voice. */
 function Notice({ children }: { children: React.ReactNode }) {

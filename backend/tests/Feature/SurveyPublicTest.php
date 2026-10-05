@@ -78,6 +78,32 @@ class SurveyPublicTest extends TestCase
         ];
     }
 
+    /** Feedback forms are anonymous: no email or phone asked, none kept. */
+    public function test_a_feedback_form_takes_answers_without_any_details(): void
+    {
+        $q = $this->openQuestion();
+        $q->survey->update(['form_type' => 'feedback']);
+
+        $this->postJson("/api/survey/questions/{$q->id}/answer", ['answer' => '1'])->assertCreated();
+        $this->postJson("/api/survey/questions/{$q->id}/answer", ['answer' => '2'])->assertCreated();
+
+        $this->assertSame(2, $q->responses()->count());
+        $this->assertSame(0, $q->responses()->whereNotNull('email')->count());
+    }
+
+    /** Even if a page sends details, a feedback form does not keep them. */
+    public function test_a_feedback_form_discards_details_it_is_sent(): void
+    {
+        $q = $this->openQuestion();
+        $q->survey->update(['form_type' => 'feedback']);
+
+        $this->answer($q, '1')->assertCreated();
+
+        $row = SurveyResponse::firstOrFail();
+        $this->assertNull($row->email);
+        $this->assertNull($row->mobile);
+    }
+
     public function test_each_survey_has_its_own_url_showing_only_its_open_questions(): void
     {
         $q = $this->openQuestion();

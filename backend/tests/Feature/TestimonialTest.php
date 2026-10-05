@@ -122,10 +122,7 @@ class TestimonialTest extends TestCase
 
     private function submit(\App\Models\Survey $form, array $body)
     {
-        return $this->postJson("/api/survey/{$form->id}/testimonial", $body + [
-            'email' => 'aisyah@example.com',
-            'mobile' => '+60 12 345 6789',
-        ]);
+        return $this->postJson("/api/survey/{$form->id}/testimonial", $body);
     }
 
     public function test_a_feedback_testimonial_with_permission_waits_for_review(): void
@@ -143,7 +140,8 @@ class TestimonialTest extends TestCase
         $t = Testimonial::firstOrFail();
         $this->assertSame('pending', $t->status);
         $this->assertSame($form->id, $t->survey_id);
-        $this->assertSame('aisyah@example.com', $t->email);
+        // The feedback form is anonymous: no email kept with the testimonial.
+        $this->assertNull($t->email);
         $this->assertSame('Aisyah Rahman, Universiti Malaya', $t->attribution());
         $this->getJson('/api/testimonials')->assertExactJson([]);
     }
@@ -187,18 +185,17 @@ class TestimonialTest extends TestCase
             'no credit' => [['quote' => 'Q'], 'credit'],
             'name missing' => [['quote' => 'Q', 'credit' => 'first_name'], 'name'],
             'organisation missing' => [['quote' => 'Q', 'credit' => 'full_name_org', 'name' => 'A'], 'organisation'],
-            'no email' => [['quote' => 'Q', 'credit' => 'anonymous', 'email' => ''], 'email'],
         ];
     }
 
-    public function test_one_testimonial_per_email_per_form(): void
+    public function test_each_anonymous_submission_is_its_own_testimonial(): void
     {
         $form = $this->feedbackForm();
         $body = ['quote' => 'Q', 'credit' => 'anonymous', 'consent' => true];
 
         $this->submit($form, $body)->assertCreated();
-        $this->submit($form, $body)->assertConflict();
-        $this->assertSame(1, Testimonial::count());
+        $this->submit($form, $body)->assertCreated();
+        $this->assertSame(2, Testimonial::count());
     }
 
     public function test_reorder(): void

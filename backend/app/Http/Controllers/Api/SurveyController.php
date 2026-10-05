@@ -74,8 +74,6 @@ class SurveyController extends Controller
         }
 
         $data = $request->validate([
-            'email' => ['required', 'email:rfc,filter', 'max:190'],
-            'mobile' => ['required', 'string', 'regex:/^\+?[0-9\s\-]{8,16}$/'],
             'quote' => ['required', 'string', 'max:1000'],
             'credit' => ['required', Rule::in(Testimonial::CREDITS)],
             'name' => ['nullable', 'required_unless:credit,anonymous', 'string', 'max:120'],
@@ -88,7 +86,8 @@ class SurveyController extends Controller
         try {
             Testimonial::create([
                 'survey_id' => $survey->id,
-                'email' => $this->email($data['email']),
+                // The feedback form is anonymous; only the credit they chose.
+                'email' => null,
                 'quote' => trim($data['quote']),
                 'credit' => $data['credit'],
                 'name' => $data['credit'] === 'anonymous' ? null : trim((string) $data['name']),
@@ -112,14 +111,19 @@ class SurveyController extends Controller
         // An optional question may be skipped. The skip is stored as an empty
         // answer, so the question counts as done and is not asked again; the
         // results leave empty answers out.
+        // Feedback forms are anonymous: no details are asked, and any a page
+        // sends are not kept. Surveys ask for an email and phone.
+        $anonymous = $question->survey->form_type === 'feedback';
+
         $data = $request->validate([
+            'answer' => [$question->is_required ? 'required' : 'nullable', 'string', ...$this->rulesFor($question)],
+        ] + ($anonymous ? [] : [
             // The form asks only for email and phone; a name is kept if sent.
             'name' => ['nullable', 'string', 'max:120'],
             'email' => ['required', 'email:rfc,filter', 'max:190'],
             // Malaysian and international numbers, as the RSVP form accepts.
             'mobile' => ['required', 'string', 'regex:/^\+?[0-9\s\-]{8,16}$/'],
-            'answer' => [$question->is_required ? 'required' : 'nullable', 'string', ...$this->rulesFor($question)],
-        ]);
+        ]));
         $answer = trim((string) $data['answer']);
 
         // Ticked boxes in option order, each once: "2,0,2" is stored "0,2".
@@ -130,9 +134,9 @@ class SurveyController extends Controller
         try {
             SurveyResponse::create([
                 'survey_question_id' => $question->id,
-                'name' => isset($data['name']) ? trim($data['name']) : null,
-                'email' => $this->email($data['email']),
-                'mobile' => preg_replace('/\s+/', ' ', trim($data['mobile'])),
+                'name' => ! $anonymous && isset($data['name']) ? trim($data['name']) : null,
+                'email' => $anonymous ? null : $this->email($data['email']),
+                'mobile' => $anonymous ? null : preg_replace('/\s+/', ' ', trim($data['mobile'])),
                 'answer' => $answer,
             ]);
         } catch (UniqueConstraintViolationException) {
