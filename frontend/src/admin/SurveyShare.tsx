@@ -7,9 +7,10 @@ import { useToast } from './Toast'
 /**
  * The survey's own link, "title-id": readable on a slide, and unique by the
  * id. The API looks up only the id, so editing the title later does not
- * break a QR code already printed.
+ * break a QR code already printed. Feedback forms live under /feedback,
+ * surveys under /survey.
  */
-export function surveyUrl(survey: Pick<AdminSurvey, 'id' | 'title'>) {
+export function surveyUrl(survey: Pick<AdminSurvey, 'id' | 'title' | 'form_type'>) {
   const slug = survey.title.en
     .toLowerCase()
     .normalize('NFKD')
@@ -17,7 +18,8 @@ export function surveyUrl(survey: Pick<AdminSurvey, 'id' | 'title'>) {
     .replace(/^-+|-+$/g, '')
     .slice(0, 60)
     .replace(/-+$/, '')
-  return `${window.location.origin}/survey/${slug ? `${slug}-` : ''}${survey.id}`
+  const base = survey.form_type === 'feedback' ? 'feedback' : 'survey'
+  return `${window.location.origin}/${base}/${slug ? `${slug}-` : ''}${survey.id}`
 }
 
 /** The QR code and link to show on the hall screen. */
@@ -36,7 +38,11 @@ export function SurveyShare({ survey }: { survey: AdminSurvey }) {
   return (
     <AdminCard className="flex flex-wrap items-center gap-4">
       {src && (
-        <img src={src} alt={`QR code for ${url}`} className="h-32 w-32 rounded-sm border border-hair" />
+        <img
+          src={src}
+          alt={`QR code for ${url}`}
+          className="h-32 w-32 rounded-sm border border-hair"
+        />
       )}
       <div className="min-w-[12rem] flex-1 space-y-2">
         <p className="text-[0.85rem] font-semibold text-navy-950">Show this on the screen</p>

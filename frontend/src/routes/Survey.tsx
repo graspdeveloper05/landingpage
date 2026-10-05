@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -32,6 +32,8 @@ export function Survey() {
   const [survey, setSurvey] = useState<PublicSurvey | null>(null)
   const [missing, setMissing] = useState(false)
   const [thanked, setThanked] = useState(false)
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
 
   const load = useCallback(
     () =>
@@ -50,6 +52,14 @@ export function Survey() {
   useEffect(() => {
     load()
   }, [load])
+
+  // Feedback forms at /feedback/..., surveys at /survey/...: a link with the
+  // other prefix (an older QR code, say) moves to the right one.
+  useEffect(() => {
+    if (!survey) return
+    const base = survey.form_type === 'feedback' ? '/feedback/' : '/survey/'
+    if (!pathname.startsWith(base)) navigate(base + id, { replace: true })
+  }, [survey, pathname, id, navigate])
 
   // Every ten seconds while the survey is open and on screen, so a question
   // the moderator opens appears by itself. A closed survey, or a tab in the
