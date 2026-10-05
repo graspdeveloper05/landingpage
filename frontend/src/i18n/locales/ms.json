@@ -84,7 +84,10 @@
   },
   "testimonials": {
     "title": "Kata peserta",
-    "sub": "Renungan daripada mereka yang menyertai perbualan ini."
+    "sub": "Renungan daripada mereka yang menyertai perbualan ini.",
+    "previous": "Testimoni sebelumnya",
+    "next": "Testimoni seterusnya",
+    "goTo": "Pergi ke slaid {{n}}"
   },
   "speakers": {
     "title": "Suara Dialog",

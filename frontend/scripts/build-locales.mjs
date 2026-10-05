@@ -236,6 +236,9 @@ const src = {
       '来自参与对话者的感想。',
       'உரையாடலில் பங்கேற்றவர்கள் பகிர்ந்த சிந்தனைகள்.',
     ),
+    previous: L('Previous testimonials', 'Testimoni sebelumnya', '上一组感言', 'முந்தைய சான்றுரைகள்'),
+    next: L('Next testimonials', 'Testimoni seterusnya', '下一组感言', 'அடுத்த சான்றுரைகள்'),
+    goTo: L('Go to slide {{n}}', 'Pergi ke slaid {{n}}', '前往第 {{n}} 张', '{{n}}-ஆம் படவில்லைக்குச் செல்'),
   },
 
   speakers: {

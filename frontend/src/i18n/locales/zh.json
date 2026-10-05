@@ -84,7 +84,10 @@
   },
   "testimonials": {
     "title": "与会者心声",
-    "sub": "来自参与对话者的感想。"
+    "sub": "来自参与对话者的感想。",
+    "previous": "上一组感言",
+    "next": "下一组感言",
+    "goTo": "前往第 {{n}} 张"
   },
   "speakers": {
     "title": "对话之声",

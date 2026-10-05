@@ -84,7 +84,10 @@
   },
   "testimonials": {
     "title": "What participants said",
-    "sub": "Reflections shared by those who joined the conversation."
+    "sub": "Reflections shared by those who joined the conversation.",
+    "previous": "Previous testimonials",
+    "next": "Next testimonials",
+    "goTo": "Go to slide {{n}}"
   },
   "speakers": {
     "title": "Voices of the Dialogue",
