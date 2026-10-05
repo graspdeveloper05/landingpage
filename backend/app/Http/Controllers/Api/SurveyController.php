@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
+use App\Models\Testimonial;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * The attendee side of a survey. There is no sign-in and no link to the
@@ -24,13 +26,7 @@ class SurveyController extends Controller
      */
     public function show(Request $request, string $link): JsonResponse
     {
-        // Links read "live-poll-12": the title for people, the id for us. Only
-        // the id is looked up, so a survey renamed after its QR code went to
-        // print still opens from the old link.
-        if (! preg_match('/(?:^|-)(\d+)$/', $link, $m)) {
-            abort(404);
-        }
-        $survey = Survey::findOrFail((int) $m[1]);
+        $survey = $this->fromLink($link);
 
         // Which of these this person has already answered, so the page can
         // leave them out; looked up by the email they typed.
@@ -61,6 +57,50 @@ class SurveyController extends Controller
                 'answered' => $answered->has($q->id),
             ])->values(),
         ]);
+    }
+
+    /**
+     * The testimonial part every feedback form ends with. Stored apart from
+     * the answers, and only with the writer's permission to publish; it then
+     * waits for the team's review before appearing on the website.
+     */
+    public function testimonial(Request $request, string $link): JsonResponse
+    {
+        $survey = $this->fromLink($link);
+        abort_unless($survey->form_type === 'feedback', 404);
+
+        if (! $survey->isOpen()) {
+            return response()->json(['message' => 'This form is not taking responses.'], 422);
+        }
+
+        $data = $request->validate([
+            'email' => ['required', 'email:rfc,filter', 'max:190'],
+            'mobile' => ['required', 'string', 'regex:/^\+?[0-9\s\-]{8,16}$/'],
+            'quote' => ['required', 'string', 'max:1000'],
+            'credit' => ['required', Rule::in(Testimonial::CREDITS)],
+            'name' => ['nullable', 'required_unless:credit,anonymous', 'string', 'max:120'],
+            'organisation' => ['nullable', 'required_if:credit,full_name_org', 'string', 'max:150'],
+            'consent' => ['accepted'],
+        ], [
+            'consent.accepted' => 'Tick the box to give permission to publish.',
+        ]);
+
+        try {
+            Testimonial::create([
+                'survey_id' => $survey->id,
+                'email' => $this->email($data['email']),
+                'quote' => trim($data['quote']),
+                'credit' => $data['credit'],
+                'name' => $data['credit'] === 'anonymous' ? null : trim((string) $data['name']),
+                'organisation' => $data['credit'] === 'full_name_org' ? trim((string) $data['organisation']) : null,
+                'status' => 'pending',
+                'display_order' => (int) Testimonial::max('display_order') + 1,
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            return response()->json(['message' => 'You have already shared a testimonial on this form.'], 409);
+        }
+
+        return response()->json(['message' => 'Thank you.'], 201);
     }
 
     public function answer(Request $request, SurveyQuestion $question): JsonResponse
@@ -124,6 +164,20 @@ class SurveyController extends Controller
             'rating' => ['regex:/^[1-5]$/'],
             default => ['max:1000'],
         };
+    }
+
+    /**
+     * Links read "live-poll-12": the title for people, the id for us. Only the
+     * id is looked up, so a survey renamed after its QR code went to print
+     * still opens from the old link.
+     */
+    private function fromLink(string $link): Survey
+    {
+        if (! preg_match('/(?:^|-)(\d+)$/', $link, $m)) {
+            abort(404);
+        }
+
+        return Survey::findOrFail((int) $m[1]);
     }
 
     /** One spelling of an address, so the same person is recognised. */
