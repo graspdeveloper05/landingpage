@@ -147,6 +147,29 @@ class SurveyAdminTest extends TestCase
         ])->assertOk();
     }
 
+    /** @dataProvider lockedChanges */
+    public function test_an_answered_question_keeps_its_type_and_option_count(array $change, string $field): void
+    {
+        $three = [['en' => 'A'], ['en' => 'B'], ['en' => 'C']];
+        $q = $this->question($this->survey(), ['options' => $three]);
+        $q->responses()->create(['registration_id' => $this->registration()->id, 'answer' => '0']);
+
+        $this->admin()->putJson("/api/admin/survey-questions/{$q->id}", $change + [
+            'type' => 'choice',
+            'question' => ['en' => 'Pick one'],
+            'options' => $three,
+        ])->assertUnprocessable()->assertJsonValidationErrors($field);
+    }
+
+    public static function lockedChanges(): array
+    {
+        return [
+            'type changed' => [['type' => 'text'], 'type'],
+            'option added' => [['options' => [['en' => 'A'], ['en' => 'B'], ['en' => 'C'], ['en' => 'D']]], 'options'],
+            'option removed' => [['options' => [['en' => 'A'], ['en' => 'B']]], 'options'],
+        ];
+    }
+
     public function test_questions_can_be_reordered(): void
     {
         $survey = $this->survey();

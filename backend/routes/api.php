@@ -49,11 +49,11 @@ Route::get('/sponsors', [SponsorController::class, 'index']);
 Route::post('/registrations', [RegistrationController::class, 'store'])
     ->middleware('throttle:6,1');
 
-// The attendee side of a survey. Limits are higher than registration's
-// because a hall full of people shares one Wi-Fi address.
-Route::post('/survey/identify', [SurveyController::class, 'identify'])->middleware('throttle:30,1');
-Route::get('/survey/{link}', [SurveyController::class, 'show'])->middleware('throttle:120,1');
-Route::post('/survey/questions/{question}/answer', [SurveyController::class, 'answer'])->middleware('throttle:120,1');
+// The attendee side of a survey. Named limiters (AppServiceProvider), each
+// on its own counter, because a hall full of people shares one Wi-Fi address.
+Route::post('/survey/identify', [SurveyController::class, 'identify'])->middleware('throttle:survey-identify');
+Route::get('/survey/{link}', [SurveyController::class, 'show'])->middleware('throttle:survey-read');
+Route::post('/survey/questions/{question}/answer', [SurveyController::class, 'answer'])->middleware('throttle:survey-answer');
 
 /*
 | §12 — basic analytics. Generous throttle because a genuine visitor sends one
