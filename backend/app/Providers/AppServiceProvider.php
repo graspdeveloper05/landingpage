@@ -38,7 +38,6 @@ class AppServiceProvider extends ServiceProvider
             fn (Request $request) => Limit::perMinute($perMinute)->by($name.'|'.$request->ip()),
         );
         $limit('survey-read', 3000);
-        $limit('survey-identify', 300);
         $limit('survey-answer', 1500);
         // Everyone arriving in the same ten minutes, on the venue's Wi-Fi.
         $limit('checkin', 300);

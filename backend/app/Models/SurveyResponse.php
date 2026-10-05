@@ -7,15 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SurveyResponse extends Model
 {
-    protected $fillable = ['survey_question_id', 'registration_id', 'answer'];
+    /** Who answered is what they typed into the form: name, email and phone. */
+    protected $fillable = ['survey_question_id', 'name', 'email', 'mobile', 'answer'];
 
     public function question(): BelongsTo
     {
         return $this->belongsTo(SurveyQuestion::class, 'survey_question_id');
-    }
-
-    public function registration(): BelongsTo
-    {
-        return $this->belongsTo(Registration::class);
     }
 }

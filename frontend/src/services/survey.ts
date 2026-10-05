@@ -21,9 +21,11 @@ export interface PublicSurvey {
   questions: PublicQuestion[]
 }
 
+/** What the person types before answering; kept with each answer. */
 export interface Identity {
-  token: string
-  firstName: string
+  name: string
+  email: string
+  mobile: string
 }
 
 export class SurveyError extends Error {
@@ -38,7 +40,7 @@ export class SurveyError extends Error {
 
 const IDENTITY_KEY = 'snd.survey'
 
-/** Who answered on this phone before, so they identify once, not per survey. */
+/** The details typed on this phone, so they are entered once per visit. */
 export function savedIdentity(): Identity | null {
   try {
     const raw = localStorage.getItem(IDENTITY_KEY)
@@ -53,14 +55,17 @@ export function saveIdentity(identity: Identity | null) {
     if (identity) localStorage.setItem(IDENTITY_KEY, JSON.stringify(identity))
     else localStorage.removeItem(IDENTITY_KEY)
   } catch {
-    // Private browsing: the person identifies again on their next visit.
+    // Private browsing: the details are typed again on the next visit.
   }
 }
 
 async function call<T>(method: 'GET' | 'POST', path: string, body?: object): Promise<T> {
   const res = await fetch(`${API_BASE}/api${path}`, {
     method,
-    headers: { Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    headers: {
+      Accept: 'application/json',
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
+    },
     body: body ? JSON.stringify(body) : undefined,
   })
   const payload = await res.json().catch(() => ({}))
@@ -68,14 +73,16 @@ async function call<T>(method: 'GET' | 'POST', path: string, body?: object): Pro
   return payload as T
 }
 
-// The token travels in the body or the query string: the API's CORS rules
+// Details travel in the body or the query string: the API's CORS rules
 // allow only standard headers.
 export const surveyApi = {
-  identify: (contact: string) => call<Identity>('POST', '/survey/identify', { contact }),
-  get: (surveyId: string, token: string | undefined) =>
-    call<PublicSurvey>('GET', `/survey/${encodeURIComponent(surveyId)}?token=${encodeURIComponent(token ?? '')}`),
-  answer: (questionId: number, token: string, answer: string) =>
-    call<{ message: string }>('POST', `/survey/questions/${questionId}/answer`, { token, answer }),
+  get: (surveyId: string, email: string | undefined) =>
+    call<PublicSurvey>(
+      'GET',
+      `/survey/${encodeURIComponent(surveyId)}?email=${encodeURIComponent(email ?? '')}`,
+    ),
+  answer: (questionId: number, who: Identity, answer: string) =>
+    call<{ message: string }>('POST', `/survey/questions/${questionId}/answer`, { ...who, answer }),
 }
 
 /** The text in the reader's language, or the English when that one is empty. */

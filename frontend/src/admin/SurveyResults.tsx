@@ -80,10 +80,13 @@ export function SurveyResults({ surveyId, live }: { surveyId: number; live: bool
             <ul className="max-h-64 space-y-1.5 overflow-y-auto">
               {r.answers.length === 0 && <li className="text-small text-slate">No answers yet.</li>}
               {r.answers.map((a, j) => (
-                <li key={j} className="rounded-sm bg-[#FAFAF8] px-2.5 py-1.5 text-small text-navy-900">
+                <li
+                  key={j}
+                  className="rounded-sm bg-[#FAFAF8] px-2.5 py-1.5 text-small text-navy-900"
+                >
                   {a.answer}
                   <span className="block text-micro text-slate">
-                    {a.name} · {a.reference}
+                    {a.name} · {a.email}
                   </span>
                 </li>
               ))}
@@ -101,7 +104,10 @@ function Bars({ rows, total }: { rows: { label: string; count: number }[]; total
       {rows.map((row, i) => {
         const pct = total ? Math.round((row.count / total) * 100) : 0
         return (
-          <div key={i} className="grid grid-cols-[minmax(5rem,10rem)_1fr_3.5rem] items-center gap-2">
+          <div
+            key={i}
+            className="grid grid-cols-[minmax(5rem,10rem)_1fr_3.5rem] items-center gap-2"
+          >
             <span className="truncate text-small text-navy-900">{row.label}</span>
             <span className="h-2.5 overflow-hidden rounded-full bg-[#EEEDEA]">
               <span

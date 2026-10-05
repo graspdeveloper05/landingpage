@@ -3,48 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Registration;
 use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
-use App\Support\RegistrationLookup;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 /**
- * The attendee side of a survey. Only registered attendees answer: they
- * identify once with the email or mobile they registered with, and get a
- * token that stands for their registration from then on. The token is the
- * registration id, encrypted, so it cannot be guessed or edited into
- * someone else's.
+ * The attendee side of a survey. There is no sign-in and no link to the
+ * registration list: the form asks for a name, email and phone, which are
+ * kept with each answer. One answer per email per question.
  */
 class SurveyController extends Controller
 {
-    public function identify(Request $request): JsonResponse
-    {
-        $contact = trim((string) $request->validate([
-            'contact' => ['required', 'string', 'max:190'],
-        ])['contact']);
-
-        $registration = RegistrationLookup::find($contact);
-
-        if (! $registration) {
-            throw ValidationException::withMessages(['contact' => 'User not found.']);
-        }
-
-        // Only the first name goes back: the token is enough to answer with,
-        // and nothing here should confirm someone else's email or number.
-        return response()->json([
-            'token' => Crypt::encryptString((string) $registration->id),
-            'firstName' => Str::of($registration->full_name)->trim()->before(' ')->toString(),
-        ]);
-    }
-
     /**
      * One survey, at its own link. A survey that is not open still shows its
      * title, so someone scanning an old QR code learns it has closed rather
@@ -60,14 +32,16 @@ class SurveyController extends Controller
         }
         $survey = Survey::findOrFail((int) $m[1]);
 
-        $registration = $this->fromToken((string) $request->query('token', ''));
+        // Which of these this person has already answered, so the page can
+        // leave them out; looked up by the email they typed.
+        $email = $this->email((string) $request->query('email', ''));
 
         $questions = $survey->isOpen()
             ? $survey->questions()->where('status', 'open')->get()
             : collect();
 
-        $answered = $registration
-            ? SurveyResponse::where('registration_id', $registration->id)
+        $answered = $email !== ''
+            ? SurveyResponse::where('email', $email)
                 ->whereIn('survey_question_id', $questions->pluck('id'))
                 ->pluck('survey_question_id')->flip()
             : collect();
@@ -90,11 +64,6 @@ class SurveyController extends Controller
 
     public function answer(Request $request, SurveyQuestion $question): JsonResponse
     {
-        $registration = $this->fromToken((string) $request->input('token', ''));
-        if (! $registration) {
-            return response()->json(['message' => 'Please enter your email or mobile again.'], 401);
-        }
-
         if (! $question->isAnswerable()) {
             return response()->json(['message' => 'This question is closed.'], 422);
         }
@@ -102,9 +71,14 @@ class SurveyController extends Controller
         // An optional question may be skipped. The skip is stored as an empty
         // answer, so the question counts as done and is not asked again; the
         // results leave empty answers out.
-        $answer = trim((string) $request->validate([
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email:rfc,filter', 'max:190'],
+            // Malaysian and international numbers, as the RSVP form accepts.
+            'mobile' => ['required', 'string', 'regex:/^\+?[0-9\s\-]{8,16}$/'],
             'answer' => [$question->is_required ? 'required' : 'nullable', 'string', ...$this->rulesFor($question)],
-        ])['answer']);
+        ]);
+        $answer = trim((string) $data['answer']);
 
         // Ticked boxes in option order, each once: "2,0,2" is stored "0,2".
         if ($question->type === 'checkbox' && $answer !== '') {
@@ -114,7 +88,9 @@ class SurveyController extends Controller
         try {
             SurveyResponse::create([
                 'survey_question_id' => $question->id,
-                'registration_id' => $registration->id,
+                'name' => trim($data['name']),
+                'email' => $this->email($data['email']),
+                'mobile' => preg_replace('/\s+/', ' ', trim($data['mobile'])),
                 'answer' => $answer,
             ]);
         } catch (UniqueConstraintViolationException) {
@@ -148,18 +124,9 @@ class SurveyController extends Controller
         };
     }
 
-    private function fromToken(string $token): ?Registration
+    /** One spelling of an address, so the same person is recognised. */
+    private function email(string $email): string
     {
-        if ($token === '') {
-            return null;
-        }
-
-        try {
-            $id = (int) Crypt::decryptString($token);
-        } catch (DecryptException) {
-            return null;
-        }
-
-        return Registration::forEdition((int) config('event.edition'))->find($id);
+        return strtolower(trim($email));
     }
 }

@@ -3,37 +3,38 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Registration;
 use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
 use Illuminate\Http\JsonResponse;
 
-/** Who filled a survey in, and everything one of them answered. */
+/**
+ * Who filled a survey in, and everything one of them answered. A person is
+ * the email they typed; the name and phone shown are the latest they gave.
+ */
 class SurveyRespondentController extends Controller
 {
     public function index(Survey $survey): JsonResponse
     {
         $rows = SurveyResponse::query()
             ->whereIn('survey_question_id', $survey->questions()->select('id'))
-            ->selectRaw("registration_id, SUM(CASE WHEN answer <> '' THEN 1 ELSE 0 END) AS answers, MAX(created_at) AS last_at")
-            ->groupBy('registration_id')
-            ->orderByDesc('last_at')
-            ->get();
+            ->whereNotNull('email')
+            ->orderBy('id')
+            ->get(['email', 'name', 'mobile', 'answer', 'created_at'])
+            ->groupBy('email');
 
-        $people = Registration::whereIn('id', $rows->pluck('registration_id'))
-            ->get(['id', 'reference', 'full_name', 'email', 'mobile'])
-            ->keyBy('id');
+        return response()->json($rows->map(function ($answers, $email) {
+            $latest = $answers->last();
 
-        return response()->json($rows->map(fn ($row) => [
-            'id' => $row->registration_id,
-            'reference' => $people[$row->registration_id]?->reference,
-            'name' => $people[$row->registration_id]?->full_name,
-            'email' => $people[$row->registration_id]?->email,
-            'mobile' => $people[$row->registration_id]?->mobile,
-            'answers' => (int) $row->answers,
-            'last_answered_at' => $row->last_at,
-        ])->values());
+            return [
+                'email' => $email,
+                'name' => $latest->name,
+                'mobile' => $latest->mobile,
+                // Skipped optional questions are stored empty; not answers.
+                'answers' => $answers->filter(fn ($r) => $r->answer !== '')->count(),
+                'last_answered_at' => $answers->max('created_at'),
+            ];
+        })->sortByDesc('last_answered_at')->values());
     }
 
     /**
@@ -41,25 +42,25 @@ class SurveyRespondentController extends Controller
      * choice as its English label, a skipped optional question marked as
      * skipped, and a question they never reached as null.
      */
-    public function show(Survey $survey, Registration $registration): JsonResponse
+    public function show(Survey $survey, string $email): JsonResponse
     {
+        $email = strtolower(trim(urldecode($email)));
         $questions = $survey->questions()->get();
-        $responses = SurveyResponse::where('registration_id', $registration->id)
+        $responses = SurveyResponse::where('email', $email)
             ->whereIn('survey_question_id', $questions->pluck('id'))
+            ->orderBy('id')
             ->get()
             ->keyBy('survey_question_id');
 
         abort_if($responses->isEmpty(), 404, 'This person has not answered this survey.');
 
+        $latest = $responses->sortBy('id')->last();
+
         return response()->json([
             'respondent' => [
-                'id' => $registration->id,
-                'reference' => $registration->reference,
-                'name' => $registration->full_name,
-                'email' => $registration->email,
-                'mobile' => $registration->mobile,
-                'organisation' => $registration->organisation,
-                'designation' => $registration->designation,
+                'email' => $email,
+                'name' => $latest->name,
+                'mobile' => $latest->mobile,
             ],
             'answers' => $questions->map(function (SurveyQuestion $q) use ($responses) {
                 $r = $responses->get($q->id);
