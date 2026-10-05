@@ -547,12 +547,19 @@ const src = {
     notFound: L('User not found.', 'Pengguna tidak ditemui.', '未找到用户。', 'பயனர் கிடைக்கவில்லை.'),
     welcome: L('Welcome, {{name}}', 'Selamat datang, {{name}}', '欢迎，{{name}}', 'வரவேற்கிறோம், {{name}}'),
     notYou: L('Not you?', 'Bukan anda?', '不是您？', 'நீங்கள் இல்லையா?'),
-    linked: L(
-      'Your responses are linked to your registration.',
-      'Jawapan anda dipautkan kepada pendaftaran anda.',
-      '您的回答将与您的报名记录关联。',
-      'உங்கள் பதில்கள் உங்கள் பதிவுடன் இணைக்கப்படும்.',
+    signIn: L(
+      'Enter the email or mobile number you registered with to begin.',
+      'Masukkan e-mel atau nombor telefon bimbit yang anda daftarkan untuk bermula.',
+      '请输入您报名时使用的电子邮件或手机号码以开始。',
+      'தொடங்க, நீங்கள் பதிவு செய்த மின்னஞ்சல் அல்லது கைபேசி எண்ணை உள்ளிடவும்.',
     ),
+    progress: L(
+      '{{done}} of {{total}} answered',
+      '{{done}} daripada {{total}} dijawab',
+      '已回答 {{done}}/{{total}}',
+      '{{total}} இல் {{done}} பதிலளிக்கப்பட்டது',
+    ),
+    stars: L('{{n}} out of 5', '{{n}} daripada 5', '5 分中的 {{n}} 分', '5 இல் {{n}}'),
     wait: L('Please wait for the next question.', 'Sila tunggu soalan seterusnya.', '请等待下一个问题。', 'அடுத்த கேள்விக்காக காத்திருக்கவும்.'),
     notOpen: L(
       'This survey is not open right now.',

@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
+import { PageHero } from '@/components/layout/PageHero'
+import { Button } from '@/components/ui/Button'
+import { Field } from '@/components/ui/Field'
+import { Ornament } from '@/components/ui/Ornament'
 import {
   pick,
   savedIdentity,
@@ -13,13 +17,20 @@ import {
   type PublicSurvey,
 } from '@/services/survey'
 
-/** One survey, at its own link. Registered attendees answer it. */
+/**
+ * One survey, at its own link. Registered attendees sign in with the email
+ * or mobile they registered with, answer, and hand the phone on.
+ *
+ * Dressed like the RSVP section -- the navy room with the interior faintly
+ * behind it -- since it is the same people at the same event.
+ */
 export function Survey() {
   const { id = '' } = useParams()
   const { t, locale } = useI18n()
   const [identity, setIdentity] = useState(savedIdentity)
   const [survey, setSurvey] = useState<PublicSurvey | null>(null)
   const [missing, setMissing] = useState(false)
+  const [thanked, setThanked] = useState(false)
 
   const load = useCallback(
     () =>
@@ -51,8 +62,6 @@ export function Survey() {
     return () => window.clearInterval(timer)
   }, [live, load])
 
-  const [thanked, setThanked] = useState(false)
-
   const forget = useCallback(() => {
     saveIdentity(null)
     setIdentity(null)
@@ -67,111 +76,93 @@ export function Survey() {
     window.scrollTo({ top: 0 })
   }, [forget])
 
-  return (
-    <section className="mx-auto min-h-[70vh] max-w-xl px-5 pb-20 pt-28 sm:pt-32">
-      <h1 className="font-display text-[2rem] leading-tight text-navy-950">
-        {survey ? pick(survey.title, locale) : t('survey.title')}
-      </h1>
-      {survey?.description && <p className="mt-2 text-slate">{pick(survey.description, locale)}</p>}
+  const title = survey ? pick(survey.title, locale) : t('survey.title')
+  const description = survey?.description ? pick(survey.description, locale) : undefined
 
-      <div className="mt-8">
-        {missing ? (
-          <Message>{t('survey.missing')}</Message>
-        ) : survey && survey.status !== 'open' ? (
-          <Message>{t('survey.notOpen')}</Message>
-        ) : !identity ? (
-          <Identify
-            onIdentified={(next) => {
-              saveIdentity(next)
-              setIdentity(next)
-            }}
-          />
-        ) : (
-          survey && (
-            <div className="space-y-4">
-              <p className="text-navy-900">
-                {t('survey.welcome', { name: identity.firstName })}{' '}
-                <button type="button" onClick={forget} className="text-small text-slate underline">
-                  {t('survey.notYou')}
-                </button>
-              </p>
-              {survey.questions.length === 0 ? (
-                <Message>{t('survey.wait')}</Message>
-              ) : (
-                <AnswerForm
-                  questions={survey.questions}
-                  token={identity.token}
-                  onDone={load}
-                  onForget={forget}
-                  onSubmitted={() => setThanked(true)}
-                />
-              )}
-            </div>
-          )
-        )}
-      </div>
+  return (
+    <>
+      <PageHero title={title} sub={description} image="/scenes/interior" position="center 38%" />
+
+      <section className="relative overflow-hidden bg-navy-900 py-section">
+        <img
+          src="/scenes/interior.jpg"
+          alt=""
+          width={1672}
+          height={941}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.07]"
+        />
+
+        <div className="shell relative">
+          <div className="mx-auto max-w-2xl">
+            {missing ? (
+              <Notice>{t('survey.missing')}</Notice>
+            ) : survey && survey.status !== 'open' ? (
+              <Notice>{t('survey.notOpen')}</Notice>
+            ) : !identity ? (
+              <Identify
+                onIdentified={(next) => {
+                  saveIdentity(next)
+                  setIdentity(next)
+                }}
+              />
+            ) : (
+              survey && (
+                <>
+                  <p className="text-body text-cream/80">
+                    {t('survey.welcome', { name: identity.firstName })}{' '}
+                    <button
+                      type="button"
+                      onClick={forget}
+                      className="text-small text-cream/55 underline underline-offset-4 transition-colors hover:text-gold-400"
+                    >
+                      {t('survey.notYou')}
+                    </button>
+                  </p>
+
+                  <div className="mt-8">
+                    {survey.questions.length === 0 ? (
+                      <Notice>{t('survey.wait')}</Notice>
+                    ) : (
+                      <AnswerForm
+                        questions={survey.questions}
+                        token={identity.token}
+                        onDone={load}
+                        onForget={forget}
+                        onSubmitted={() => setThanked(true)}
+                      />
+                    )}
+                  </div>
+                </>
+              )
+            )}
+          </div>
+        </div>
+      </section>
 
       {thanked && <ThankYou onClose={finish} />}
-    </section>
+    </>
   )
 }
 
-/** Shown after a successful submit; closes itself after a few seconds. */
-function ThankYou({ onClose }: { onClose: () => void }) {
-  const { t } = useI18n()
-
-  useEffect(() => {
-    const timer = window.setTimeout(onClose, 5000)
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.clearTimeout(timer)
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [onClose])
-
+/** A closed, missing or waiting state, in the RSVP section's voice. */
+function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-navy-950/60 px-5" onClick={onClose}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="survey-thanks-title"
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-sm bg-white p-6 text-center shadow-xl"
-      >
-        <p aria-hidden className="text-3xl text-gold-600">✓</p>
-        <h2 id="survey-thanks-title" className="mt-2 font-display text-[1.5rem] text-navy-950">
-          {t('survey.thanksTitle')}
-        </h2>
-        <p className="mt-2 text-slate">{t('survey.thanksBody')}</p>
-        <button
-          type="button"
-          autoFocus
-          onClick={onClose}
-          className="mt-5 rounded-sm bg-navy-900 px-6 py-2.5 font-semibold text-cream hover:bg-navy-800"
-        >
-          {t('survey.ok')}
-        </button>
-      </div>
-    </div>
+    <p className="border-l-2 border-gold-500 py-2 pl-6 font-display text-h3 text-cream">{children}</p>
   )
-}
-
-function Message({ children }: { children: React.ReactNode }) {
-  return <p className="rounded-sm border border-hair bg-white px-4 py-6 text-center text-slate">{children}</p>
 }
 
 function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void }) {
   const { t } = useI18n()
   const [contact, setContact] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | undefined>()
   const [busy, setBusy] = useState(false)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!contact.trim()) return
     setBusy(true)
-    setError(null)
+    setError(undefined)
     try {
       onIdentified(await surveyApi.identify(contact.trim()))
     } catch (err) {
@@ -182,34 +173,24 @@ function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <label className="block">
-        <span className="block font-semibold text-navy-950">{t('survey.contact')}</span>
-        <span className="block text-small text-slate">{t('survey.contactHint')}</span>
-        <input
+    <form onSubmit={submit} className="mx-auto max-w-md text-center">
+      <p className="text-lead text-cream/80">{t('survey.signIn')}</p>
+      <Ornament className="mt-5" tone="light" />
+
+      <div className="mt-8 text-left">
+        <Field
+          label={t('survey.contact')}
           value={contact}
           onChange={(e) => setContact(e.target.value)}
+          error={error}
           autoComplete="email"
-          aria-invalid={error ? true : undefined}
-          className={cn(
-            'mt-2 block w-full rounded-sm border bg-white px-3 py-2.5 text-navy-950 focus:outline-none focus:ring-2 focus:ring-gold-500/40',
-            error ? 'border-red-400' : 'border-hair',
-          )}
+          required
         />
-      </label>
-      {error && (
-        <p role="alert" className="text-small text-red-700">
-          {error}
-        </p>
-      )}
-      <button
-        type="submit"
-        disabled={busy}
-        className="rounded-sm bg-navy-900 px-5 py-2.5 font-semibold text-cream hover:bg-navy-800 disabled:opacity-50"
-      >
+      </div>
+
+      <Button type="submit" disabled={busy} withArrow className="mt-6 w-full">
         {t('survey.continue')}
-      </button>
-      <p className="text-micro text-slate">{t('survey.linked')}</p>
+      </Button>
     </form>
   )
 }
@@ -242,6 +223,7 @@ function AnswerForm({
 
   const isDone = (q: PublicQuestion) => q.answered || sent.has(q.id)
   const pending = questions.filter((q) => !isDone(q))
+  const filled = pending.filter((q) => answers[q.id]?.trim()).length
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -290,32 +272,39 @@ function AnswerForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
-      {questions.map((q) => (
-        <QuestionField
-          key={q.id}
-          question={q}
-          done={isDone(q)}
-          value={answers[q.id] ?? ''}
-          error={errors[q.id]}
-          onChange={(v) => setAnswers((all) => ({ ...all, [q.id]: v }))}
-        />
-      ))}
+    <form onSubmit={submit} noValidate>
+      <ol className="divide-y divide-cream/10 border-y border-cream/10">
+        {questions.map((q, i) => (
+          <QuestionField
+            key={q.id}
+            number={i + 1}
+            question={q}
+            done={isDone(q)}
+            value={answers[q.id] ?? ''}
+            error={errors[q.id]}
+            onChange={(v) => {
+              setAnswers((all) => ({ ...all, [q.id]: v }))
+              setErrors(({ [q.id]: _cleared, ...rest }) => rest)
+            }}
+          />
+        ))}
+      </ol>
 
       {pending.length > 0 && (
-        <div className="space-y-2">
-          {error && (
-            <p role="alert" className="text-small text-red-700">
-              {error}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={busy}
-            className="rounded-sm bg-navy-900 px-6 py-2.5 font-semibold text-cream hover:bg-navy-800 disabled:opacity-40"
-          >
+        <div className="mt-8 flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p aria-live="polite" className="text-small text-cream/60">
+            {error ? (
+              <span role="alert" className="flex items-center gap-2 text-gold-300">
+                <span aria-hidden className="block h-1.5 w-1.5 shrink-0 rotate-45 bg-gold-400" />
+                {error}
+              </span>
+            ) : (
+              t('survey.progress', { done: filled, total: pending.length })
+            )}
+          </p>
+          <Button type="submit" disabled={busy} withArrow className="w-full sm:w-auto">
             {t('survey.submit')}
-          </button>
+          </Button>
         </div>
       )}
     </form>
@@ -323,12 +312,14 @@ function AnswerForm({
 }
 
 function QuestionField({
+  number,
   question,
   done,
   value,
   error,
   onChange,
 }: {
+  number: number
   question: PublicQuestion
   done: boolean
   value: string
@@ -336,79 +327,147 @@ function QuestionField({
   onChange: (value: string) => void
 }) {
   const { t, locale } = useI18n()
+  const text = pick(question.question, locale)
+  const errorId = `q${question.id}-error`
 
   return (
-    <fieldset
-      className={cn('rounded-sm border bg-white p-4', error ? 'border-red-400' : 'border-hair')}
-      aria-invalid={error ? true : undefined}
-    >
-      <legend className="sr-only">{pick(question.question, locale)}</legend>
-      <p aria-hidden className="font-semibold text-navy-950">
-        {pick(question.question, locale)}
-      </p>
+    <li className="grid grid-cols-[2.25rem_1fr] gap-x-4 py-8 sm:grid-cols-[3rem_1fr]">
+      <span aria-hidden className="tnum font-display text-[1.75rem] leading-none text-gold-500 sm:text-[2.25rem]">
+        {number}
+      </span>
 
-      {done ? (
-        <p className="mt-3 text-small text-green-800">✓ {t('survey.thanks')}</p>
-      ) : (
-        <div className="mt-3">
-          {question.type === 'choice' && (
-            <div className="space-y-2">
-              {question.options?.map((o, i) => (
-                <label
-                  key={i}
-                  className={cn(
-                    'flex cursor-pointer items-center gap-3 rounded-sm border px-3 py-2.5',
-                    value === String(i) ? 'border-navy-900 bg-navy-900/5' : 'border-hair',
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name={`q${question.id}`}
-                    checked={value === String(i)}
-                    onChange={() => onChange(String(i))}
-                    className="accent-[#0B2140]"
-                  />
-                  {pick(o, locale)}
-                </label>
-              ))}
-            </div>
-          )}
+      <fieldset aria-describedby={error ? errorId : undefined} className="min-w-0">
+        <legend className="font-display text-[1.2rem] leading-snug text-cream sm:text-[1.35rem]">{text}</legend>
 
-          {question.type === 'rating' && (
-            <div className="flex gap-2" role="radiogroup">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  role="radio"
-                  aria-checked={value === String(n)}
-                  aria-label={String(n)}
-                  onClick={() => onChange(String(n))}
-                  className={cn(
-                    'h-11 w-11 rounded-sm border text-xl',
-                    Number(value) >= n ? 'border-gold-500 bg-gold-500/15 text-gold-700' : 'border-hair text-slate',
-                  )}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-          )}
+        {done ? (
+          <p className="mt-4 flex items-center gap-2 text-small text-gold-300">
+            <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-gold-400" />
+            {t('survey.thanks')}
+          </p>
+        ) : (
+          <div className="mt-5">
+            {question.type === 'choice' && (
+              <div className="space-y-2.5">
+                {question.options?.map((o, i) => {
+                  const checked = value === String(i)
+                  return (
+                    <label
+                      key={i}
+                      className={cn(
+                        'flex min-h-[52px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-3 text-body transition-colors duration-200',
+                        'focus-within:ring-2 focus-within:ring-gold-500/60',
+                        checked
+                          ? 'border-gold-500 bg-gold-500/10 text-cream'
+                          : 'border-cream/15 text-cream/80 hover:border-gold-300/60',
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name={`q${question.id}`}
+                        checked={checked}
+                        onChange={() => onChange(String(i))}
+                        className="sr-only"
+                      />
+                      <span
+                        aria-hidden
+                        className={cn(
+                          'grid h-4 w-4 shrink-0 place-items-center border transition-colors',
+                          checked ? 'rotate-45 border-gold-400 bg-gold-500' : 'rotate-45 border-cream/40',
+                        )}
+                      />
+                      {pick(o, locale)}
+                    </label>
+                  )
+                })}
+              </div>
+            )}
 
-          {question.type === 'text' && (
-            <textarea
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              maxLength={1000}
-              rows={4}
-              placeholder={t('survey.typeHere')}
-              className="block w-full rounded-sm border border-hair px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gold-500/40"
-            />
-          )}
+            {question.type === 'rating' && (
+              <div role="radiogroup" aria-label={text} className="flex gap-1.5 sm:gap-2">
+                {[1, 2, 3, 4, 5].map((n) => {
+                  const lit = Number(value) >= n
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      role="radio"
+                      aria-checked={value === String(n)}
+                      aria-label={t('survey.stars', { n })}
+                      onClick={() => onChange(String(n))}
+                      className={cn(
+                        'grid h-12 w-12 place-items-center rounded-sm text-[1.6rem] transition-colors duration-200 sm:h-14 sm:w-14',
+                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/60',
+                        lit ? 'text-gold-400' : 'text-cream/25 hover:text-gold-300/70',
+                      )}
+                    >
+                      ★
+                    </button>
+                  )
+                })}
+              </div>
+            )}
 
-          {error && <p className="mt-2 text-small text-red-700">{error}</p>}
-        </div>
-      )}
-    </fieldset>
+            {question.type === 'text' && (
+              <textarea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                maxLength={1000}
+                rows={4}
+                aria-label={text}
+                placeholder={t('survey.typeHere')}
+                className={cn(
+                  'block w-full rounded-sm border bg-cream/95 px-4 py-3 text-body text-navy-950',
+                  'transition-colors duration-200 placeholder:text-slate/50 focus:bg-white focus:outline-none',
+                  error ? 'border-red-400' : 'border-transparent hover:border-gold-300 focus:border-gold-500',
+                )}
+              />
+            )}
+
+            {error && (
+              <p id={errorId} className="mt-2 flex items-center gap-1.5 text-micro text-gold-300">
+                <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-gold-400" />
+                {error}
+              </p>
+            )}
+          </div>
+        )}
+      </fieldset>
+    </li>
+  )
+}
+
+/** Shown after a successful submit; closes itself after a few seconds. */
+function ThankYou({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n()
+
+  useEffect(() => {
+    const timer = window.setTimeout(onClose, 5000)
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-navy-950/70 px-5 backdrop-blur-sm" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="survey-thanks-title"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm border border-gold-500/40 bg-navy-900 px-8 py-10 text-center shadow-xl"
+      >
+        <h2 id="survey-thanks-title" className="font-display text-[2rem] text-cream">
+          {t('survey.thanksTitle')}
+        </h2>
+        <Ornament className="mt-4" tone="light" />
+        <p className="mt-5 text-body text-cream/75">{t('survey.thanksBody')}</p>
+        <Button type="button" autoFocus onClick={onClose} className="mt-8 w-full">
+          {t('survey.ok')}
+        </Button>
+      </div>
+    </div>
   )
 }
