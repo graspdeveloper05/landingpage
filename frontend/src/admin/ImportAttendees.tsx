@@ -2,6 +2,20 @@ import { useState } from 'react'
 import { adminApi, AdminError } from './client'
 import { AdminButton, AdminCard, Notice } from './ui'
 
+/** The file's columns, in the templates' order: [column, required, what to enter]. */
+const COLUMNS: [string, boolean, string][] = [
+  ['name', true, 'Full name'],
+  ['email', true, 'One registration per email; already registered emails are skipped'],
+  ['mobile', true, 'Any format, e.g. +60 12 345 6789 or 012-345 6789'],
+  ['organisation', true, 'Organisation or ministry'],
+  ['designation', true, 'Job title'],
+  ['chevening_scholar', false, 'Yes or No'],
+  ['chevening_cohort', false, 'e.g. 2019/20'],
+  ['chevening_university', false, 'University under the Chevening scholarship'],
+  ['cam_member', false, 'Yes or No'],
+  ['arrived', false, 'Yes marks them arrived now; leave blank otherwise'],
+]
+
 interface ImportResult {
   added: number
   skipped: number
@@ -43,14 +57,58 @@ export function ImportAttendees({ onImported }: { onImported: () => void }) {
       <div>
         <p className="text-[0.85rem] font-semibold text-navy-950">Import attendees</p>
         <p className="text-micro text-slate">
-          Add people who did not register on the website from a CSV or Excel (.xlsx) file, with the
-          columns name, email, mobile, organisation and designation. Optional columns:
-          chevening_scholar (Yes/No), chevening_cohort, chevening_university, cam_member (Yes/No),
-          and arrived (yes marks them arrived; otherwise they are not). Emails already registered are
-          skipped.
+          Add people who did not register on the website, such as ministry staff, from an Excel or
+          CSV file.
         </p>
+
+        <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-[0.78rem] text-navy-900">
+          <li>
+            <span className="font-semibold">Download a template</span> below: Excel or CSV. The
+            first row holds the column names; keep it as it is.
+          </li>
+          <li>
+            <span className="font-semibold">Fill in one person per row</span> under the column
+            names. Name, email, mobile, organisation and designation are required; the rest may be
+            left blank (see the table).
+          </li>
+          <li>
+            <span className="font-semibold">Save the file</span> as Excel (.xlsx) or CSV. Phone
+            numbers that lose their leading 0 in Excel are fixed on import.
+          </li>
+          <li>
+            <span className="font-semibold">Choose the file</span> with the button below, then click{' '}
+            <span className="font-semibold">Import</span>.
+          </li>
+          <li>
+            <span className="font-semibold">Check the summary:</span> how many were added, how many
+            were skipped because their email is already registered, and any rows to fix. Fix those
+            rows and import the file again; people already added are skipped, not duplicated.
+          </li>
+        </ol>
+
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[30rem] text-left text-[0.74rem]">
+            <thead className="text-slate">
+              <tr className="border-b border-[#EEEDEA]">
+                <th className="py-1 pr-3 font-semibold">Column</th>
+                <th className="py-1 pr-3 font-semibold">Required</th>
+                <th className="py-1 font-semibold">What to enter</th>
+              </tr>
+            </thead>
+            <tbody className="text-navy-900">
+              {COLUMNS.map(([column, required, help]) => (
+                <tr key={column} className="border-b border-[#F4F3F0] last:border-0">
+                  <td className="py-1 pr-3 font-mono">{column}</td>
+                  <td className="py-1 pr-3">{required ? 'Yes' : 'Optional'}</td>
+                  <td className="py-1 text-slate">{help}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         {/* Blank templates to fill in, and one filled in to show the shape. */}
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           <a
             href="/samples/attendees-template.xlsx"
             download
