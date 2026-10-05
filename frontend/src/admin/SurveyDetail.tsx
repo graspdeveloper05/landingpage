@@ -204,7 +204,9 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
                       Close
                     </AdminButton>
                   ) : (
-                    <AdminButton onClick={() => setQuestionStatus(q, 'open')}>Open</AdminButton>
+                    <AdminButton variant="success" onClick={() => setQuestionStatus(q, 'open')}>
+                      Open
+                    </AdminButton>
                   )}
                   <button
                     type="button"
