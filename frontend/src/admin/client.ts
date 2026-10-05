@@ -312,3 +312,17 @@ export interface AdminUser {
   name: string
   email: string
 }
+
+export type TestimonialCredit = 'anonymous' | 'first_name' | 'full_name' | 'full_name_org'
+export type TestimonialStatus = 'pending' | 'approved' | 'hidden'
+
+export interface AdminTestimonial {
+  id: number
+  quote: string
+  credit: TestimonialCredit
+  name: string | null
+  organisation: string | null
+  status: TestimonialStatus
+  display_order: number
+  created_at: string
+}

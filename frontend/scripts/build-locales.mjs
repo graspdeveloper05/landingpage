@@ -228,6 +228,16 @@ const src = {
     cta: L('Read the full welcome', 'Baca ucapan aluan penuh', '阅读完整致辞', 'முழு வரவேற்புரையைப் படிக்க'),
   },
 
+  testimonials: {
+    title: L('What participants said', 'Kata peserta', '与会者心声', 'பங்கேற்பாளர்களின் கருத்து'),
+    sub: L(
+      'Reflections shared by those who joined the conversation.',
+      'Renungan daripada mereka yang menyertai perbualan ini.',
+      '来自参与对话者的感想。',
+      'உரையாடலில் பங்கேற்றவர்கள் பகிர்ந்த சிந்தனைகள்.',
+    ),
+  },
+
   speakers: {
     title: L('Voices of the Dialogue', 'Suara Dialog', '对话之声', 'உரையாடலின் குரல்கள்'),
     sub: L(

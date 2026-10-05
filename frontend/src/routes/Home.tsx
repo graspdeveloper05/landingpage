@@ -6,6 +6,7 @@ import { ThemeSection } from '@/components/home/ThemeSection'
 import { ChairmanWelcome } from '@/components/home/ChairmanWelcome'
 import { SpeakerGrid } from '@/components/home/SpeakerGrid'
 import { ProgrammeSection } from '@/components/home/ProgrammeSection'
+import { TestimonialsSection } from '@/components/home/TestimonialsSection'
 import { EventInfoSection } from '@/components/home/EventInfoSection'
 import { RsvpSection } from '@/components/home/RsvpSection'
 import { SponsorsSection } from '@/components/home/SponsorsSection'
@@ -43,6 +44,8 @@ export function Home({ status, refresh }: { status: EventStatus | null; refresh:
           </div>
         </div>
       </section>
+
+      <TestimonialsSection />
 
       <ProgrammeSection>
         <div className="mt-10">

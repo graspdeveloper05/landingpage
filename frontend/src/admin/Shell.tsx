@@ -24,6 +24,7 @@ const NAV = [
   { to: '/admin/analytics', label: 'Analytics', icon: ChartIcon, hint: 'Visitors and pages' },
   { to: '/admin/survey', label: 'Survey / Feedback', icon: SurveyIcon, hint: 'Questions and results' },
   { to: '/admin/attendance', label: 'Attendance', icon: CheckInIcon, hint: 'Check-in and arrivals' },
+  { to: '/admin/testimonials', label: 'Testimonials', icon: QuoteIcon, hint: 'Review before publishing' },
 ]
 
 export function Shell({
@@ -255,6 +256,15 @@ function CheckInIcon({ className }: { className?: string }) {
       <rect x="1.5" y="9.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
       <rect x="9.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
       <path d="M9.5 12l1.8 1.8L14.5 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function QuoteIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden>
+      <path d="M2 3.5h12v7.5H7l-3 2.5v-2.5H2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M5 6.5h6M5 8.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   )
 }
