@@ -166,7 +166,33 @@ class AttendeeImportTest extends TestCase
             $this->assertFileExists(base_path("../frontend/public/samples/{$file}"));
         }
         $csv = file_get_contents(base_path('../frontend/public/samples/attendees-template.csv'));
-        $this->assertSame('name,email,mobile,organisation,designation,arrived', trim($csv));
+        $this->assertSame('name,email,mobile,organisation,designation,chevening_scholar,chevening_cohort,chevening_university,cam_member,arrived', trim($csv));
+    }
+
+    public function test_chevening_answers_are_kept_like_the_website_form(): void
+    {
+        $file = UploadedFile::fake()->createWithContent('a.csv', implode("\n", [
+            'name,email,mobile,organisation,designation,chevening_scholar,chevening_cohort,chevening_university,cam_member',
+            'Scholar,s@example.com,0123456781,O,D,yes,2019/20,University of Edinburgh,yes',
+            'Not One,n@example.com,0123456782,O,D,No,,,',
+            'Blank,b@example.com,0123456783,O,D,,,,',
+        ])."\n");
+
+        $this->import($file)->assertJsonPath('added', 3);
+
+        $this->assertSame(
+            ['chevening_scholar' => 'Yes', 'chevening_cohort' => '2019/20', 'chevening_university' => 'University of Edinburgh', 'cam_member' => 'Yes'],
+            Registration::where('email', 's@example.com')->firstOrFail()->answers,
+        );
+        $this->assertSame(['chevening_scholar' => 'No'], Registration::where('email', 'n@example.com')->firstOrFail()->answers);
+        $this->assertNull(Registration::where('email', 'b@example.com')->firstOrFail()->answers);
+    }
+
+    public function test_a_chevening_answer_other_than_yes_or_no_is_reported(): void
+    {
+        $file = UploadedFile::fake()->createWithContent('a.csv', "name,email,mobile,organisation,designation,chevening_scholar\nX,x@example.com,0123456789,O,D,maybe\n");
+
+        $this->import($file)->assertJsonPath('added', 0)->assertJsonPath('errors.0.row', 2);
     }
 
     public function test_only_csv_or_excel_files_are_taken(): void

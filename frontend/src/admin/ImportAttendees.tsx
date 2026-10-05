@@ -44,8 +44,9 @@ export function ImportAttendees({ onImported }: { onImported: () => void }) {
         <p className="text-[0.85rem] font-semibold text-navy-950">Import attendees</p>
         <p className="text-micro text-slate">
           Add people who did not register on the website from a CSV or Excel (.xlsx) file, with the
-          columns name, email, mobile, organisation and designation. An optional “arrived” column
-          set to yes marks them arrived; otherwise they are not. Emails already registered are
+          columns name, email, mobile, organisation and designation. Optional columns:
+          chevening_scholar (Yes/No), chevening_cohort, chevening_university, cam_member (Yes/No),
+          and arrived (yes marks them arrived; otherwise they are not). Emails already registered are
           skipped.
         </p>
         {/* Blank templates to fill in, and one filled in to show the shape. */}

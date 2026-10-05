@@ -59,6 +59,13 @@ class AttendeeImport
                 'organisation' => ['required', 'string', 'max:150'],
                 'designation' => ['required', 'string', 'max:150'],
             ]);
+            $answers = self::answers($person);
+            if ($answers === false) {
+                $this->errors[] = ['row' => $line, 'message' => 'Chevening scholar and CAM member take Yes or No.'];
+
+                continue;
+            }
+
             if ($check->fails()) {
                 $this->errors[] = ['row' => $line, 'message' => $check->errors()->first()];
 
@@ -86,6 +93,7 @@ class AttendeeImport
                 'designation' => $person['designation'],
                 'edition' => $edition,
                 'source' => 'import',
+                'answers' => $answers,
                 'checked_in_at' => $arrived ? now() : null,
                 'checked_in_via' => $arrived ? 'staff' : null,
             ]));
@@ -124,6 +132,10 @@ class AttendeeImport
             'organisation' => $value('organisation'),
             'designation' => $value('designation'),
             'arrived' => $value('arrived'),
+            'chevening_scholar' => $value('chevening_scholar'),
+            'chevening_cohort' => $value('chevening_cohort'),
+            'chevening_university' => $value('chevening_university'),
+            'cam_member' => $value('cam_member'),
         ];
     }
 
@@ -134,6 +146,40 @@ class AttendeeImport
     private static function mobile(string $typed): string
     {
         return preg_match('/^1\d{8,9}$/', $typed) ? '0'.$typed : $typed;
+    }
+
+    /**
+     * The Chevening answers, worded as the website form stores them ("Yes" /
+     * "No"). Null when the file leaves them out; false when a yes/no column
+     * holds something else.
+     */
+    private static function answers(array $person): array|null|false
+    {
+        $yesNo = function (string $typed): string|null|false {
+            $v = strtolower(trim($typed));
+
+            return match (true) {
+                $v === '' => null,
+                in_array($v, ['yes', 'y', 'true', '1'], true) => 'Yes',
+                in_array($v, ['no', 'n', 'false', '0'], true) => 'No',
+                default => false,
+            };
+        };
+
+        $scholar = $yesNo($person['chevening_scholar']);
+        $cam = $yesNo($person['cam_member']);
+        if ($scholar === false || $cam === false) {
+            return false;
+        }
+
+        $answers = array_filter([
+            'chevening_scholar' => $scholar,
+            'chevening_cohort' => $person['chevening_cohort'],
+            'chevening_university' => $person['chevening_university'],
+            'cam_member' => $cam,
+        ], fn ($v) => $v !== null && $v !== '');
+
+        return $answers === [] ? null : $answers;
     }
 
     private function blank(array $person): bool
