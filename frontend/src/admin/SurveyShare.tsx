@@ -10,7 +10,7 @@ import { useToast } from './Toast'
  * break a QR code already printed. Feedback forms live under /feedback,
  * surveys under /survey.
  */
-export function surveyUrl(survey: Pick<AdminSurvey, 'id' | 'title' | 'form_type'>) {
+export function surveyUrl(survey: Pick<AdminSurvey, 'id' | 'title' | 'form_type' | 'slug'>) {
   const slug = survey.title.en
     .toLowerCase()
     .normalize('NFKD')
@@ -19,6 +19,8 @@ export function surveyUrl(survey: Pick<AdminSurvey, 'id' | 'title' | 'form_type'
     .slice(0, 60)
     .replace(/-+$/, '')
   const base = survey.form_type === 'feedback' ? 'feedback' : 'survey'
+  // A short link, when set, is what goes on a printed QR code.
+  if (survey.slug) return `${window.location.origin}/${base}/${survey.slug}`
   return `${window.location.origin}/${base}/${slug ? `${slug}-` : ''}${survey.id}`
 }
 

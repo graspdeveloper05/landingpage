@@ -21,6 +21,7 @@ const TYPE_LABEL = {
   checkbox: 'Checkboxes',
   rating: 'Rating 1–5',
   text: 'Text',
+  grid: 'Statement table',
 }
 
 export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void }) {
@@ -199,6 +200,11 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
               <div className="flex flex-wrap items-center gap-3">
                 <span className="tnum w-6 text-[0.85rem] font-semibold text-gold-700">{i + 1}</span>
                 <div className="min-w-[12rem] flex-1">
+                  {q.section && (
+                    <p className="text-micro font-semibold text-gold-700">
+                      New page: {q.section.title.en}
+                    </p>
+                  )}
                   <p className="text-[0.88rem] font-semibold text-navy-950">{q.question.en}</p>
                   <p className="text-micro text-slate">
                     {TYPE_LABEL[q.type]} · {q.is_required ? 'Required' : 'Optional'} ·{' '}

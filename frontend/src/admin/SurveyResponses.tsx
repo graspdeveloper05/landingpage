@@ -29,7 +29,18 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
   const [openKey, setOpenKey] = useState<string | null>(null)
   // The questions head the columns, so each response reads across one row.
   const [questions, setQuestions] = useState<AdminSurveyQuestion[]>([])
-  const anonymous = survey.form_type === 'feedback'
+  // Which details this form asks, as the API reads them: a form that never
+  // chose asks email and phone, or nothing for feedback.
+  const asked = {
+    name: 'off',
+    email: 'off',
+    mobile: 'off',
+    organisation: 'off',
+    ...(survey.fields ??
+      (survey.form_type === 'feedback' ? {} : { email: 'required', mobile: 'required' })),
+  }
+  const anonymous = asked.name === 'off' && asked.email === 'off'
+  const hasOrganisation = asked.organisation !== 'off'
 
   const load = () => {
     setError(null)
@@ -43,6 +54,20 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
   }
 
   useEffect(load, [survey.id])
+
+  // While the form is taking answers (questions from the floor, say), the
+  // list keeps itself current for whoever is watching it.
+  useEffect(() => {
+    if (survey.status !== 'open' || openKey !== null) return
+    const timer = window.setInterval(() => {
+      if (document.hidden) return
+      adminApi
+        .get<SurveyRespondent[]>(`/admin/surveys/${survey.id}/respondents`)
+        .then(setList)
+        .catch(() => {})
+    }, 15000)
+    return () => window.clearInterval(timer)
+  }, [survey.id, survey.status, openKey])
   useEffect(() => {
     adminApi
       .get<AdminSurvey>(`/admin/surveys/${survey.id}`)
@@ -126,8 +151,9 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
             <thead className="border-b border-[#DDDCD8] bg-[#FAFAF8] text-micro text-slate">
               <tr>
                 <th className="px-3 py-2 font-semibold">{anonymous ? 'Response' : 'Name'}</th>
-                {!anonymous && <th className="px-3 py-2 font-semibold">Email</th>}
-                {!anonymous && <th className="px-3 py-2 font-semibold">Phone</th>}
+                {asked.email !== 'off' && <th className="px-3 py-2 font-semibold">Email</th>}
+                {asked.mobile !== 'off' && <th className="px-3 py-2 font-semibold">Phone</th>}
+                {hasOrganisation && <th className="px-3 py-2 font-semibold">Organisation</th>}
                 {questions.map((qq, i) => (
                   <th
                     key={qq.id}
@@ -161,8 +187,15 @@ export function SurveyResponses({ survey, onBack }: { survey: AdminSurvey; onBac
                       {label(r)}
                     </button>
                   </td>
-                  {!anonymous && <td className="px-3 py-2.5 text-navy-800">{r.email}</td>}
-                  {!anonymous && <td className="tnum px-3 py-2.5 text-slate">{r.mobile}</td>}
+                  {asked.email !== 'off' && (
+                    <td className="px-3 py-2.5 text-navy-800">{r.email}</td>
+                  )}
+                  {asked.mobile !== 'off' && (
+                    <td className="tnum px-3 py-2.5 text-slate">{r.mobile}</td>
+                  )}
+                  {hasOrganisation && (
+                    <td className="px-3 py-2.5 text-navy-800">{r.organisation ?? '—'}</td>
+                  )}
                   {questions.map((qq) => {
                     const v = r.values?.[qq.id]
                     return (

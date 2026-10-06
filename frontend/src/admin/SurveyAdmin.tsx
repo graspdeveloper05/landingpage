@@ -10,8 +10,10 @@ import {
   type Localized,
   type FormType,
   type SurveyStatus,
+  type FormDetail,
+  type DetailMode,
 } from './client'
-import { AdminButton, AdminCard, LocalizedFieldset, Notice } from './ui'
+import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
 import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
 import { SurveyDetail } from './SurveyDetail'
@@ -122,8 +124,8 @@ export function SurveyAdmin() {
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[0.78rem] text-slate">
-          Each survey has its own link. Attendees answer with the email or mobile they registered
-          with.
+          Each form has its own link and QR code. Under Edit, choose which details it asks
+          (name, email, phone, organisation).
         </p>
         <AdminButton onClick={() => setAdding(true)}>Add survey</AdminButton>
       </div>
@@ -186,6 +188,14 @@ export function SurveyAdmin() {
 
 /* -------------------------------------------------------------------------- */
 
+/** The details a form can ask for, in the order the form shows them. */
+const DETAILS: { key: FormDetail; label: string }[] = [
+  { key: 'name', label: 'Full name' },
+  { key: 'email', label: 'Email' },
+  { key: 'mobile', label: 'Phone' },
+  { key: 'organisation', label: 'Organisation' },
+]
+
 const FORM_TYPES: { value: FormType; label: string; hint: string }[] = [
   { value: 'survey', label: 'Survey', hint: 'Live polls and questions' },
   { value: 'feedback', label: 'Feedback', hint: 'Participant feedback form' },
@@ -209,6 +219,21 @@ export function SurveyForm({
   const [description, setDescription] = useState<Localized>(toLocalized(survey?.description))
   const [status, setStatus] = useState<SurveyStatus>(survey?.status ?? 'draft')
   const [formType, setFormType] = useState<FormType>(survey?.form_type ?? 'survey')
+  const [slug, setSlug] = useState(survey?.slug ?? '')
+  // A form that never chose keeps what it always asked: email and phone for
+  // a survey, nothing for (anonymous) feedback.
+  const [fields, setFields] = useState<Record<FormDetail, DetailMode>>(() => {
+    const set =
+      survey?.fields ??
+      (survey?.form_type === 'feedback' ? {} : { email: 'required', mobile: 'required' })
+    return {
+      name: set.name ?? 'off',
+      email: set.email ?? 'off',
+      mobile: set.mobile ?? 'off',
+      organisation: set.organisation ?? 'off',
+    }
+  })
+  const [detailsNote, setDetailsNote] = useState<Localized>(toLocalized(survey?.details_note))
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -226,9 +251,15 @@ export function SurveyForm({
     setError(null)
     setFieldErrors({})
     try {
-      const payload = survey
-        ? { form_type: formType, title, description, status }
-        : { form_type: formType, title, description }
+      const common = {
+        form_type: formType,
+        title,
+        description,
+        slug,
+        fields,
+        details_note: detailsNote,
+      }
+      const payload = survey ? { ...common, status } : common
       const saved = survey
         ? await adminApi.put<AdminSurvey>(`/admin/surveys/${survey.id}`, payload)
         : await adminApi.post<AdminSurvey>('/admin/surveys', payload)
@@ -290,6 +321,55 @@ export function SurveyForm({
           value={description}
           onChange={setDescription}
           errors={localeErrors('description')}
+          multiline
+        />
+
+        <AdminField
+          label="Short link (optional)"
+          hint="Lowercase words and dashes, e.g. pre-event. The link then stays the same, so a QR code can be printed before the form is ready."
+          error={fieldErrors.slug}
+          value={slug}
+          onChange={(v) => setSlug(v.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+          placeholder="pre-event"
+        />
+
+        <fieldset>
+          <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">
+            Details to ask
+          </legend>
+          <p className="mb-2 text-[0.7rem] text-slate">
+            Asked on the first page, before the questions. Without email, the form is anonymous and
+            anyone can send it more than once (useful for questions from the floor).
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {DETAILS.map((d) => (
+              <label
+                key={d.key}
+                className="flex items-center justify-between gap-3 rounded-sm border border-[#DDDCD8] px-3 py-2"
+              >
+                <span className="text-[0.82rem] font-semibold text-navy-900">{d.label}</span>
+                <select
+                  value={fields[d.key]}
+                  onChange={(e) =>
+                    setFields((f) => ({ ...f, [d.key]: e.target.value as DetailMode }))
+                  }
+                  className="rounded-sm border border-[#DDDCD8] bg-white px-2 py-1 text-[0.8rem]"
+                >
+                  <option value="required">Required</option>
+                  <option value="optional">Optional</option>
+                  <option value="off">Don't ask</option>
+                </select>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <LocalizedFieldset
+          label="Note beside the details (optional)"
+          hint="E.g. how answers are used and who can see them."
+          value={detailsNote}
+          onChange={setDetailsNote}
+          errors={localeErrors('details_note')}
           multiline
         />
 

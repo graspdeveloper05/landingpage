@@ -209,7 +209,10 @@ export interface AdminProgrammeItem {
 }
 
 export type SurveyStatus = 'draft' | 'open' | 'closed'
-export type SurveyQuestionType = 'choice' | 'checkbox' | 'rating' | 'text'
+export type SurveyQuestionType = 'choice' | 'checkbox' | 'rating' | 'text' | 'grid'
+
+export type FormDetail = 'name' | 'email' | 'mobile' | 'organisation'
+export type DetailMode = 'required' | 'optional' | 'off'
 /** Only English is required; other languages may be empty or missing. */
 export type PartialLocalized = { en: string } & Partial<
   Record<Exclude<Locale, 'en'>, string | null>
@@ -220,8 +223,13 @@ export type FormType = 'survey' | 'feedback'
 export interface AdminSurvey {
   id: number
   form_type: FormType
+  /** A fixed short link, e.g. "pre-event", for a QR code printed early. */
+  slug: string | null
   title: PartialLocalized
   description: PartialLocalized | null
+  /** The details asked before the questions; null keeps the old default. */
+  fields: Partial<Record<FormDetail, DetailMode>> | null
+  details_note: PartialLocalized | null
   status: SurveyStatus
   questions_count?: number
   responses_count?: number
@@ -233,7 +241,15 @@ export interface AdminSurveyQuestion {
   survey_id: number
   type: SurveyQuestionType
   question: PartialLocalized
+  help: PartialLocalized | null
+  /** A heading that starts a new page at this question. */
+  section: { title: PartialLocalized; intro?: PartialLocalized | null } | null
   options: PartialLocalized[] | null
+  statements: PartialLocalized[] | null
+  layout: 'scale' | null
+  max_choices: number | null
+  has_other: boolean
+  max_length: number | null
   /** Optional questions can be skipped by attendees. */
   is_required: boolean
   status: SurveyStatus
@@ -249,9 +265,19 @@ export interface SurveyResult {
   status: SurveyStatus
   total: number
   options?: { label: string; count: number }[]
+  /** A statement table: each statement's counts. */
+  statements?: { label: string; options: { label: string; count: number }[] }[]
+  /** What people typed for "Other". */
+  other?: { answer: string; name: string | null; at: string }[]
   ratings?: Record<'1' | '2' | '3' | '4' | '5', number>
   average?: number | null
-  answers?: { answer: string; name: string | null; email: string | null; at: string }[]
+  answers?: {
+    answer: string
+    name: string | null
+    organisation?: string | null
+    email: string | null
+    at: string
+  }[]
 }
 
 export interface AttendanceRow {
@@ -284,6 +310,7 @@ export interface SurveyRespondent {
   email: string | null
   name: string | null
   mobile: string | null
+  organisation?: string | null
   /** Questions answered, not counting skipped optional ones. */
   answers: number
   /** Each answer as shown to the admin, by question id. */
@@ -296,6 +323,7 @@ export interface SurveyRespondentDetail {
     email: string | null
     name: string | null
     mobile: string | null
+    organisation?: string | null
   }
   answers: {
     question_id: number

@@ -69,6 +69,34 @@ export function SurveyResults({ surveyId, live }: { surveyId: number; live: bool
 
           {r.options && <Bars rows={r.options} total={r.total} />}
 
+          {r.other && r.other.length > 0 && (
+            <div className="mt-3">
+              <p className="mb-1 text-micro font-semibold text-slate">Written in for “Other”</p>
+              <ul className="max-h-40 space-y-1 overflow-y-auto">
+                {r.other.map((o, j) => (
+                  <li
+                    key={j}
+                    className="rounded-sm bg-[#FAFAF8] px-2.5 py-1 text-small text-navy-900"
+                  >
+                    {o.answer}
+                    {o.name && <span className="ml-2 text-micro text-slate">{o.name}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {r.statements && (
+            <div className="space-y-4">
+              {r.statements.map((s, j) => (
+                <div key={j}>
+                  <p className="mb-1.5 text-small font-semibold text-navy-900">{s.label}</p>
+                  <Bars rows={s.options} total={r.total} />
+                </div>
+              ))}
+            </div>
+          )}
+
           {r.ratings && (
             <>
               <Bars
@@ -92,7 +120,7 @@ export function SurveyResults({ surveyId, live }: { surveyId: number; live: bool
                 >
                   {a.answer}
                   <span className="block text-micro text-slate">
-                    {[a.name, a.email].filter(Boolean).join(' · ')}
+                    {[a.name, a.organisation, a.email].filter(Boolean).join(' · ')}
                   </span>
                 </li>
               ))}
