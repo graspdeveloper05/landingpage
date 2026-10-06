@@ -4,6 +4,7 @@ import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { PageHero } from '@/components/layout/PageHero'
+import { FormBackdrop } from '@/components/survey/FormBackdrop'
 import { BANNER_TEXT, FormIntro, type FormProgress } from '@/components/survey/FormHeader'
 import { Smiley } from '@/components/survey/Smiley'
 import {
@@ -119,7 +120,11 @@ export function Survey() {
         className="pb-16 sm:pb-20"
       />
 
-      <section className="bg-cream-deep pb-24">
+      {/* flow-root keeps the column's negative margin to the column: without
+          it the margin carries the whole section, background and all, up
+          over the banner. */}
+      <section className="relative isolate flow-root bg-cream-deep pb-24">
+        <FormBackdrop />
         <div className="shell">
           <div className="relative z-10 mx-auto -mt-12 max-w-3xl space-y-6 sm:-mt-14">
             <FormIntro
