@@ -280,6 +280,7 @@
     "page": "Halaman {{page}} daripada {{pages}}",
     "answerPage": "Sila jawab semua soalan di halaman ini untuk meneruskan.",
     "stars": "{{n}} daripada 5",
+    "part": "Bahagian {{n}}",
     "face1": "Sangat lemah",
     "face2": "Lemah",
     "face3": "Sederhana",

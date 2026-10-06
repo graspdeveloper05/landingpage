@@ -688,81 +688,30 @@
 /* ---------------------------------------------------------------------------
  * The attendee form (/survey, /feedback)
  *
- * The masthead's rings are the one thing that moves on its own: a dialogue
- * as voices spreading outward. Two dashed rings turn very slowly, a wave
- * leaves the centre every few seconds, and the outer ring fills in gold as
- * the pages go by. Everything else moves only when the person does
- * something: a page arriving, a choice taken, a gap pointed out.
- * The reduced-motion rule below ends all of it after one frame.
+ * One quiet thing moves on its own: the drawing of Seri Negara drifting in
+ * the navy band (anim-pan). Everything else moves when the person does
+ * something: a page arriving, a choice taken, a step completed, a gap
+ * pointed out. The reduced-motion rule below ends all of it after one frame.
  * ------------------------------------------------------------------------ */
 
-/* Rotation about each ring's own centre (fill-box is the circle's box). */
-.sv-turn {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: sv-turn 90s linear infinite;
-}
-.sv-turn--back {
-  animation-duration: 140s;
-  animation-direction: reverse;
-}
-@keyframes sv-turn {
-  to {
-    transform: rotate(360deg);
-  }
+/* The sepia drawing turned to pale gold lines on navy: inverted so its white
+   paper goes black, which the screen blend then drops. */
+.sv-heritage {
+  filter: invert(1) sepia(1) saturate(1.8) hue-rotate(-8deg) brightness(0.95);
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  /* Faded out at its edges, so the paper's faint tint leaves no frame. */
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 45%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 45%, #000 55%, transparent 100%);
 }
 
-/* A voice leaving the centre: grows from the inner ring past the outer one. */
-.sv-wave {
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-  animation: sv-wave 7s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
-}
-@keyframes sv-wave {
-  0% {
-    transform: scale(0.4);
-    opacity: 0;
-  }
-  12% {
-    opacity: 0.85;
-  }
-  100% {
-    transform: scale(1.18);
-    opacity: 0;
-  }
-}
-/* Once, when a new page opens: the same wave, brighter and quicker. */
-.sv-wave--once {
-  animation: sv-wave 1.6s cubic-bezier(0.2, 0.6, 0.3, 1) both;
-}
-
-/* The pointer's light across the navy band, and the rings leaning toward it.
-   --sv-x / --sv-y are set from the pointer, -1 to 1 from the centre. */
-.sv-glow {
-  background: radial-gradient(
-    28rem circle at var(--sv-px, 80%) var(--sv-py, 50%),
-    rgba(201, 162, 39, 0.13),
-    transparent 65%
-  );
-  transition: opacity 0.6s ease;
-}
-.sv-depth {
-  transform: translate3d(
-    calc(var(--sv-x, 0) * var(--d, 10px)),
-    calc(var(--sv-y, 0) * var(--d, 10px)),
-    0
-  );
-  transition: transform 0.9s cubic-bezier(0.22, 0.68, 0.28, 1);
-}
-
-/* The head of the progress line: a gold point with a slow halo. */
+/* The current step: a navy circle with a slow gold halo. */
 .sv-head::after {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -2px;
   border-radius: 9999px;
-  border: 1px solid rgba(232, 196, 98, 0.8);
+  border: 1.5px solid rgba(201, 162, 39, 0.75);
   animation: sv-halo 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
 }
 @keyframes sv-halo {
@@ -771,7 +720,7 @@
     opacity: 0.9;
   }
   to {
-    transform: scale(3.2);
+    transform: scale(1.75);
     opacity: 0;
   }
 }

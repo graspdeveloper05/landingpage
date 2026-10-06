@@ -280,6 +280,7 @@
     "page": "Page {{page}} of {{pages}}",
     "answerPage": "Please answer every question on this page to continue.",
     "stars": "{{n}} out of 5",
+    "part": "Part {{n}}",
     "face1": "Very poor",
     "face2": "Poor",
     "face3": "Okay",

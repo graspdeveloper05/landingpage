@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
-import { SurveyRings, useLean } from '@/components/survey/SurveyRings'
+import { FormBand, FormCard, type FormProgress } from '@/components/survey/FormHeader'
 import { Smiley } from '@/components/survey/Smiley'
 import {
   EMPTY_IDENTITY,
@@ -36,7 +36,7 @@ export function Survey() {
   const [survey, setSurvey] = useState<PublicSurvey | null>(null)
   const [missing, setMissing] = useState(false)
   const [thanked, setThanked] = useState(false)
-  const [page, setPage] = useState({ title: '', intro: '', at: 0, of: 1 })
+  const [page, setPage] = useState<FormProgress>({ at: 0, steps: [], intro: '' })
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
@@ -96,158 +96,76 @@ export function Survey() {
   }, [id, survey])
 
   const formTitle = survey ? pick(survey.title, locale) : t('survey.title')
-  const showForm = survey && !thanked && !missing && survey.status === 'open'
+  const showForm =
+    !!survey &&
+    !thanked &&
+    !missing &&
+    survey.status === 'open' &&
+    survey.questions.some((q) => !q.answered)
+  const total = survey?.questions.length ?? 0
 
   return (
     <>
-      <Masthead
-        eyebrow={showForm && page.title ? formTitle : t('survey.brand')}
-        title={showForm && page.title ? page.title : formTitle}
-        intro={showForm ? page.intro : undefined}
-        progress={showForm && page.of > 1 ? { at: page.at, of: page.of } : undefined}
-      />
+      <FormBand />
 
-      <section className="bg-cream-deep pb-24 pt-10 sm:pt-14">
+      <section className="bg-cream-deep pb-24">
         <div className="shell">
           <div className="mx-auto max-w-3xl">
-            {thanked ? (
-              <Thanks
-                feedback={survey?.form_type === 'feedback'}
-                another={!!survey && survey.fields.email === 'off'}
-                onBack={again}
-              />
-            ) : missing ? (
-              <Notice>{t('survey.missing')}</Notice>
-            ) : !survey ? null : survey.status !== 'open' ? (
-              <Notice>{t('survey.notOpen')}</Notice>
-            ) : survey.questions.length === 0 ? (
-              <Notice>{t('survey.wait')}</Notice>
-            ) : (
-              <AnswerForm
-                // A new person (details forgotten, or someone else's saved)
-                // starts on a clean form rather than the last one's details.
-                key={`${survey.id}-${identity?.email ?? ''}-${identity ? 1 : 0}`}
-                survey={survey}
-                surveyLink={id}
-                saved={identity}
-                onPage={setPage}
-                onDone={load}
-                onSubmitted={(who) => {
-                  if (Object.values(who).some((v) => v.trim())) {
-                    saveIdentity(id, who)
-                    setIdentity(who)
-                  }
-                  setThanked(true)
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                }}
-                onFinished={again}
-              />
-            )}
+            <FormCard
+              title={formTitle}
+              description={
+                showForm && survey.description ? pick(survey.description, locale) : undefined
+              }
+              meta={
+                showForm && total > 1
+                  ? t('survey.length', {
+                      count: total,
+                      minutes: Math.max(1, Math.round(total * 0.4)),
+                    })
+                  : undefined
+              }
+              progress={showForm ? page : undefined}
+            />
+
+            <div className="mt-6">
+              {thanked ? (
+                <Thanks
+                  feedback={survey?.form_type === 'feedback'}
+                  another={!!survey && survey.fields.email === 'off'}
+                  onBack={again}
+                />
+              ) : missing ? (
+                <Notice>{t('survey.missing')}</Notice>
+              ) : !survey ? null : survey.status !== 'open' ? (
+                <Notice>{t('survey.notOpen')}</Notice>
+              ) : survey.questions.length === 0 ? (
+                <Notice>{t('survey.wait')}</Notice>
+              ) : (
+                <AnswerForm
+                  // A new person (details forgotten, or someone else's saved)
+                  // starts on a clean form rather than the last one's details.
+                  key={`${survey.id}-${identity?.email ?? ''}-${identity ? 1 : 0}`}
+                  survey={survey}
+                  surveyLink={id}
+                  saved={identity}
+                  onPage={setPage}
+                  onDone={load}
+                  onSubmitted={(who) => {
+                    if (Object.values(who).some((v) => v.trim())) {
+                      saveIdentity(id, who)
+                      setIdentity(who)
+                    }
+                    setThanked(true)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  onFinished={again}
+                />
+              )}
+            </div>
           </div>
         </div>
       </section>
     </>
-  )
-}
-
-/**
- * The navy band under the site header, continuing it: the form's name above
- * the current section's heading, its introduction, and how far along this
- * page is. Gold rings at the right edge, as on the printed mock, carry the
- * same progress as an arc, send out a wave now and then, and lean toward
- * the mouse with a soft light following it.
- */
-function Masthead({
-  eyebrow,
-  title,
-  intro,
-  progress,
-}: {
-  eyebrow: string
-  title: string
-  intro?: string
-  progress?: { at: number; of: number }
-}) {
-  const { t } = useI18n()
-  const lean = useLean<HTMLElement>()
-  const share = progress ? (progress.at + 1) / progress.of : 0
-
-  return (
-    <section
-      ref={lean.ref}
-      onPointerMove={lean.onPointerMove}
-      onPointerLeave={lean.onPointerLeave}
-      className="group/band relative isolate overflow-hidden bg-navy-950 text-cream"
-    >
-      <div
-        aria-hidden
-        className="sv-glow pointer-events-none absolute inset-0 -z-20 opacity-0 group-hover/band:opacity-100"
-      />
-      <div
-        aria-hidden
-        className="anim-fade pointer-events-none absolute -right-36 top-4 -z-10 h-[19rem] w-[19rem] opacity-50 sm:-right-20 sm:top-1/2 sm:h-[16rem] sm:w-[16rem] sm:-translate-y-1/2 sm:opacity-100 xl:right-[2%]"
-      >
-        <SurveyRings progress={progress} />
-      </div>
-
-      <div className="shell py-10 sm:py-14">
-        <div className="mx-auto max-w-3xl">
-          <span aria-hidden className="anim-line block h-[3px] w-12 origin-left bg-gold-500" />
-          <p
-            key={`eyebrow-${eyebrow}`}
-            className="anim-fade mt-4 text-small font-semibold tracking-[0.04em] text-gold-400"
-          >
-            {eyebrow}
-          </p>
-          <h1
-            key={title}
-            className="anim-rise mt-2 font-display text-[2.1rem] font-medium leading-[1.08] text-cream sm:text-[3.2rem]"
-          >
-            {title}
-          </h1>
-          {intro && (
-            <p
-              key={`intro-${intro}`}
-              className="anim-rise mt-4 max-w-2xl text-lead text-cream/75"
-              style={{ animationDelay: '120ms' }}
-            >
-              {intro}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {progress && (
-        <div className="shell pb-6">
-          <div className="mx-auto flex max-w-3xl items-center gap-4">
-            <div
-              className="relative h-[3px] flex-1 rounded-full bg-white/10"
-              role="progressbar"
-              aria-valuemin={1}
-              aria-valuemax={progress.of}
-              aria-valuenow={progress.at + 1}
-              aria-label={t('survey.page', { page: progress.at + 1, pages: progress.of })}
-            >
-              <div
-                className="relative h-full rounded-full bg-gradient-to-r from-gold-600 to-gold-400 transition-[width] duration-700 ease-gentle"
-                style={{ width: `${share * 100}%` }}
-              >
-                <span
-                  aria-hidden
-                  className="sv-head absolute -right-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-gold-400 shadow-[0_0_10px_rgba(232,196,98,0.8)]"
-                />
-              </div>
-            </div>
-            <span
-              key={progress.at}
-              className="anim-fade tnum shrink-0 text-micro font-semibold text-cream/70"
-            >
-              {t('survey.page', { page: progress.at + 1, pages: progress.of })}
-            </span>
-          </div>
-        </div>
-      )}
-    </section>
   )
 }
 
@@ -408,7 +326,7 @@ function AnswerForm({
   survey: PublicSurvey
   surveyLink: string
   saved: Identity | null
-  onPage: (page: { title: string; intro: string; at: number; of: number }) => void
+  onPage: (page: FormProgress) => void
   onDone: () => void
   onSubmitted: (who: Identity) => void
   onFinished: () => void
@@ -452,19 +370,29 @@ function AnswerForm({
   const total = survey.questions.length
 
   // The masthead shows this page's section heading.
-  const sectionTitle = here?.testimonial
-    ? t('survey.testimonialPageTitle')
-    : here?.section
-      ? pick(here.section.title, locale)
-      : ''
+  // What each page is called in the steps: its section heading, "Your
+  // details" for a first page that asks them, else "Part 2".
+  const stepsKey = pages
+    .map((p, i) =>
+      p.testimonial
+        ? t('survey.testimonialPageTitle')
+        : p.section
+          ? pick(p.section.title, locale)
+          : i === 0 && asksDetails
+            ? t('survey.detailsHeading')
+            : t('survey.part', { n: i + 1 }),
+    )
+    .join('\u0001')
   const sectionIntro = here?.testimonial
     ? t('survey.testimonialPageIntro')
     : here?.section?.intro
       ? pick(here.section.intro, locale)
       : ''
+  // Joined into one string so the effect runs when the names change, not on
+  // every render's fresh array.
   useEffect(() => {
-    onPage({ title: sectionTitle, intro: sectionIntro, at: current, of: pages.length })
-  }, [sectionTitle, sectionIntro, current, pages.length, onPage])
+    onPage({ at: current, steps: stepsKey.split('\u0001'), intro: sectionIntro })
+  }, [stepsKey, sectionIntro, current, onPage])
 
   const goTo = (next: number) => {
     setBackwards(next < current)
@@ -607,9 +535,6 @@ function AnswerForm({
     return <Thanks feedback={feedback} another={fields.email === 'off'} onBack={onFinished} />
   }
 
-  const description = survey.description ? pick(survey.description, locale) : ''
-  const minutes = Math.max(1, Math.round(total * 0.4))
-
   return (
     <form onSubmit={submit} noValidate className="space-y-5">
       {/* Keyed by page: each page's cards arrive one after another. */}
@@ -618,17 +543,6 @@ function AnswerForm({
         className="sv-page space-y-5"
         style={{ '--sv-from': backwards ? '-28px' : '28px' } as React.CSSProperties}
       >
-        {current === 0 && (description || total > 1) && (
-          <div className="pb-2">
-            {description && <p className="max-w-2xl text-lead text-navy-900/85">{description}</p>}
-            {total > 1 && (
-              <p className="mt-3 text-small font-semibold text-gold-700">
-                {t('survey.length', { count: total, minutes })}
-              </p>
-            )}
-          </div>
-        )}
-
         {current === 0 && asksDetails && (
           <DetailsCard
             fields={fields}

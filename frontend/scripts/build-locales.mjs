@@ -697,6 +697,8 @@ const src = {
       'தொடர, இந்தப் பக்கத்திலுள்ள அனைத்து கேள்விகளுக்கும் பதிலளிக்கவும்.',
     ),
     stars: L('{{n}} out of 5', '{{n}} daripada 5', '5 分中的 {{n}} 分', '5 இல் {{n}}'),
+    // A page of the form with no section heading, in the steps.
+    part: L('Part {{n}}', 'Bahagian {{n}}', '第 {{n}} 部分', 'பகுதி {{n}}'),
     // The five faces of a smiley rating, 1 to 5.
     face1: L('Very poor', 'Sangat lemah', '很差', 'மிகவும் மோசம்'),
     face2: L('Poor', 'Lemah', '较差', 'மோசம்'),
