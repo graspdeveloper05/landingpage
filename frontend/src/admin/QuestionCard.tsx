@@ -1005,7 +1005,7 @@ function KindIcon({ kind }: { kind: QuestionKind }) {
 }
 
 /** Closes a popover on a click outside it or on Escape. */
-function usePopover() {
+export function usePopover() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -1285,13 +1285,13 @@ export function Switch({
       <span
         aria-hidden
         className={cn(
-          'relative h-5 w-9 rounded-full transition-colors duration-200',
+          'relative block h-5 w-9 shrink-0 rounded-full transition-colors duration-200',
           checked ? 'bg-gold-500' : 'bg-[#CFCDC7]',
         )}
       >
         <span
           className={cn(
-            'absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200',
+            'absolute left-0 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200',
             checked ? 'translate-x-[1.125rem]' : 'translate-x-0.5',
           )}
         />

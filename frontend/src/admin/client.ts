@@ -234,6 +234,9 @@ export interface AdminSurvey {
   questions_count?: number
   responses_count?: number
   questions?: AdminSurveyQuestion[]
+  created_at?: string
+  /** When the form last took an answer, on the forms list; null if never. */
+  last_answer_at?: string | null
 }
 
 export interface AdminSurveyQuestion {

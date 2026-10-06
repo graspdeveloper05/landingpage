@@ -27,6 +27,8 @@ class Survey extends Model
         'description' => 'array',
         'fields' => 'array',
         'details_note' => 'array',
+        // Loaded by the admin list (withMax); a date like created_at, not text.
+        'last_answer_at' => 'datetime',
     ];
 
     protected $attributes = ['form_type' => 'survey', 'status' => 'draft'];

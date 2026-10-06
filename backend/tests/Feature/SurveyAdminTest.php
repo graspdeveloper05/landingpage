@@ -170,6 +170,24 @@ class SurveyAdminTest extends TestCase
             ->assertJsonPath('answers.3.question', $open->question);
     }
 
+    public function test_the_list_says_when_each_form_was_made_and_last_answered(): void
+    {
+        $this->travelTo('2026-10-01 09:00:00');
+        $quiet = $this->survey(['title' => ['en' => 'Quiet']]);
+        $busy = $this->survey(['form_type' => 'feedback', 'status' => 'open']);
+        $rating = $this->question($busy, ['type' => 'rating', 'options' => null, 'status' => 'open']);
+
+        $this->travelTo('2026-10-03 14:30:00');
+        $this->postJson("/api/survey/questions/{$rating->id}/answer", [
+            'answer' => '4', 'submission' => '33333333-3333-4333-8333-333333333333',
+        ])->assertCreated();
+
+        $list = collect($this->admin()->getJson('/api/admin/surveys')->assertOk()->json())->keyBy('id');
+        $this->assertStringStartsWith('2026-10-01', $list[$quiet->id]['created_at']);
+        $this->assertNull($list[$quiet->id]['last_answer_at']);
+        $this->assertSame('2026-10-03T14:30:00.000000Z', $list[$busy->id]['last_answer_at']);
+    }
+
     public function test_anonymous_feedback_is_listed_one_entry_per_submission(): void
     {
         $survey = $this->survey(['form_type' => 'feedback', 'status' => 'open']);

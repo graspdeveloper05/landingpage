@@ -13,8 +13,13 @@ class SurveyAdminController extends Controller
 {
     public function index(): JsonResponse
     {
+        // With when each form last took an answer, for the list's dates.
         return response()->json(
-            Survey::query()->withCount(['questions', 'responses'])->latest('id')->get(),
+            Survey::query()
+                ->withCount(['questions', 'responses'])
+                ->withMax('responses as last_answer_at', 'created_at')
+                ->latest('id')
+                ->get(),
         );
     }
 
