@@ -12,7 +12,7 @@ class SurveyResponse extends Model
      * Anonymous feedback has none of these; its submission id ties together
      * the answers sent in one go.
      */
-    protected $fillable = ['survey_question_id', 'name', 'email', 'mobile', 'submission_id', 'answer'];
+    protected $fillable = ['survey_question_id', 'name', 'email', 'mobile', 'organisation', 'submission_id', 'answer', 'other_text'];
 
     public function question(): BelongsTo
     {

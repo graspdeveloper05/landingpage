@@ -23,7 +23,7 @@ class StoreSurveyQuestionRequest extends FormRequest
 
             'options' => [
                 Rule::excludeIf(! in_array($this->input('type'), SurveyQuestion::WITH_OPTIONS, true)),
-                'required', 'array', 'min:'.($this->allowsSingleTickbox() ? 1 : 2), 'max:10',
+                'required', 'array', 'min:'.($this->allowsSingleTickbox() ? 1 : 2), 'max:15',
             ],
             'options.*' => ['array'],
             'options.*.en' => ['required', 'string', 'max:150'],
@@ -33,6 +33,31 @@ class StoreSurveyQuestionRequest extends FormRequest
 
             'is_required' => ['sometimes', 'boolean'],
             'status' => ['sometimes', Rule::in(Survey::STATUSES)],
+
+            // A note under the question, and a section heading that starts a
+            // new page at this question.
+            'help' => ['nullable', 'array'],
+            'help.*' => ['nullable', 'string', 'max:300'],
+            'section' => ['nullable', 'array'],
+            'section.title' => ['nullable', 'array'],
+            'section.title.en' => ['required_with:section', 'string', 'max:120'],
+            'section.title.*' => ['nullable', 'string', 'max:120'],
+            'section.intro' => ['nullable', 'array'],
+            'section.intro.*' => ['nullable', 'string', 'max:300'],
+
+            // A statement table: the statements; its options are the scale.
+            'statements' => [
+                Rule::excludeIf($this->input('type') !== 'grid'),
+                'required', 'array', 'min:1', 'max:10',
+            ],
+            'statements.*' => ['array'],
+            'statements.*.en' => ['required', 'string', 'max:200'],
+            'statements.*.*' => ['nullable', 'string', 'max:200'],
+
+            'layout' => ['nullable', Rule::in(SurveyQuestion::LAYOUTS)],
+            'max_choices' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'has_other' => ['sometimes', 'boolean'],
+            'max_length' => ['nullable', 'integer', 'min:10', 'max:2000'],
         ];
     }
 
@@ -47,6 +72,9 @@ class StoreSurveyQuestionRequest extends FormRequest
             'options.required' => $tooFew,
             'options.min' => $tooFew,
             'options.*.en.required' => 'Each option needs English text.',
+            'statements.required' => 'A statement table needs at least one statement.',
+            'statements.*.en.required' => 'Each statement needs English text.',
+            'section.title.en.required_with' => 'The section heading is needed in English.',
         ];
     }
 
@@ -102,14 +130,39 @@ class StoreSurveyQuestionRequest extends FormRequest
         return $this->input('type') === 'checkbox' && $survey?->form_type === 'feedback';
     }
 
-    /** The validated fields, with options cleared for non-choice types. */
+    /**
+     * The validated fields, with each setting kept only where it means
+     * something: options for choices, statements for a table, a scale for a
+     * single choice, a maximum for checkboxes, a limit for written answers.
+     */
     public function toQuestion(): array
     {
         $data = $this->validated();
-        $data['options'] = in_array($data['type'], SurveyQuestion::WITH_OPTIONS, true)
+        $type = $data['type'];
+        $data['options'] = in_array($type, SurveyQuestion::WITH_OPTIONS, true)
             ? array_values($data['options'])
             : null;
+        $data['statements'] = $type === 'grid' ? array_values($data['statements']) : null;
+        $data['layout'] = $type === 'choice' && ($data['layout'] ?? null) === 'scale' ? 'scale' : null;
+        $data['max_choices'] = $type === 'checkbox' ? ($data['max_choices'] ?? null) : null;
+        $data['has_other'] = in_array($type, ['choice', 'checkbox'], true) && ($data['has_other'] ?? false);
+        $data['max_length'] = $type === 'text' ? ($data['max_length'] ?? null) : null;
+
+        foreach (['help'] as $key) {
+            if (array_key_exists($key, $data) && blank(implode('', array_map(fn ($v) => (string) $v, (array) $data[$key])))) {
+                $data[$key] = null;
+            }
+        }
 
         return $data;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        // A section with no heading is no section.
+        $section = $this->input('section');
+        if (is_array($section) && blank($section['title']['en'] ?? null)) {
+            $this->merge(['section' => null]);
+        }
     }
 }

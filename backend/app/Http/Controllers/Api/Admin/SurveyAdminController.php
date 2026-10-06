@@ -68,14 +68,40 @@ class SurveyAdminController extends Controller
             'total' => $answers->count(),
         ];
 
+        if ($q->type === 'grid') {
+            // "0,2": the first statement took option 0, the second option 2.
+            $picked = $answers->map(fn ($a) => explode(',', $a));
+
+            return $base + ['statements' => collect($q->statements)->map(function ($s, $row) use ($q, $picked) {
+                $counts = $picked->map(fn ($p) => $p[$row] ?? null)->filter(fn ($v) => $v !== null)->countBy();
+
+                return [
+                    'label' => $s['en'] ?? '',
+                    'options' => collect($q->options)->map(fn ($o, $i) => [
+                        'label' => $o['en'] ?? '',
+                        'count' => (int) ($counts[(string) $i] ?? 0),
+                    ])->values(),
+                ];
+            })->values()];
+        }
+
         if ($q->hasOptions()) {
             // A checkbox answer ("0,2") counts once for each option ticked.
             $counts = $answers->flatMap(fn ($a) => explode(',', $a))->countBy();
+            $options = collect($q->options)->map(fn ($o) => $o['en'] ?? '');
+            if ($q->otherIndex() !== null) {
+                $options->push('Other');
+            }
 
-            return $base + ['options' => collect($q->options)->map(fn ($o, $i) => [
-                'label' => $o['en'] ?? '',
-                'count' => (int) ($counts[(string) $i] ?? 0),
-            ])->values()];
+            return $base + [
+                'options' => $options->map(fn ($label, $i) => [
+                    'label' => $label,
+                    'count' => (int) ($counts[(string) $i] ?? 0),
+                ])->values(),
+                // What people typed for "Other", newest first.
+                'other' => $responses->filter(fn ($r) => filled($r->other_text))->sortByDesc('id')
+                    ->map(fn ($r) => ['answer' => $r->other_text, 'name' => $r->name, 'at' => $r->created_at])->values(),
+            ];
         }
 
         if ($q->type === 'rating') {
@@ -90,6 +116,7 @@ class SurveyAdminController extends Controller
         return $base + ['answers' => $responses->sortByDesc('id')->map(fn ($r) => [
             'answer' => $r->answer,
             'name' => $r->name,
+            'organisation' => $r->organisation,
             'email' => $r->email,
             'at' => $r->created_at,
         ])->values()];

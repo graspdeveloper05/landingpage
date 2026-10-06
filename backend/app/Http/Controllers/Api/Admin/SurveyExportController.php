@@ -16,7 +16,7 @@ class SurveyExportController extends Controller
 
         return response()->streamDownload(function () use ($survey) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Name', 'Email', 'Phone', 'Question', 'Answer', 'Answered at']);
+            fputcsv($out, ['Name', 'Email', 'Phone', 'Organisation', 'Question', 'Answer', 'Answered at']);
 
             $questions = $survey->questions()->get()->keyBy('id');
 
@@ -30,12 +30,13 @@ class SurveyExportController extends Controller
                         $q = $questions[$r->survey_question_id];
                         // Options are stored by number; the file shows the
                         // English labels so it reads on its own.
-                        $answer = $q->label($r->answer);
+                        $answer = $q->label($r->answer, $r->other_text);
 
                         fputcsv($out, array_map(fn ($v) => $this->guard((string) $v), [
                             $r->name,
                             $r->email,
                             $r->mobile,
+                            $r->organisation,
                             $q->question['en'] ?? '',
                             $answer,
                             $r->created_at?->timezone('Asia/Kuala_Lumpur')->format('Y-m-d H:i'),

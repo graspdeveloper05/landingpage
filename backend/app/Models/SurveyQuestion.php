@@ -8,23 +8,38 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SurveyQuestion extends Model
 {
-    /** choice: pick one; checkbox: tick any number; rating: 1-5; text: written. */
-    public const TYPES = ['choice', 'checkbox', 'rating', 'text'];
+    /**
+     * choice: pick one; checkbox: tick any number; rating: 1-5; text: written;
+     * grid: one choice for each of several statements, on a shared scale.
+     */
+    public const TYPES = ['choice', 'checkbox', 'rating', 'text', 'grid'];
 
     /** The types answered by picking from a list of options. */
-    public const WITH_OPTIONS = ['choice', 'checkbox'];
+    public const WITH_OPTIONS = ['choice', 'checkbox', 'grid'];
 
-    protected $fillable = ['type', 'question', 'options', 'is_required', 'status', 'display_order', 'closed_at'];
+    /** How a choice question is shown: a list, or numbered scale cards. */
+    public const LAYOUTS = ['list', 'scale'];
+
+    protected $fillable = [
+        'type', 'question', 'help', 'section', 'options', 'statements', 'layout',
+        'max_choices', 'has_other', 'max_length', 'is_required', 'status', 'display_order', 'closed_at',
+    ];
 
     protected $casts = [
         'question' => 'array',
+        'help' => 'array',
+        'section' => 'array',
         'options' => 'array',
+        'statements' => 'array',
+        'max_choices' => 'integer',
+        'has_other' => 'boolean',
+        'max_length' => 'integer',
         'is_required' => 'boolean',
         'display_order' => 'integer',
         'closed_at' => 'datetime',
     ];
 
-    protected $attributes = ['status' => 'draft', 'is_required' => false];
+    protected $attributes = ['status' => 'draft', 'is_required' => false, 'has_other' => false];
 
     public function survey(): BelongsTo
     {
@@ -41,18 +56,35 @@ class SurveyQuestion extends Model
         return in_array($this->type, self::WITH_OPTIONS, true);
     }
 
+    /** "Other" is answered as the number after the last option. */
+    public function otherIndex(): ?int
+    {
+        return $this->has_other && in_array($this->type, ['choice', 'checkbox'], true)
+            ? count($this->options ?? [])
+            : null;
+    }
+
     /**
      * A stored answer in words: options are stored by number ("0", or "0,2"
-     * for checkboxes) and read back as their English labels.
+     * for checkboxes) and read back as their English labels. A statement
+     * table reads "Statement: choice" for each statement in turn.
      */
-    public function label(string $answer): string
+    public function label(string $answer, ?string $other = null): string
     {
+        if ($this->type === 'grid') {
+            return collect(explode(',', $answer))
+                ->map(fn ($i, $row) => ($this->statements[$row]['en'] ?? '').': '.($this->options[(int) $i]['en'] ?? $i))
+                ->implode('; ');
+        }
+
         if (! $this->hasOptions()) {
             return $answer;
         }
 
         return collect(explode(',', $answer))
-            ->map(fn ($i) => $this->options[(int) $i]['en'] ?? $i)
+            ->map(fn ($i) => (int) $i === $this->otherIndex()
+                ? 'Other'.($other !== null && $other !== '' ? ': '.$other : '')
+                : ($this->options[(int) $i]['en'] ?? $i))
             ->implode('; ');
     }
 

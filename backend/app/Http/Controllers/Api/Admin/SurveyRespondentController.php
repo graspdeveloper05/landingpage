@@ -22,7 +22,7 @@ class SurveyRespondentController extends Controller
             ->whereIn('survey_question_id', $survey->questions()->select('id'))
             ->where(fn ($q) => $q->whereNotNull('email')->orWhereNotNull('submission_id'))
             ->orderBy('id')
-            ->get(['survey_question_id', 'email', 'submission_id', 'name', 'mobile', 'answer', 'created_at'])
+            ->get(['survey_question_id', 'email', 'submission_id', 'name', 'mobile', 'organisation', 'answer', 'other_text', 'created_at'])
             ->groupBy(fn ($r) => $r->email ?? $r->submission_id);
 
         return response()->json($rows->map(function ($answers, $key) use ($questions) {
@@ -33,6 +33,7 @@ class SurveyRespondentController extends Controller
                 'email' => $latest->email,
                 'name' => $latest->name,
                 'mobile' => $latest->mobile,
+                'organisation' => $latest->organisation,
                 // Skipped optional questions are stored empty; not answers.
                 'answers' => $answers->filter(fn ($r) => $r->answer !== '')->count(),
                 'last_answered_at' => $answers->max('created_at'),
@@ -40,7 +41,7 @@ class SurveyRespondentController extends Controller
                 'values' => $answers
                     ->filter(fn ($r) => $r->answer !== '' && $questions->has($r->survey_question_id))
                     ->mapWithKeys(fn ($r) => [
-                        (string) $r->survey_question_id => $questions[$r->survey_question_id]->label($r->answer),
+                        (string) $r->survey_question_id => $questions[$r->survey_question_id]->label($r->answer, $r->other_text),
                     ])
                     ->toArray() ?: new \stdClass,
             ];
@@ -73,6 +74,7 @@ class SurveyRespondentController extends Controller
                 'email' => $latest->email,
                 'name' => $latest->name,
                 'mobile' => $latest->mobile,
+                'organisation' => $latest->organisation,
             ],
             'answers' => $questions->map(function (SurveyQuestion $q) use ($responses) {
                 $r = $responses->get($q->id);
@@ -83,7 +85,7 @@ class SurveyRespondentController extends Controller
                     'type' => $q->type,
                     'question' => $q->question,
                     'is_required' => $q->is_required,
-                    'answer' => $r === null || $skipped ? null : $q->label($r->answer),
+                    'answer' => $r === null || $skipped ? null : $q->label($r->answer, $r->other_text),
                     'skipped' => $skipped,
                     'answered_at' => $r?->created_at,
                 ];

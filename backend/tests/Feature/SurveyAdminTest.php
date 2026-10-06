@@ -415,7 +415,7 @@ class SurveyAdminTest extends TestCase
             ->assertOk()
             ->streamedContent();
 
-        $this->assertStringContainsString('Name,Email,Phone,Question,Answer,"Answered at"', $csv);
-        $this->assertStringContainsString("\"'=HYPERLINK(\"\"x\"\")\",{$r['email']},\"'{$r['mobile']}\",\"Pick one\",B,", $csv);
+        $this->assertStringContainsString('Name,Email,Phone,Organisation,Question,Answer,"Answered at"', $csv);
+        $this->assertStringContainsString("\"'=HYPERLINK(\"\"x\"\")\",{$r['email']},\"'{$r['mobile']}\",,\"Pick one\",B,", $csv);
     }
 }
