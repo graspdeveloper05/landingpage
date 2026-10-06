@@ -694,7 +694,7 @@
  * pointed out. The reduced-motion rule below ends all of it after one frame.
  * ------------------------------------------------------------------------ */
 
-/* The current step: a navy circle with a slow gold halo. */
+/* The current step: a gold-ringed circle with a slow gold halo. */
 .sv-head::after {
   content: '';
   position: absolute;

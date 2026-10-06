@@ -76,7 +76,7 @@ export function FormIntro({
 
 /**
  * The parts of the form, left to right: done ones ticked in gold, the
- * current one in navy with a slow halo, the rest waiting. A gold line fills
+ * current one ringed in gold with a slow halo, the rest waiting. A gold line fills
  * along behind them. On a phone, where the names will not fit side by side,
  * the current step's name and "Step 2 of 4" stand in for the row.
  */
@@ -134,7 +134,8 @@ function Stepper({ at, steps }: { at: number; steps: string[] }) {
                 className={cn(
                   'relative grid h-7 w-7 place-items-center rounded-full border-2 text-micro font-bold transition-colors duration-500',
                   done && 'border-gold-500 bg-gold-500 text-white',
-                  now && 'sv-head border-navy-900 bg-navy-900 text-cream',
+                  now &&
+                    'sv-head border-gold-500 bg-white text-gold-700 shadow-[0_0_0_4px_rgba(201,162,39,0.15)]',
                   !done && !now && 'border-hair bg-white text-slate',
                 )}
               >
@@ -158,7 +159,7 @@ function Stepper({ at, steps }: { at: number; steps: string[] }) {
                 title={name}
                 className={cn(
                   'mt-2 block w-full truncate text-micro transition-colors duration-500',
-                  now ? 'font-semibold text-navy-950' : done ? 'text-gold-700' : 'text-slate',
+                  now ? 'font-semibold text-gold-700' : done ? 'text-gold-700' : 'text-slate',
                 )}
               >
                 {name}
