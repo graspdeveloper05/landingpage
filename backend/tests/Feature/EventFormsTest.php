@@ -255,6 +255,32 @@ class EventFormsTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors('fields.name');
     }
 
+    public function test_changing_only_a_questions_status_keeps_its_settings(): void
+    {
+        $survey = $this->form();
+        $q = $this->question($survey, [
+            'type' => 'checkbox', 'max_choices' => 2, 'has_other' => true,
+            'help' => ['en' => 'A note'], 'status' => 'open',
+        ]);
+        $grid = $this->question($survey, [
+            'type' => 'grid', 'statements' => [['en' => 'S1']], 'options' => [['en' => 'A'], ['en' => 'B']],
+        ]);
+
+        $this->admin()->putJson("/api/admin/survey-questions/{$q->id}", [
+            'type' => 'checkbox', 'question' => $q->question, 'options' => $q->options, 'status' => 'closed',
+        ])->assertOk();
+        $this->putJson("/api/admin/survey-questions/{$grid->id}", [
+            'type' => 'grid', 'question' => $grid->question, 'options' => $grid->options, 'status' => 'closed',
+        ])->assertOk();
+
+        $q->refresh();
+        $this->assertSame('closed', $q->status);
+        $this->assertSame(2, $q->max_choices);
+        $this->assertTrue($q->has_other);
+        $this->assertSame('A note', $q->help['en']);
+        $this->assertSame('S1', $grid->fresh()->statements[0]['en']);
+    }
+
     // Results, responses, export
 
     public function test_results_count_each_statement_and_list_other_answers(): void

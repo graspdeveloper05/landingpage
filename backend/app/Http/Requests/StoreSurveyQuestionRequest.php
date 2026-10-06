@@ -48,7 +48,8 @@ class StoreSurveyQuestionRequest extends FormRequest
             // A statement table: the statements; its options are the scale.
             'statements' => [
                 Rule::excludeIf($this->input('type') !== 'grid'),
-                'required', 'array', 'min:1', 'max:10',
+                // Needed to make a table; an edit that leaves them out keeps them.
+                $this->keeps('statements') ? 'sometimes' : 'required', 'array', 'min:1', 'max:10',
             ],
             'statements.*' => ['array'],
             'statements.*.en' => ['required', 'string', 'max:200'],
@@ -142,11 +143,19 @@ class StoreSurveyQuestionRequest extends FormRequest
         $data['options'] = in_array($type, SurveyQuestion::WITH_OPTIONS, true)
             ? array_values($data['options'])
             : null;
-        $data['statements'] = $type === 'grid' ? array_values($data['statements']) : null;
+        $data['statements'] = $type === 'grid' && isset($data['statements']) ? array_values($data['statements']) : null;
         $data['layout'] = $type === 'choice' && ($data['layout'] ?? null) === 'scale' ? 'scale' : null;
         $data['max_choices'] = $type === 'checkbox' ? ($data['max_choices'] ?? null) : null;
         $data['has_other'] = in_array($type, ['choice', 'checkbox'], true) && ($data['has_other'] ?? false);
         $data['max_length'] = $type === 'text' ? ($data['max_length'] ?? null) : null;
+
+        // An edit that leaves a setting out (switching a question on or off,
+        // say) keeps it as it was, rather than clearing it.
+        foreach (['statements', 'layout', 'max_choices', 'has_other', 'max_length'] as $key) {
+            if ($this->keeps($key)) {
+                unset($data[$key]);
+            }
+        }
 
         foreach (['help'] as $key) {
             if (array_key_exists($key, $data) && blank(implode('', array_map(fn ($v) => (string) $v, (array) $data[$key])))) {
@@ -155,6 +164,19 @@ class StoreSurveyQuestionRequest extends FormRequest
         }
 
         return $data;
+    }
+
+    /**
+     * True when this is an edit of an existing question of the same type that
+     * does not send the setting: it stays as stored.
+     */
+    private function keeps(string $key): bool
+    {
+        $question = $this->route('question');
+
+        return $question instanceof SurveyQuestion
+            && $question->type === $this->input('type')
+            && ! $this->exists($key);
     }
 
     protected function prepareForValidation(): void
