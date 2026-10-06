@@ -19,7 +19,22 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
   const [editingDetails, setEditingDetails] = useState(false)
   // Bumped when a new order is saved, so the results below follow it.
   const [orderSaved, setOrderSaved] = useState(0)
+  // Questions with changes the builder has not saved (yet, or at all).
+  const [unsaved, setUnsaved] = useState(0)
   const toast = useToast()
+
+  /** Leaving the builder with changes not saved asks first. */
+  const leave = (go: () => void) => {
+    if (
+      unsaved > 0 &&
+      !confirm(
+        `${unsaved} ${unsaved === 1 ? 'question has' : 'questions have'} changes that are not saved yet (see the red messages). Leave anyway?`,
+      )
+    ) {
+      return
+    }
+    go()
+  }
 
   const load = useCallback(() => {
     setError(null)
@@ -81,11 +96,11 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
-        <AdminButton variant="quiet" onClick={onBack}>
+        <AdminButton variant="quiet" onClick={() => leave(onBack)}>
           ← All forms
         </AdminButton>
         <h2 className="flex-1 text-[0.95rem] font-semibold text-navy-950">{survey.title.en}</h2>
-        <AdminButton variant="quiet" onClick={() => setEditingDetails(true)}>
+        <AdminButton variant="quiet" onClick={() => leave(() => setEditingDetails(true))}>
           Edit title & details
         </AdminButton>
         {survey.status === 'open' ? (
@@ -116,6 +131,7 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
           survey={survey}
           setSurvey={setSurvey}
           onOrderSaved={() => setOrderSaved((n) => n + 1)}
+          onUnsavedChange={setUnsaved}
         />
       </div>
 

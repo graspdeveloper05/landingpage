@@ -5,6 +5,7 @@ import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import {
   EMPTY_IDENTITY,
+  OFF_SCALE,
   newSubmissionId,
   pick,
   savedIdentity,
@@ -334,9 +335,6 @@ function checkDetails(
   if (needed('organisation') && !v.organisation.trim()) errors.organisation = t('survey.required')
   return errors
 }
-
-/** Options not on the numbered scale: "Not sure", "N/A". */
-const OFF_SCALE = /^(not sure|n\/a|tidak pasti)/i
 
 /** Whether an answer counts as given, for each kind of question. */
 function answered(q: PublicQuestion, value: string | undefined): boolean {

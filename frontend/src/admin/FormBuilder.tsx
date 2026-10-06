@@ -33,11 +33,14 @@ export function FormBuilder({
   survey,
   setSurvey,
   onOrderSaved,
+  onUnsavedChange,
 }: {
   survey: AdminSurvey
   setSurvey: React.Dispatch<React.SetStateAction<AdminSurvey | null>>
   /** A new order was saved; the results below follow it. */
   onOrderSaved: () => void
+  /** How many questions have changes not saved yet. */
+  onUnsavedChange?: (count: number) => void
 }) {
   const toast = useToast()
   const questions = useMemo(() => survey.questions ?? [], [survey.questions])
@@ -49,19 +52,94 @@ export function FormBuilder({
   const [lang, setLang] = useState<Locale>('en')
 
   // Saving: what is waiting, what is on its way, what could not go.
+  // One save per question at a time; a change made while one is on its way
+  // is sent when it lands, so the newest wording is always the last to arrive.
   const timers = useRef(new Map<number, number>())
   const versions = useRef(new Map<number, number>())
+  const saving = useRef(new Set<number>())
+  const again = useRef(new Set<number>())
+  const deleted = useRef(new Set<number>())
   const [pending, setPending] = useState<Set<number>>(new Set())
   const [inflight, setInflight] = useState(0)
   const [failed, setFailed] = useState<Record<number, string[]>>({})
   const [busy, setBusy] = useState(false)
+  const questionsRef = useRef(questions)
+  questionsRef.current = questions
 
   const draftOf = useCallback((q: AdminSurveyQuestion) => drafts[q.id] ?? fromQuestion(q), [drafts])
 
+  const dropPending = (id: number) =>
+    setPending((p) => {
+      if (!p.has(id)) return p
+      const next = new Set(p)
+      next.delete(id)
+      return next
+    })
+  const dropFailed = (id: number) =>
+    setFailed((f) => {
+      if (!(id in f)) return f
+      const { [id]: _gone, ...rest } = f
+      return rest
+    })
+
+  const replaceQuestion = useCallback(
+    (saved: AdminSurveyQuestion) =>
+      setSurvey((s) =>
+        s
+          ? { ...s, questions: (s.questions ?? []).map((q) => (q.id === saved.id ? saved : q)) }
+          : s,
+      ),
+    [setSurvey],
+  )
+
+  /**
+   * Someone answered this question while it was being edited: its kind and
+   * options are now locked. The stored structure comes back, the wording
+   * typed here is kept, and the wording is saved again.
+   */
+  const lockAfterAnswers = useCallback(
+    async (id: number) => {
+      try {
+        const fresh = await adminApi.get<AdminSurvey>(`/admin/surveys/${survey.id}`)
+        const stored = fresh.questions?.find((q) => q.id === id)
+        if (!stored) return
+        replaceQuestion(stored)
+        const mine = draftsRef.current[id]
+        const base = fromQuestion(stored)
+        const merged: Draft = mine
+          ? {
+              ...base,
+              question: mine.question,
+              help: mine.help,
+              section: mine.section,
+              required: mine.required,
+              status: mine.status,
+            }
+          : base
+        setDrafts((all) => ({ ...all, [id]: merged }))
+        draftsRef.current = { ...draftsRef.current, [id]: merged }
+        versions.current.set(id, (versions.current.get(id) ?? 0) + 1)
+        toast.error(
+          'People have started answering this question, so its type and options are now locked. Your wording was kept; changes to the options were undone.',
+        )
+        flushRef.current(id)
+      } catch {
+        // The error message on the card still says what happened.
+      }
+    },
+    [replaceQuestion, survey.id, toast],
+  )
+
+  const flushRef = useRef<(id: number) => void>(() => {})
   const flush = useCallback(
     async (id: number) => {
       window.clearTimeout(timers.current.get(id))
       timers.current.delete(id)
+      if (deleted.current.has(id)) return
+      if (saving.current.has(id)) {
+        again.current.add(id)
+        return
+      }
       const d = draftsRef.current[id]
       if (!d) return
       const problems = problemsOf(d, survey.form_type)
@@ -70,36 +148,45 @@ export function FormBuilder({
         return
       }
       const version = versions.current.get(id) ?? 0
+      saving.current.add(id)
       setInflight((n) => n + 1)
       try {
         const saved = await adminApi.put<AdminSurveyQuestion>(
           `/admin/survey-questions/${id}`,
           toPayload(d),
         )
-        setSurvey((s) =>
-          s ? { ...s, questions: (s.questions ?? []).map((q) => (q.id === id ? saved : q)) } : s,
-        )
-        setFailed(({ [id]: _cleared, ...rest }) => rest)
-        // Typed into again while this was saving: the next save carries it.
+        if (deleted.current.has(id)) return
+        replaceQuestion(saved)
+        // Only the newest version clears the state: an older save landing
+        // late must not hide a newer problem.
         if ((versions.current.get(id) ?? 0) === version) {
-          setPending((p) => {
-            const next = new Set(p)
-            next.delete(id)
-            return next
-          })
+          dropFailed(id)
+          dropPending(id)
         }
       } catch (e) {
-        const message =
-          e instanceof AdminError
-            ? (Object.values(e.fields)[0] ?? e.message)
-            : 'Could not reach the server. It will try again when you next type.'
-        setFailed((f) => ({ ...f, [id]: [message] }))
+        if (deleted.current.has(id)) return
+        if (e instanceof AdminError && (e.fields.options || e.fields.type)) {
+          setFailed((f) => ({ ...f, [id]: [e.fields.options ?? e.fields.type] }))
+          lockAfterAnswers(id)
+        } else {
+          const message =
+            e instanceof AdminError
+              ? (Object.values(e.fields)[0] ?? e.message)
+              : 'Could not reach the server. Your change is kept here; it saves when you next type.'
+          setFailed((f) => ({ ...f, [id]: [message] }))
+        }
       } finally {
+        saving.current.delete(id)
         setInflight((n) => n - 1)
+        if (again.current.has(id)) {
+          again.current.delete(id)
+          flushRef.current(id)
+        }
       }
     },
-    [setSurvey, survey.form_type],
+    [lockAfterAnswers, replaceQuestion, survey.form_type],
   )
+  flushRef.current = flush
 
   function change(id: number, next: Draft) {
     setDrafts((all) => ({ ...all, [id]: next }))
@@ -109,24 +196,29 @@ export function FormBuilder({
     window.clearTimeout(timers.current.get(id))
     timers.current.set(
       id,
-      window.setTimeout(() => flush(id), SAVE_AFTER_MS),
+      window.setTimeout(() => flushRef.current(id), SAVE_AFTER_MS),
     )
   }
 
-  // Leaving with changes not yet saved: send them, and warn if the tab closes.
+  // What is not saved yet, for the page around the builder to warn about.
+  const unsaved = new Set([...pending, ...Object.keys(failed).map(Number)]).size
+  useEffect(() => {
+    onUnsavedChange?.(unsaved)
+  }, [unsaved, onUnsavedChange])
+
+  // Closing the tab with changes not saved: the browser asks first. Leaving
+  // the builder inside the panel: whatever is waiting is sent on the way out.
   useEffect(() => {
     const warn = (e: BeforeUnloadEvent) => {
-      if (pending.size > 0) e.preventDefault()
+      if (unsaved > 0) e.preventDefault()
     }
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
-  }, [pending])
-  useEffect(
-    () => () => {
-      timers.current.forEach((_, id) => flush(id))
-    },
-    [flush],
-  )
+  }, [unsaved])
+  useEffect(() => {
+    const waiting = timers.current
+    return () => waiting.forEach((_, id) => flushRef.current(id))
+  }, [])
 
   function open(id: number | null) {
     if (openId !== null && openId !== id && pending.has(openId)) flush(openId)
@@ -136,32 +228,55 @@ export function FormBuilder({
 
   // ------------------------------------------------------------ add, copy, delete
 
-  async function saveOrder(list: AdminSurveyQuestion[]) {
+  // The order is saved one request at a time; the newest order waits for
+  // the one on its way, so quick moves cannot land out of turn.
+  const orderBusy = useRef(false)
+  const orderNext = useRef<number[] | null>(null)
+  const orderTimer = useRef<number | undefined>(undefined)
+
+  async function sendOrder() {
+    if (orderBusy.current || !orderNext.current) return
+    const ids = orderNext.current
+    orderNext.current = null
+    orderBusy.current = true
     try {
-      await adminApi.post(`/admin/surveys/${survey.id}/questions/reorder`, {
-        ids: list.map((q) => q.id),
-      })
-      onOrderSaved()
+      await adminApi.post(`/admin/surveys/${survey.id}/questions/reorder`, { ids })
+      if (!orderNext.current) onOrderSaved()
     } catch {
       toast.error('Could not save the new order.')
+    } finally {
+      orderBusy.current = false
+      if (orderNext.current) sendOrder()
     }
   }
 
-  /** A new question (or page break) after the open one, or at the end. */
+  function saveOrder(list: AdminSurveyQuestion[], wait = 0) {
+    orderNext.current = list.map((q) => q.id)
+    window.clearTimeout(orderTimer.current)
+    orderTimer.current = window.setTimeout(sendOrder, wait)
+  }
+
+  /**
+   * A new question (or page break) after the open one, or at the end. On a
+   * form attendees can answer now, it starts hidden, so nobody meets
+   * "Untitled question" half-way through its writing.
+   */
   async function add(draft: Draft) {
     setBusy(true)
+    const start: Draft = { ...draft, status: survey.status === 'open' ? 'closed' : 'open' }
     try {
       const created = await adminApi.post<AdminSurveyQuestion>(
         `/admin/surveys/${survey.id}/questions`,
-        toPayload(draft),
+        toPayload(start),
       )
-      const at =
-        openId !== null ? questions.findIndex((q) => q.id === openId) + 1 : questions.length
-      const next = [...questions]
+      const list = questionsRef.current
+      const at = openId !== null ? list.findIndex((q) => q.id === openId) + 1 : list.length
+      const next = [...list]
       next.splice(at, 0, { ...created, responses_count: 0 })
       setSurvey((s) => (s ? { ...s, questions: next } : s))
-      setDrafts((all) => ({ ...all, [created.id]: draft }))
-      if (at < questions.length) saveOrder(next)
+      setDrafts((all) => ({ ...all, [created.id]: start }))
+      draftsRef.current = { ...draftsRef.current, [created.id]: start }
+      if (at < list.length) saveOrder(next)
       open(created.id)
       setFreshId(created.id)
       window.setTimeout(
@@ -187,27 +302,34 @@ export function FormBuilder({
   }
 
   async function remove(q: AdminSurveyQuestion) {
-    const answers = q.responses_count ?? 0
+    // The answers so far, asked fresh: the page may have been open a while.
+    let answers = q.responses_count ?? 0
+    try {
+      const fresh = await adminApi.get<AdminSurvey>(`/admin/surveys/${survey.id}`)
+      answers = fresh.questions?.find((x) => x.id === q.id)?.responses_count ?? answers
+    } catch {
+      // Use what the page already knows.
+    }
     const extra = answers
       ? ` Its ${answers} ${answers === 1 ? 'answer' : 'answers'} will be deleted too.`
       : ''
     if (!confirm(`Delete "${draftOf(q).question.en || 'this question'}"?${extra}`)) return
     window.clearTimeout(timers.current.get(q.id))
     timers.current.delete(q.id)
+    deleted.current.add(q.id)
     try {
       await adminApi.del(`/admin/survey-questions/${q.id}`)
       setSurvey((s) =>
         s ? { ...s, questions: (s.questions ?? []).filter((x) => x.id !== q.id) } : s,
       )
-      setPending((p) => {
-        const next = new Set(p)
-        next.delete(q.id)
-        return next
-      })
-      setFailed(({ [q.id]: _gone, ...rest }) => rest)
+      dropPending(q.id)
+      dropFailed(q.id)
       if (openId === q.id) setOpenId(null)
       toast.success('Question deleted.')
     } catch (e) {
+      // Still there: its unsaved changes go back to being saved.
+      deleted.current.delete(q.id)
+      if (pending.has(q.id)) flush(q.id)
       toast.error(e instanceof AdminError ? e.message : 'Could not delete that question.')
     }
   }
@@ -216,20 +338,23 @@ export function FormBuilder({
 
   /** Keyboard on the grip: arrow up or down moves the question one place. */
   function move(index: number, direction: -1 | 1) {
+    const list = questionsRef.current
     const target = index + direction
-    if (target < 0 || target >= questions.length) return
-    const next = [...questions]
+    if (target < 0 || target >= list.length) return
+    const next = [...list]
     ;[next[index], next[target]] = [next[target], next[index]]
     reordering.current = true
     setSurvey((s) => (s ? { ...s, questions: next } : s))
-    saveOrder(next)
+    // Saved once the keys stop, not on every press of a held key.
+    saveOrder(next, 400)
   }
 
   // Dragging a card: press anywhere on a closed card, or on the grip of the
   // open one (its boxes are for typing), and move. The card follows the
   // pointer, the others slide out of its way, and the order is saved once,
   // when it is let go. On a touch screen only the grip drags, so a swipe
-  // still scrolls the page.
+  // still scrolls the page. The moves are followed on the window, so the
+  // drag ends wherever the button is let go.
   const [dragId, setDragId] = useState<number | null>(null)
   const rows = useRef(new Map<number, HTMLDivElement>())
   const drag = useRef<{
@@ -272,7 +397,7 @@ export function FormBuilder({
   })
 
   function startDrag(e: React.PointerEvent<HTMLDivElement>, id: number) {
-    if (e.button !== 0) return
+    if (e.button !== 0 || drag.current) return
     const target = e.target as Element
     const onGrip = !!target.closest('[data-grip]')
     // The open card is for typing: it moves only by its grip. A closed card
@@ -282,11 +407,6 @@ export function FormBuilder({
     const el = rows.current.get(id)
     if (!el) return
     if (onGrip) e.preventDefault()
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId)
-    } catch {
-      // A pointer that is no longer down cannot be captured; nothing to hold.
-    }
     drag.current = {
       id,
       startY: e.pageY,
@@ -294,13 +414,18 @@ export function FormBuilder({
       height: el.offsetHeight,
       delta: 0,
       started: false,
-      order: questions.map((q) => q.id).join(),
+      order: questionsRef.current.map((q) => q.id).join(),
     }
+    window.addEventListener('pointermove', dragMove)
+    window.addEventListener('pointerup', endDrag)
+    window.addEventListener('pointercancel', endDrag)
   }
 
-  function dragMove(e: React.PointerEvent<HTMLDivElement>) {
+  function dragMove(e: PointerEvent) {
     const d = drag.current
     if (!d) return
+    // The button came up somewhere the page did not hear it: finish.
+    if (e.buttons === 0) return endDrag()
     d.delta = e.pageY - d.startY
     // A few pixels first, so a press that was meant as a click stays one.
     if (!d.started) {
@@ -320,38 +445,47 @@ export function FormBuilder({
 
     // The new place: how many other cards have their middle above the held
     // card's middle, measured on the layout so sliding cards do not flicker.
+    const list = questionsRef.current
     const middle = d.startTop + d.delta + d.height / 2
     let to = 0
-    for (const q of questions) {
+    for (const q of list) {
       if (q.id === d.id) continue
       const r = rows.current.get(q.id)
       if (r && r.offsetTop + r.offsetHeight / 2 < middle) to++
     }
-    const from = questions.findIndex((q) => q.id === d.id)
+    const from = list.findIndex((q) => q.id === d.id)
     if (to === from) return
-    const next = [...questions]
+    const next = [...list]
     const [moved] = next.splice(from, 1)
     next.splice(to, 0, moved)
     reordering.current = true
+    questionsRef.current = next
     setSurvey((s) => (s ? { ...s, questions: next } : s))
   }
 
   function endDrag() {
+    window.removeEventListener('pointermove', dragMove)
+    window.removeEventListener('pointerup', endDrag)
+    window.removeEventListener('pointercancel', endDrag)
     const d = drag.current
     drag.current = null
     if (!d?.started) return
-    // The pointerup that ends a drag must not also open the card under it.
-    suppressClick.current = true
-    window.setTimeout(() => (suppressClick.current = false), 0)
+    // The click that follows letting go must not open the card under it.
+    const swallow = (ev: MouseEvent) => {
+      ev.stopPropagation()
+      ev.preventDefault()
+    }
+    window.addEventListener('click', swallow, { capture: true, once: true })
+    window.setTimeout(() => window.removeEventListener('click', swallow, true), 0)
     setDragId(null)
     const el = rows.current.get(d.id)
     if (el) {
       el.style.transition = calm ? 'none' : 'transform 200ms cubic-bezier(0.2, 0.7, 0.3, 1)'
       el.style.transform = ''
     }
-    if (questions.map((q) => q.id).join() !== d.order) saveOrder(questions)
+    const list = questionsRef.current
+    if (list.map((q) => q.id).join() !== d.order) saveOrder(list)
   }
-  const suppressClick = useRef(false)
 
   // ---------------------------------------------------------------- the page
 
@@ -473,15 +607,6 @@ export function FormBuilder({
                 else rows.current.delete(q.id)
               }}
               onPointerDown={(e) => startDrag(e, q.id)}
-              onPointerMove={dragMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
-              onClickCapture={(e) => {
-                if (suppressClick.current) {
-                  e.stopPropagation()
-                  e.preventDefault()
-                }
-              }}
               className={cn(
                 'relative rounded-md',
                 dragId === q.id &&

@@ -4,8 +4,11 @@ import type { AdminSurveyQuestion, FormType, Locale, Localized } from './client'
 import {
   KINDS,
   LANGUAGES,
+  LIMITS,
+  choiceCount,
   hasOptionList,
   localized,
+  scaleNumbers,
   withKind,
   type Draft,
   type QuestionKind,
@@ -57,7 +60,7 @@ export function QuestionCard({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-md border bg-white transition-shadow duration-200',
+        'relative rounded-md border bg-white transition-shadow duration-200',
         open
           ? 'border-[#DDDCD8] shadow-[0_6px_24px_-10px_rgba(11,33,64,0.35)]'
           : 'border-[#E6E5E1] hover:border-[#CFCDC7] hover:shadow-card',
@@ -67,7 +70,7 @@ export function QuestionCard({
       <span
         aria-hidden
         className={cn(
-          'absolute inset-y-0 left-0 w-1 transition-colors',
+          'absolute inset-y-0 left-0 z-[1] w-1 rounded-l-md transition-colors',
           open ? 'bg-gold-500' : 'bg-transparent',
         )}
       />
@@ -76,6 +79,7 @@ export function QuestionCard({
         <SectionBreak
           section={draft.section}
           open={open}
+          hidden={draft.status !== 'open'}
           lang={lang}
           onChange={(section) => set({ section })}
           onRemove={() => set({ section: null })}
@@ -150,6 +154,7 @@ export function QuestionCard({
                 placeholder="Question"
                 big
                 autoSelect={fresh}
+                maxLength={LIMITS.question}
                 label="Question"
               />
             </div>
@@ -162,6 +167,13 @@ export function QuestionCard({
 
           {(draft.help.en || translating === false) && (
             <HelpField draft={draft} lang={lang} onChange={(help) => set({ help })} />
+          )}
+
+          {draft.status !== 'open' && !translating && (
+            <p className="mt-3 rounded-sm bg-[#F1F1EF] px-3 py-2 text-micro text-navy-900">
+              Hidden from attendees. Switch on “Shown to attendees” below when this question is
+              ready.
+            </p>
           )}
 
           {locked && !translating && (
@@ -253,6 +265,7 @@ function TextField({
   autoSelect,
   multiline,
   inputClassName,
+  maxLength,
 }: {
   value: Localized
   lang: Locale
@@ -263,6 +276,7 @@ function TextField({
   autoSelect?: boolean
   multiline?: boolean
   inputClassName?: string
+  maxLength?: number
 }) {
   const ref = useRef<HTMLInputElement & HTMLTextAreaElement>(null)
   useEffect(() => {
@@ -289,6 +303,7 @@ function TextField({
         placeholder={translating ? `In ${langLabel(lang)}` : placeholder}
         aria-label={translating ? `${label} in ${langLabel(lang)}` : label}
         rows={multiline ? 2 : undefined}
+        maxLength={maxLength}
         className={cn(
           'block w-full border-0 border-b bg-transparent px-1 text-navy-950 transition-colors',
           'placeholder:text-slate/60 focus:outline-none focus:ring-0',
@@ -320,6 +335,7 @@ function HelpField({
         lang={lang}
         onChange={onChange}
         placeholder="Note under the question (optional)"
+        maxLength={LIMITS.help}
         label="Note under the question"
       />
     </div>
@@ -382,6 +398,8 @@ function AnswerEditor({
             addLabel="Add statement"
             newItem={(n) => localized(`Statement ${n}`)}
             min={1}
+            max={LIMITS.statements}
+            textLimit={LIMITS.statement}
           />
         </div>
         <div>
@@ -397,6 +415,8 @@ function AnswerEditor({
             addLabel="Add column"
             newItem={(n) => localized(`Column ${n}`)}
             min={2}
+            max={LIMITS.options}
+            textLimit={LIMITS.option}
           />
         </div>
       </div>
@@ -414,7 +434,7 @@ function AnswerEditor({
         marker={(i) =>
           draft.kind === 'scale' ? (
             <span className="tnum grid h-5 w-5 place-items-center rounded-sm border border-gold-500/50 text-micro font-semibold text-gold-700">
-              {i + 1}
+              {scaleNumbers(draft.options)[i] ?? '–'}
             </span>
           ) : draft.kind === 'checkbox' ? (
             <Box />
@@ -425,6 +445,8 @@ function AnswerEditor({
         addLabel="Add option"
         newItem={(n) => localized(`Option ${n}`)}
         min={min}
+        max={LIMITS.options}
+        textLimit={LIMITS.option}
         extra={
           (draft.kind === 'choice' || draft.kind === 'checkbox') &&
           (draft.hasOther ? (
@@ -468,6 +490,8 @@ function OptionList({
   addLabel,
   newItem,
   min,
+  max,
+  textLimit,
   extra,
   addOther,
 }: {
@@ -479,10 +503,16 @@ function OptionList({
   addLabel: string
   newItem: (n: number) => Localized
   min: number
+  max: number
+  textLimit: number
   extra?: React.ReactNode
   addOther?: () => void
 }) {
   const [dragFrom, setDragFrom] = useState<number | null>(null)
+  // The row is draggable only while its dots are held, so pressing in a text
+  // box selects text rather than picking the row up.
+  const [armed, setArmed] = useState<number | null>(null)
+  const full = items.length >= max
   const [focusLast, setFocusLast] = useState(false)
   const lastRef = useRef<HTMLInputElement | null>(null)
   useEffect(() => {
@@ -507,10 +537,11 @@ function OptionList({
         {items.map((item, i) => (
           <li
             key={i}
-            draggable={!locked}
+            draggable={!locked && armed === i}
             onDragStart={(e) => {
               setDragFrom(i)
               e.dataTransfer.effectAllowed = 'move'
+              e.dataTransfer.setData('text/plain', String(i))
             }}
             onDragOver={(e) => {
               if (dragFrom === null) return
@@ -520,7 +551,10 @@ function OptionList({
                 setDragFrom(i)
               }
             }}
-            onDragEnd={() => setDragFrom(null)}
+            onDragEnd={() => {
+              setDragFrom(null)
+              setArmed(null)
+            }}
             className={cn(
               'group flex items-center gap-3 rounded-sm py-0.5 pl-1 transition-colors',
               dragFrom === i && 'bg-gold-500/10',
@@ -530,6 +564,8 @@ function OptionList({
               <span
                 aria-hidden
                 title="Drag to reorder"
+                onPointerDown={() => setArmed(i)}
+                onPointerUp={() => setArmed(null)}
                 className="-ml-4 cursor-grab text-[#BDBAB3] opacity-0 transition-opacity group-hover:opacity-100"
               >
                 <Dots />
@@ -542,8 +578,9 @@ function OptionList({
                 lang={lang}
                 inputRef={i === items.length - 1 ? lastRef : undefined}
                 onChange={(v) => onChange(items.map((o, j) => (j === i ? v : o)))}
+                maxLength={textLimit}
                 onEnter={
-                  !locked && lang === 'en'
+                  !locked && lang === 'en' && !full
                     ? () => {
                         onChange([...items, newItem(items.length + 1)])
                         setFocusLast(true)
@@ -567,14 +604,17 @@ function OptionList({
         <div className="mt-1.5 flex flex-wrap items-center gap-x-1 pl-1 text-[0.85rem]">
           <button
             type="button"
+            disabled={full}
+            title={full ? `Up to ${max}` : undefined}
             onClick={() => {
               onChange([...items, newItem(items.length + 1)])
               setFocusLast(true)
             }}
-            className="rounded-sm px-1 py-1 font-semibold text-navy-700 hover:bg-[#F1F1EF] hover:text-navy-950"
+            className="rounded-sm px-1 py-1 font-semibold text-navy-700 hover:bg-[#F1F1EF] hover:text-navy-950 disabled:cursor-not-allowed disabled:opacity-50"
           >
             + {addLabel}
           </button>
+          {full && <span className="text-micro text-slate">(up to {max})</span>}
           {addOther && (
             <>
               <span className="text-slate">or</span>
@@ -600,6 +640,7 @@ function OptionInput({
   onEnter,
   inputRef,
   label,
+  maxLength,
 }: {
   value: Localized
   lang: Locale
@@ -607,6 +648,7 @@ function OptionInput({
   onEnter?: () => void
   inputRef?: React.Ref<HTMLInputElement>
   label: string
+  maxLength: number
 }) {
   const translating = lang !== 'en'
   return (
@@ -622,6 +664,7 @@ function OptionInput({
             onEnter()
           }
         }}
+        maxLength={maxLength}
         placeholder={translating ? `In ${langLabel(lang)}` : 'Option'}
         aria-label={translating ? `${label} in ${langLabel(lang)}` : label}
         className={cn(
@@ -639,21 +682,31 @@ function OptionInput({
 function SectionBreak({
   section,
   open,
+  hidden,
   lang,
   onChange,
   onRemove,
 }: {
   section: NonNullable<Draft['section']>
   open: boolean
+  /** Its question is hidden from attendees, so this page break is too. */
+  hidden: boolean
   lang: Locale
   onChange: (s: NonNullable<Draft['section']>) => void
   onRemove: () => void
 }) {
   return (
-    <div className="bg-navy-950 px-4 py-3 text-cream sm:px-6">
+    <div
+      className={cn(
+        'rounded-t-md px-4 py-3 text-cream sm:px-6',
+        hidden ? 'bg-navy-950/45' : 'bg-navy-950',
+      )}
+    >
       <div className="flex items-center justify-between gap-3">
         <p className="text-micro font-semibold tracking-[0.04em] text-gold-400">
-          New page starts here
+          {hidden
+            ? 'Page break hidden with its question: attendees will not see this new page'
+            : 'New page starts here'}
         </p>
         {open && lang === 'en' && (
           <button
@@ -672,6 +725,7 @@ function SectionBreak({
             lang={lang}
             onChange={(title) => onChange({ ...section, title })}
             placeholder="Page heading, e.g. Shaping the conversation"
+            maxLength={LIMITS.sectionTitle}
             label="Page heading"
             inputClassName="!bg-transparent font-display !text-[1.25rem] !text-cream placeholder:!text-cream/40 !border-cream/20 hover:!border-cream/40 focus:!border-gold-400"
           />
@@ -680,6 +734,7 @@ function SectionBreak({
             lang={lang}
             onChange={(intro) => onChange({ ...section, intro })}
             placeholder="A line under the heading (optional)"
+            maxLength={LIMITS.sectionIntro}
             label="Line under the page heading"
             inputClassName="!bg-transparent !text-cream/85 placeholder:!text-cream/40 !border-cream/10 hover:!border-cream/40 focus:!border-gold-400"
           />
@@ -722,11 +777,17 @@ function Preview({ draft, lang }: { draft: Draft; lang: Locale }) {
     return (
       <span className="mt-2 flex flex-wrap gap-1.5">
         {draft.options.map((o, i) => (
+          // "Not sure" stands apart, unnumbered, as on the form.
+
           <span
             key={i}
             className="rounded-sm border border-gold-500/40 bg-[#FBF9F3] px-2 py-0.5 text-micro text-navy-900"
           >
-            <span className="tnum mr-1 font-semibold text-gold-700">{i + 1}</span>
+            {scaleNumbers(draft.options)[i] !== null && (
+              <span className="tnum mr-1 font-semibold text-gold-700">
+                {scaleNumbers(draft.options)[i]}
+              </span>
+            )}
             {text(o)}
           </span>
         ))}
@@ -957,8 +1018,13 @@ function MoreMenu({
     {
       label: 'Limit how many can be ticked',
       on: !!draft.maxChoices,
-      show: draft.kind === 'checkbox',
-      toggle: () => ({ ...draft, maxChoices: draft.maxChoices ? null : 3 }),
+      show: draft.kind === 'checkbox' && choiceCount(draft) > 1,
+      toggle: () => ({
+        ...draft,
+        maxChoices: draft.maxChoices
+          ? null
+          : Math.min(3, choiceCount(draft) - 1, LIMITS.maxChoices),
+      }),
     },
     {
       label: 'Limit the length of the answer',
@@ -975,7 +1041,7 @@ function MoreMenu({
           label="Up to"
           value={draft.maxChoices}
           min={1}
-          max={Math.max(1, draft.options.length + (draft.hasOther ? 1 : 0))}
+          max={Math.max(1, Math.min(LIMITS.maxChoices, choiceCount(draft) - 1))}
           onChange={(maxChoices) => onChange({ ...draft, maxChoices })}
         />
       )}
@@ -1049,18 +1115,34 @@ function NumberChip({
   step?: number
   onChange: (n: number) => void
 }) {
+  // What is being typed stays as typed ("5" on the way to "500"); it is
+  // checked against the range when the box is left or Enter is pressed.
+  const [text, setText] = useState(String(value))
+  useEffect(() => setText(String(value)), [value])
+  const commit = () => {
+    const n = Math.round(Number(text))
+    const next = Number.isFinite(n) && text.trim() !== '' ? Math.min(max, Math.max(min, n)) : value
+    setText(String(next))
+    if (next !== value) onChange(next)
+  }
+
   return (
     <label className="flex items-center gap-1.5 rounded-sm border border-[#DDDCD8] bg-[#FAFAF8] px-2 py-1 text-micro font-semibold text-navy-900">
       {label}
       <input
         type="number"
-        value={value}
+        inputMode="numeric"
+        value={text}
         min={min}
         max={max}
         step={step}
-        onChange={(e) => {
-          const n = Math.round(Number(e.target.value))
-          if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)))
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            commit()
+          }
         }}
         className="w-16 rounded-sm border border-[#DDDCD8] bg-white px-1.5 py-0.5 text-[0.8rem] focus:border-gold-500 focus:outline-none"
       />

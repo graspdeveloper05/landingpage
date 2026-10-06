@@ -1,3 +1,4 @@
+import { OFF_SCALE } from '@/services/survey'
 import {
   toLocalized,
   type AdminSurveyQuestion,
@@ -30,6 +31,31 @@ export const LANGUAGES: { code: Locale; label: string }[] = [
   { code: 'zh', label: '中文' },
   { code: 'ta', label: 'தமிழ்' },
 ]
+
+/** What the API accepts, mirrored here so a draft is checked before it is sent. */
+export const LIMITS = {
+  options: 15,
+  statements: 10,
+  maxChoices: 10,
+  question: 300,
+  help: 300,
+  option: 150,
+  statement: 200,
+  sectionTitle: 120,
+  sectionIntro: 300,
+} as const
+
+/**
+ * Numbers for a numbered scale's options as attendees see them: "Not sure"
+ * and "N/A" stand apart, unnumbered (null).
+ */
+export function scaleNumbers(options: Localized[]): (number | null)[] {
+  let n = 0
+  return options.map((o) => (OFF_SCALE.test(o.en.trim()) ? null : ++n))
+}
+
+/** How many boxes a checkbox question offers, "Other" included. */
+export const choiceCount = (d: Draft) => d.options.length + (d.hasOther ? 1 : 0)
 
 /** One question as the builder edits it: every text in all four languages. */
 export interface Draft {
@@ -128,7 +154,11 @@ export function toPayload(d: Draft) {
     options: hasOptionList(d.kind) ? d.options : null,
     statements: d.kind === 'grid' ? d.statements : null,
     layout: d.kind === 'scale' ? 'scale' : null,
-    max_choices: d.kind === 'checkbox' && d.maxChoices ? d.maxChoices : null,
+    // A limit at or above the number of boxes limits nothing.
+    max_choices:
+      d.kind === 'checkbox' && d.maxChoices && d.maxChoices < choiceCount(d)
+        ? Math.min(d.maxChoices, LIMITS.maxChoices)
+        : null,
     has_other: (d.kind === 'choice' || d.kind === 'checkbox') && d.hasOther,
     max_length: d.kind === 'text' && d.maxLength ? d.maxLength : null,
     is_required: d.required,
@@ -160,6 +190,24 @@ export function problemsOf(d: Draft, formType: FormType): string[] {
       out.push('Fill in or remove the empty statement.')
     }
   }
+  if (hasOptionList(d.kind) && d.options.length > LIMITS.options) {
+    out.push(`Keep to ${LIMITS.options} options or fewer.`)
+  }
+  if (d.kind === 'grid' && d.statements.length > LIMITS.statements) {
+    out.push(`Keep to ${LIMITS.statements} statements or fewer.`)
+  }
+  // Texts pasted in past their length (typing stops at the limit).
+  const tooLong = (v: Localized | undefined, max: number) =>
+    !!v && Object.values(v).some((t) => (t ?? '').length > max)
+  if (tooLong(d.question, LIMITS.question))
+    out.push(`Keep the question under ${LIMITS.question} characters.`)
+  if (tooLong(d.help, LIMITS.help)) out.push(`Keep the note under ${LIMITS.help} characters.`)
+  if (d.options.some((o) => tooLong(o, LIMITS.option)))
+    out.push(`Keep each option under ${LIMITS.option} characters.`)
+  if (d.statements.some((o) => tooLong(o, LIMITS.statement)))
+    out.push(`Keep each statement under ${LIMITS.statement} characters.`)
+  if (d.section && tooLong(d.section.title, LIMITS.sectionTitle))
+    out.push(`Keep the page heading under ${LIMITS.sectionTitle} characters.`)
   return out
 }
 

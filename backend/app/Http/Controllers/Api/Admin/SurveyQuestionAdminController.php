@@ -8,6 +8,7 @@ use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SurveyQuestionAdminController extends Controller
 {
@@ -50,9 +51,14 @@ class SurveyQuestionAdminController extends Controller
             'ids.*' => ['required', 'integer'],
         ]);
 
-        foreach ($data['ids'] as $position => $id) {
-            $survey->questions()->whereKey($id)->update(['display_order' => $position]);
-        }
+        // One order at a time, all of it or none: two saves close together
+        // cannot interleave row by row.
+        DB::transaction(function () use ($data, $survey) {
+            Survey::whereKey($survey->id)->lockForUpdate()->first();
+            foreach ($data['ids'] as $position => $id) {
+                $survey->questions()->whereKey($id)->update(['display_order' => $position]);
+            }
+        });
 
         return response()->json(['message' => 'Order saved.']);
     }

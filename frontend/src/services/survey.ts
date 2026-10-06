@@ -157,6 +157,9 @@ export function newSubmissionId(): string {
   })
 }
 
+/** Options set apart from a numbered scale, unnumbered: "Not sure", "N/A". */
+export const OFF_SCALE = /^(not sure|n\/a|tidak pasti)/i
+
 /** The text in the reader's language, or the English when that one is empty. */
 export function pick(text: Text | null | undefined, locale: string): string {
   if (!text) return ''
