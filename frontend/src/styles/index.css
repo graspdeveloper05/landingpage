@@ -685,6 +685,189 @@
   mix-blend-mode: normal;
 }
 
+/* ---------------------------------------------------------------------------
+ * The attendee form (/survey, /feedback)
+ *
+ * The masthead's rings are the one thing that moves on its own: a dialogue
+ * as voices spreading outward. Two dashed rings turn very slowly, a wave
+ * leaves the centre every few seconds, and the outer ring fills in gold as
+ * the pages go by. Everything else moves only when the person does
+ * something: a page arriving, a choice taken, a gap pointed out.
+ * The reduced-motion rule below ends all of it after one frame.
+ * ------------------------------------------------------------------------ */
+
+/* Rotation about each ring's own centre (fill-box is the circle's box). */
+.sv-turn {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sv-turn 90s linear infinite;
+}
+.sv-turn--back {
+  animation-duration: 140s;
+  animation-direction: reverse;
+}
+@keyframes sv-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* A voice leaving the centre: grows from the inner ring past the outer one. */
+.sv-wave {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: sv-wave 7s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+@keyframes sv-wave {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+/* Once, when a new page opens: the same wave, brighter and quicker. */
+.sv-wave--once {
+  animation: sv-wave 1.6s cubic-bezier(0.2, 0.6, 0.3, 1) both;
+}
+
+/* The pointer's light across the navy band, and the rings leaning toward it.
+   --sv-x / --sv-y are set from the pointer, -1 to 1 from the centre. */
+.sv-glow {
+  background: radial-gradient(
+    28rem circle at var(--sv-px, 80%) var(--sv-py, 50%),
+    rgba(201, 162, 39, 0.13),
+    transparent 65%
+  );
+  transition: opacity 0.6s ease;
+}
+.sv-depth {
+  transform: translate3d(
+    calc(var(--sv-x, 0) * var(--d, 10px)),
+    calc(var(--sv-y, 0) * var(--d, 10px)),
+    0
+  );
+  transition: transform 0.9s cubic-bezier(0.22, 0.68, 0.28, 1);
+}
+
+/* The head of the progress line: a gold point with a slow halo. */
+.sv-head::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid rgba(232, 196, 98, 0.8);
+  animation: sv-halo 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+@keyframes sv-halo {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+/* A page's cards arrive one after another, from the side the person is
+   heading: Next brings them from the right, Back from the left. */
+.sv-page > * {
+  animation: sv-in 0.6s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+}
+.sv-page > *:nth-child(2) { animation-delay: 70ms; }
+.sv-page > *:nth-child(3) { animation-delay: 140ms; }
+.sv-page > *:nth-child(4) { animation-delay: 210ms; }
+.sv-page > *:nth-child(5) { animation-delay: 280ms; }
+.sv-page > *:nth-child(6) { animation-delay: 350ms; }
+.sv-page > *:nth-child(n + 7) { animation-delay: 420ms; }
+@keyframes sv-in {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--sv-from, 0px), 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A choice answering back. */
+@keyframes sv-pop {
+  0% {
+    transform: scale(0.3);
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.sv-pop {
+  animation: sv-pop 0.34s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+}
+.sv-star {
+  display: inline-block;
+  animation: sv-pop 0.42s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+}
+
+/* A tick drawing itself (pathLength="1" on the path). */
+.sv-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: sv-draw 0.32s ease-out 0.05s forwards;
+}
+.sv-draw--slow {
+  animation-duration: 0.6s;
+  animation-delay: 0.35s;
+}
+@keyframes sv-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The thank-you's mark: two waves leave it, as from the masthead. */
+.sv-ring-out {
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(201, 162, 39, 0.7);
+  animation: sv-ring-out 1.4s cubic-bezier(0.2, 0.6, 0.3, 1) 0.4s both;
+}
+.sv-ring-out + .sv-ring-out {
+  animation-delay: 0.7s;
+}
+@keyframes sv-ring-out {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* A question left unanswered: a small shake, once, when it is pointed out. */
+@keyframes sv-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+.sv-shake {
+  animation: sv-shake 0.42s ease-in-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

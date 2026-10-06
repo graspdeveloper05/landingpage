@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
+import { SurveyRings, useLean } from '@/components/survey/SurveyRings'
 import {
   EMPTY_IDENTITY,
   OFF_SCALE,
@@ -151,7 +152,9 @@ export function Survey() {
 /**
  * The navy band under the site header, continuing it: the form's name above
  * the current section's heading, its introduction, and how far along this
- * page is. Faint gold rings sit at the right edge, as on the printed mock.
+ * page is. Gold rings at the right edge, as on the printed mock, carry the
+ * same progress as an arc, send out a wave now and then, and lean toward
+ * the mouse with a soft light following it.
  */
 function Masthead({
   eyebrow,
@@ -165,32 +168,51 @@ function Masthead({
   progress?: { at: number; of: number }
 }) {
   const { t } = useI18n()
+  const lean = useLean<HTMLElement>()
+  const share = progress ? (progress.at + 1) / progress.of : 0
 
   return (
-    <section className="relative isolate overflow-hidden bg-navy-950 text-cream">
-      <svg
+    <section
+      ref={lean.ref}
+      onPointerMove={lean.onPointerMove}
+      onPointerLeave={lean.onPointerLeave}
+      className="group/band relative isolate overflow-hidden bg-navy-950 text-cream"
+    >
+      <div
         aria-hidden
-        viewBox="0 0 400 400"
-        className="pointer-events-none absolute -right-24 top-1/2 -z-10 h-[28rem] w-[28rem] -translate-y-1/2 text-gold-500/25 sm:-right-10"
-        fill="none"
-        stroke="currentColor"
+        className="sv-glow pointer-events-none absolute inset-0 -z-20 opacity-0 group-hover/band:opacity-100"
+      />
+      <div
+        aria-hidden
+        className="anim-fade pointer-events-none absolute -right-36 top-4 -z-10 h-[19rem] w-[19rem] opacity-50 sm:-right-20 sm:top-1/2 sm:h-[16rem] sm:w-[16rem] sm:-translate-y-1/2 sm:opacity-100 xl:right-[2%]"
       >
-        {[80, 120, 160, 200].map((r) => (
-          <circle key={r} cx="200" cy="200" r={r} strokeWidth="1" />
-        ))}
-      </svg>
+        <SurveyRings progress={progress} />
+      </div>
 
       <div className="shell py-10 sm:py-14">
         <div className="mx-auto max-w-3xl">
-          <span aria-hidden className="block h-[3px] w-12 bg-gold-500" />
-          <p className="mt-4 text-small font-semibold tracking-[0.04em] text-gold-400">{eyebrow}</p>
+          <span aria-hidden className="anim-line block h-[3px] w-12 origin-left bg-gold-500" />
+          <p
+            key={`eyebrow-${eyebrow}`}
+            className="anim-fade mt-4 text-small font-semibold tracking-[0.04em] text-gold-400"
+          >
+            {eyebrow}
+          </p>
           <h1
             key={title}
             className="anim-rise mt-2 font-display text-[2.1rem] font-medium leading-[1.08] text-cream sm:text-[3.2rem]"
           >
             {title}
           </h1>
-          {intro && <p className="mt-4 max-w-2xl text-lead text-cream/75">{intro}</p>}
+          {intro && (
+            <p
+              key={`intro-${intro}`}
+              className="anim-rise mt-4 max-w-2xl text-lead text-cream/75"
+              style={{ animationDelay: '120ms' }}
+            >
+              {intro}
+            </p>
+          )}
         </div>
       </div>
 
@@ -198,7 +220,7 @@ function Masthead({
         <div className="shell pb-6">
           <div className="mx-auto flex max-w-3xl items-center gap-4">
             <div
-              className="h-[3px] flex-1 overflow-hidden bg-white/10"
+              className="relative h-[3px] flex-1 rounded-full bg-white/10"
               role="progressbar"
               aria-valuemin={1}
               aria-valuemax={progress.of}
@@ -206,11 +228,19 @@ function Masthead({
               aria-label={t('survey.page', { page: progress.at + 1, pages: progress.of })}
             >
               <div
-                className="h-full bg-gold-500 transition-[width] duration-500 ease-gentle"
-                style={{ width: `${((progress.at + 1) / progress.of) * 100}%` }}
-              />
+                className="relative h-full rounded-full bg-gradient-to-r from-gold-600 to-gold-400 transition-[width] duration-700 ease-gentle"
+                style={{ width: `${share * 100}%` }}
+              >
+                <span
+                  aria-hidden
+                  className="sv-head absolute -right-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-gold-400 shadow-[0_0_10px_rgba(232,196,98,0.8)]"
+                />
+              </div>
             </div>
-            <span className="tnum shrink-0 text-micro font-semibold text-cream/70">
+            <span
+              key={progress.at}
+              className="anim-fade tnum shrink-0 text-micro font-semibold text-cream/70"
+            >
               {t('survey.page', { page: progress.at + 1, pages: progress.of })}
             </span>
           </div>
@@ -250,13 +280,18 @@ function Thanks({
       role="status"
       className="anim-rise rounded-sm border border-hair bg-white px-6 py-12 text-center shadow-card sm:px-12"
     >
+      {/* The tick draws itself and two waves leave it, as from the masthead. */}
       <span
         aria-hidden
-        className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-gold-500 text-navy-950"
+        className="sv-pop relative mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-gold-500 bg-gold-500/10 text-navy-950"
       >
+        <span className="sv-ring-out" />
+        <span className="sv-ring-out" />
         <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7">
           <path
             d="M5 12.5l4.5 4.5L19 7.5"
+            pathLength={1}
+            className="sv-draw sv-draw--slow"
             stroke="currentColor"
             strokeWidth="2.2"
             strokeLinecap="round"
@@ -264,13 +299,22 @@ function Thanks({
           />
         </svg>
       </span>
-      <h2 className="mx-auto mt-6 max-w-xl font-display text-[1.75rem] leading-snug text-navy-950 sm:text-[2.1rem]">
+      <h2
+        className="anim-rise mx-auto mt-6 max-w-xl font-display text-[1.75rem] leading-snug text-navy-950 sm:text-[2.1rem]"
+        style={{ animationDelay: '250ms' }}
+      >
         {t(feedback ? 'survey.feedbackThanksTitle' : 'survey.thanksTitle')}
       </h2>
-      <p className="mx-auto mt-3 max-w-lg text-body text-slate">
+      <p
+        className="anim-rise mx-auto mt-3 max-w-lg text-body text-slate"
+        style={{ animationDelay: '350ms' }}
+      >
         {t(feedback ? 'survey.feedbackThanksBody' : 'survey.thanksBody')}
       </p>
-      <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+      <div
+        className="anim-rise mt-9 flex flex-col justify-center gap-3 sm:flex-row"
+        style={{ animationDelay: '450ms' }}
+      >
         <ButtonLink to="/programme" withArrow>
           {t('survey.viewProgramme')}
         </ButtonLink>
@@ -382,6 +426,9 @@ function AnswerForm({
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [page, setPage] = useState(0)
+  // Which way the last page change went, so the next page's cards come in
+  // from that side.
+  const [backwards, setBackwards] = useState(false)
   const [testimonial, setTestimonial] = useState<TestimonialEntry>(EMPTY_TESTIMONIAL)
   const [testimonialErrors, setTestimonialErrors] = useState<TestimonialErrors>({})
   // One id for this filling-in, kept across a retry, so the admin reads one
@@ -419,6 +466,7 @@ function AnswerForm({
   }, [sectionTitle, sectionIntro, current, pages.length, onPage])
 
   const goTo = (next: number) => {
+    setBackwards(next < current)
     setPage(next)
     setError(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -479,6 +527,7 @@ function AnswerForm({
     if (!check(pending, t('survey.answerAll'))) {
       const first = pages.findIndex((p) => p.questions.some((q) => problem(q)))
       if (first !== -1 && first !== current) {
+        setBackwards(first < current)
         setPage(first)
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
@@ -562,61 +611,69 @@ function AnswerForm({
 
   return (
     <form onSubmit={submit} noValidate className="space-y-5">
-      {current === 0 && (description || total > 1) && (
-        <div className="pb-2">
-          {description && <p className="max-w-2xl text-lead text-navy-900/85">{description}</p>}
-          {total > 1 && (
-            <p className="mt-3 text-small font-semibold text-gold-700">
-              {t('survey.length', { count: total, minutes })}
-            </p>
-          )}
-        </div>
-      )}
+      {/* Keyed by page: each page's cards arrive one after another. */}
+      <div
+        key={current}
+        className="sv-page space-y-5"
+        style={{ '--sv-from': backwards ? '-28px' : '28px' } as React.CSSProperties}
+      >
+        {current === 0 && (description || total > 1) && (
+          <div className="pb-2">
+            {description && <p className="max-w-2xl text-lead text-navy-900/85">{description}</p>}
+            {total > 1 && (
+              <p className="mt-3 text-small font-semibold text-gold-700">
+                {t('survey.length', { count: total, minutes })}
+              </p>
+            )}
+          </div>
+        )}
 
-      {current === 0 && asksDetails && (
-        <DetailsCard
-          fields={fields}
-          note={survey.details_note ? pick(survey.details_note, locale) : ''}
-          value={who}
-          errors={detailErrors}
-          onChange={(next, key) => {
-            setWho(next)
-            setDetailErrors(({ [key]: _cleared, ...rest }) => rest)
-          }}
-        />
-      )}
+        {current === 0 && asksDetails && (
+          <DetailsCard
+            fields={fields}
+            note={survey.details_note ? pick(survey.details_note, locale) : ''}
+            value={who}
+            errors={detailErrors}
+            onChange={(next, key) => {
+              setWho(next)
+              setDetailErrors(({ [key]: _cleared, ...rest }) => rest)
+            }}
+          />
+        )}
 
-      {here.questions.map((q) => (
-        <QuestionCard
-          key={q.id}
-          number={numberOf(q)}
-          question={q}
-          value={answers[q.id] ?? ''}
-          other={others[q.id] ?? ''}
-          error={errors[q.id]}
-          onChange={(v) => {
-            setAnswers((all) => ({ ...all, [q.id]: v }))
-            setErrors(({ [q.id]: _cleared, ...rest }) => rest)
-          }}
-          onOther={(v) => {
-            setOthers((all) => ({ ...all, [q.id]: v }))
-            setErrors(({ [q.id]: _cleared, ...rest }) => rest)
-          }}
-        />
-      ))}
+        {here.questions.map((q) => (
+          <QuestionCard
+            key={q.id}
+            number={numberOf(q)}
+            question={q}
+            value={answers[q.id] ?? ''}
+            other={others[q.id] ?? ''}
+            error={errors[q.id]}
+            done={answered(q, answers[q.id]) && !errors[q.id]}
+            onChange={(v) => {
+              setAnswers((all) => ({ ...all, [q.id]: v }))
+              setErrors(({ [q.id]: _cleared, ...rest }) => rest)
+            }}
+            onOther={(v) => {
+              setOthers((all) => ({ ...all, [q.id]: v }))
+              setErrors(({ [q.id]: _cleared, ...rest }) => rest)
+            }}
+          />
+        ))}
 
-      {here.testimonial && (
-        <TestimonialFields
-          firstNumber={total + 1}
-          named={named}
-          value={testimonial}
-          errors={testimonialErrors}
-          onChange={(next) => {
-            setTestimonial(next)
-            setTestimonialErrors({})
-          }}
-        />
-      )}
+        {here.testimonial && (
+          <TestimonialFields
+            firstNumber={total + 1}
+            named={named}
+            value={testimonial}
+            errors={testimonialErrors}
+            onChange={(next) => {
+              setTestimonial(next)
+              setTestimonialErrors({})
+            }}
+          />
+        )}
+      </div>
 
       <div className="flex flex-col-reverse items-stretch gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p aria-live="polite" className="text-small text-slate">
@@ -742,6 +799,7 @@ function QuestionCard({
   value,
   other,
   error,
+  done,
   onChange,
   onOther,
 }: {
@@ -750,6 +808,8 @@ function QuestionCard({
   value: string
   other: string
   error?: string
+  /** Answered: the number turns full gold and a line grows under it. */
+  done: boolean
   onChange: (value: string) => void
   onOther: (value: string) => void
 }) {
@@ -767,14 +827,28 @@ function QuestionCard({
           : ''
 
   return (
-    <Card>
+    <Card
+      className={cn(
+        'transition-[border-color,box-shadow] duration-300',
+        error && 'sv-shake !border-red-300 ring-1 ring-red-200',
+      )}
+    >
       <fieldset aria-describedby={error ? errorId : undefined} className="min-w-0">
         <div className="grid grid-cols-[2.75rem_1fr] gap-x-3 sm:grid-cols-[3.75rem_1fr]">
           <span
             aria-hidden
-            className="tnum font-display text-[2rem] leading-none text-gold-500 sm:text-[2.6rem]"
+            className={cn(
+              'tnum relative self-start justify-self-start font-display text-[2rem] leading-none transition-colors duration-500 sm:text-[2.6rem]',
+              done ? 'text-gold-500' : 'text-gold-500/45',
+            )}
           >
             {String(number).padStart(2, '0')}
+            <span
+              className={cn(
+                'absolute -bottom-2 left-0 h-[2px] w-full origin-left bg-gold-500 transition-transform duration-500 ease-gentle',
+                done ? 'scale-x-100' : 'scale-x-0',
+              )}
+            />
           </span>
           <div className="min-w-0">
             <legend className="text-[1.08rem] font-semibold leading-snug text-navy-950 sm:text-[1.2rem]">
@@ -835,14 +909,17 @@ function QuestionCard({
   )
 }
 
+/** A choice: picking it sweeps a gold wash across from the left. */
 const optionClass = (checked: boolean, disabled = false) =>
   cn(
-    'flex min-h-[52px] cursor-pointer items-center gap-3.5 rounded-sm border px-4 py-3 text-body transition-colors duration-200',
+    'flex min-h-[52px] cursor-pointer items-center gap-3.5 rounded-sm border px-4 py-3 text-body',
+    'bg-white bg-gradient-to-r from-gold-500/[0.14] to-gold-500/[0.06] bg-no-repeat',
+    'transition-[background-size,border-color,color,transform] duration-300 ease-gentle active:scale-[0.99]',
     'focus-within:ring-2 focus-within:ring-gold-500/60',
     checked
-      ? 'border-gold-500 bg-gold-500/10 text-navy-950'
-      : 'border-navy-900/15 bg-white text-navy-900 hover:border-gold-500/60',
-    disabled && 'cursor-not-allowed opacity-45 hover:border-navy-900/15',
+      ? 'border-gold-500 bg-[length:100%_100%] text-navy-950'
+      : 'border-navy-900/15 bg-[length:0%_100%] text-navy-900 hover:border-gold-500/60',
+    disabled && 'cursor-not-allowed opacity-45 hover:border-navy-900/15 active:scale-100',
   )
 
 function Mark({ checked, square }: { checked: boolean; square?: boolean }) {
@@ -850,11 +927,11 @@ function Mark({ checked, square }: { checked: boolean; square?: boolean }) {
     <span
       aria-hidden
       className={cn(
-        'grid h-5 w-5 shrink-0 place-items-center border-2 transition-colors',
+        'grid h-5 w-5 shrink-0 place-items-center border-2 transition-colors duration-200',
         square ? 'rounded-sm' : 'rounded-full',
         checked
           ? square
-            ? 'border-gold-500 bg-gold-500 text-white'
+            ? 'sv-pop border-gold-500 bg-gold-500 text-white'
             : 'border-gold-500'
           : 'border-navy-900/30',
       )}
@@ -864,6 +941,8 @@ function Mark({ checked, square }: { checked: boolean; square?: boolean }) {
           <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
             <path
               d="M3 8.5l3 3 7-7"
+              pathLength={1}
+              className="sv-draw"
               stroke="currentColor"
               strokeWidth="2.2"
               strokeLinecap="round"
@@ -871,7 +950,7 @@ function Mark({ checked, square }: { checked: boolean; square?: boolean }) {
             />
           </svg>
         ) : (
-          <span className="block h-2.5 w-2.5 rounded-full bg-gold-500" />
+          <span className="sv-pop block h-2.5 w-2.5 rounded-full bg-gold-500" />
         ))}
     </span>
   )
@@ -948,7 +1027,7 @@ function OptionsInput({
           placeholder={t('survey.otherPlaceholder')}
           aria-label={t('survey.other')}
           autoFocus
-          className={inputClass(false)}
+          className={cn('anim-fade', inputClass(false))}
         />
       )}
     </>
@@ -996,12 +1075,13 @@ function ScaleInput({
             <label
               key={o.i}
               className={cn(
-                'flex min-h-[56px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-2.5 transition-colors duration-200',
+                'flex min-h-[56px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-2.5',
+                'transition-[background-color,border-color,color,transform,box-shadow] duration-300 ease-gentle active:scale-[0.98]',
                 'sm:min-h-[104px] sm:flex-col sm:justify-center sm:gap-1.5 sm:px-2 sm:text-center',
                 'focus-within:ring-2 focus-within:ring-gold-500/60',
                 checked
-                  ? 'border-navy-900 bg-navy-900 text-cream'
-                  : 'border-gold-500/35 bg-[#FBF9F3] text-navy-900 hover:border-gold-500',
+                  ? 'border-navy-900 bg-navy-900 text-cream shadow-[0_10px_24px_-12px_rgba(10,22,40,0.55)] sm:-translate-y-1'
+                  : 'border-gold-500/35 bg-[#FBF9F3] text-navy-900 hover:border-gold-500 sm:hover:-translate-y-0.5',
               )}
             >
               <input
@@ -1015,7 +1095,7 @@ function ScaleInput({
                 aria-hidden
                 className={cn(
                   'tnum w-6 shrink-0 font-display text-[1.6rem] leading-none sm:w-auto sm:text-[1.9rem]',
-                  checked ? 'text-gold-400' : 'text-gold-600',
+                  checked ? 'sv-pop text-gold-400' : 'text-gold-600',
                 )}
               >
                 {n + 1}
@@ -1033,7 +1113,7 @@ function ScaleInput({
               <label
                 key={o.i}
                 className={cn(
-                  'inline-flex min-h-[44px] cursor-pointer items-center rounded-full border px-5 text-small transition-colors duration-200',
+                  'inline-flex min-h-[44px] cursor-pointer items-center rounded-full border px-5 text-small transition-[background-color,border-color,color,transform] duration-200 active:scale-95',
                   'focus-within:ring-2 focus-within:ring-gold-500/60',
                   checked
                     ? 'border-navy-900 bg-navy-900 text-cream'
@@ -1097,7 +1177,7 @@ function GridInput({
                 <label
                   key={i}
                   className={cn(
-                    'flex min-h-[40px] cursor-pointer items-center rounded-full border px-3.5 py-1.5 text-small leading-tight transition-colors duration-200',
+                    'flex min-h-[40px] cursor-pointer items-center rounded-full border px-3.5 py-1.5 text-small leading-tight transition-[background-color,border-color,color,transform] duration-200 active:scale-95',
                     'sm:min-h-[48px] sm:justify-center sm:rounded-sm sm:px-2 sm:text-center sm:text-[0.8rem]',
                     'focus-within:ring-2 focus-within:ring-gold-500/60',
                     checked
@@ -1146,12 +1226,19 @@ function StarsInput({
             aria-label={t('survey.stars', { n })}
             onClick={() => onChange(String(n))}
             className={cn(
-              'grid h-12 w-12 place-items-center rounded-sm text-[1.6rem] transition-colors duration-200 sm:h-14 sm:w-14',
+              'grid h-12 w-12 place-items-center rounded-sm text-[1.6rem] transition-[color,transform] duration-200 hover:scale-110 sm:h-14 sm:w-14',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/60',
               lit ? 'text-gold-500' : 'text-navy-900/20 hover:text-gold-500/60',
             )}
           >
-            ★
+            {/* Re-keyed on each new rating, so the lit stars pop in turn. */}
+            <span
+              key={lit ? `on-${value}` : 'off'}
+              className={lit ? 'sv-star' : undefined}
+              style={lit ? { animationDelay: `${(n - 1) * 45}ms` } : undefined}
+            >
+              ★
+            </span>
           </button>
         )
       })}
@@ -1190,7 +1277,12 @@ function TextInput({
             : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
         )}
       />
-      <p className="tnum mt-1.5 text-right text-micro text-slate">
+      <p
+        className={cn(
+          'tnum mt-1.5 text-right text-micro transition-colors duration-300',
+          value.length >= max * 0.9 ? 'font-semibold text-gold-700' : 'text-slate',
+        )}
+      >
         {t('survey.chars', { n: value.length, max })}
       </p>
     </>
