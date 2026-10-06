@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import { API_BASE } from '@/services/api'
 import {
@@ -111,41 +111,109 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
     saveOrder(next)
   }
 
-  // Dragging by the grip: the list reorders under the pointer as it moves,
-  // and the new order is saved once, when it is let go.
+  // Dragging a question: press anywhere on its row (on a touch screen, on
+  // its grip, so a swipe still scrolls the page) and move. The row follows
+  // the pointer, the others slide out of its way, and the order is saved
+  // once, when it is let go.
   const [dragId, setDragId] = useState<number | null>(null)
   // Bumped when a new order is saved, so the results below follow it.
   const [orderSaved, setOrderSaved] = useState(0)
-  const dragStart = useRef<number[]>([])
   const rows = useRef(new Map<number, HTMLDivElement>())
+  const drag = useRef<{
+    id: number
+    startY: number
+    startTop: number
+    height: number
+    delta: number
+    started: boolean
+    order: string
+  } | null>(null)
+  // Where each row sat last time, so a row that moves can glide from there.
+  const lastTops = useRef(new Map<number, number>())
+  const calm =
+    typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-  function startDrag(e: React.PointerEvent<HTMLButtonElement>, id: number) {
-    if (!survey?.questions) return
+  // After each reorder: the held row stays under the pointer; every other row
+  // that changed place starts where it was and slides to where it is now.
+  useLayoutEffect(() => {
+    const d = drag.current
+    rows.current.forEach((el, id) => {
+      const top = el.offsetTop
+      if (d?.started && id === d.id) {
+        el.style.transition = 'none'
+        el.style.transform = `translateY(${d.startTop + d.delta - top}px)`
+      } else {
+        const was = lastTops.current.get(id)
+        if (!calm && was !== undefined && was !== top) {
+          el.style.transition = 'none'
+          el.style.transform = `translateY(${was - top}px)`
+          void el.offsetHeight
+          el.style.transition = 'transform 220ms cubic-bezier(0.2, 0.7, 0.3, 1)'
+          el.style.transform = ''
+        }
+      }
+      lastTops.current.set(id, top)
+    })
+  }, [survey?.questions, calm])
+
+  function startDrag(e: React.PointerEvent<HTMLDivElement>, id: number) {
+    if (!survey?.questions || e.button !== 0) return
+    const target = e.target as Element
+    const onGrip = !!target.closest('[data-grip]')
+    // The row's buttons stay buttons; a finger drags only by the grip.
+    if (!onGrip && target.closest('button, a, input, select, textarea')) return
+    if (e.pointerType === 'touch' && !onGrip) return
+    const el = rows.current.get(id)
+    if (!el) return
     e.preventDefault()
-    // Keeps the moves coming to the grip while the pointer leaves it.
     try {
       e.currentTarget.setPointerCapture(e.pointerId)
     } catch {
       // A pointer that is no longer down cannot be captured; nothing to hold.
     }
-    dragStart.current = survey.questions.map((q) => q.id)
-    setDragId(id)
+    drag.current = {
+      id,
+      startY: e.pageY,
+      startTop: el.offsetTop,
+      height: el.offsetHeight,
+      delta: 0,
+      started: false,
+      order: survey.questions.map((q) => q.id).join(),
+    }
   }
 
-  function dragMove(e: React.PointerEvent<HTMLButtonElement>) {
+  function dragMove(e: React.PointerEvent<HTMLDivElement>) {
+    const d = drag.current
     const list = survey?.questions
-    if (dragId === null || !survey || !list) return
+    if (!d || !survey || !list) return
+    d.delta = e.pageY - d.startY
+    // A few pixels first, so a press that was meant as a click stays one.
+    if (!d.started) {
+      if (Math.abs(d.delta) < 4) return
+      d.started = true
+      setDragId(d.id)
+    }
     // Near the top or bottom of the window, scroll so a long list can be crossed.
     if (e.clientY < 80) window.scrollBy(0, -14)
     else if (e.clientY > window.innerHeight - 80) window.scrollBy(0, 14)
-    const from = list.findIndex((q) => q.id === dragId)
-    // The new place: how many other rows lie wholly above the pointer.
+
+    const el = rows.current.get(d.id)
+    if (el) {
+      el.style.transition = 'none'
+      el.style.transform = `translateY(${d.startTop + d.delta - el.offsetTop}px)`
+    }
+
+    // The new place: how many other rows have their middle above the held
+    // row's middle. Measured on the layout, not the sliding rows, so it does
+    // not flicker while they move.
+    const middle = d.startTop + d.delta + d.height / 2
     let to = 0
     for (const q of list) {
-      if (q.id === dragId) continue
-      const r = rows.current.get(q.id)?.getBoundingClientRect()
-      if (r && e.clientY > r.top + r.height / 2) to++
+      if (q.id === d.id) continue
+      const r = rows.current.get(q.id)
+      if (r && r.offsetTop + r.offsetHeight / 2 < middle) to++
     }
+    const from = list.findIndex((q) => q.id === d.id)
     if (to === from) return
     const next = [...list]
     const [moved] = next.splice(from, 1)
@@ -154,10 +222,18 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
   }
 
   function endDrag() {
-    if (dragId === null) return
+    const d = drag.current
+    drag.current = null
+    if (!d?.started) return
     setDragId(null)
+    // Settle the held row into its place.
+    const el = rows.current.get(d.id)
+    if (el) {
+      el.style.transition = calm ? 'none' : 'transform 200ms cubic-bezier(0.2, 0.7, 0.3, 1)'
+      el.style.transform = ''
+    }
     const list = survey?.questions ?? []
-    if (list.map((q) => q.id).join() !== dragStart.current.join()) saveOrder(list)
+    if (list.map((q) => q.id).join() !== d.order) saveOrder(list)
   }
 
   if (editingDetails && survey) {
@@ -259,9 +335,15 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
                 if (el) rows.current.set(q.id, el)
                 else rows.current.delete(q.id)
               }}
+              onPointerDown={(e) => startDrag(e, q.id)}
+              onPointerMove={dragMove}
+              onPointerUp={endDrag}
+              onPointerCancel={endDrag}
               className={cn(
-                'rounded-sm transition-shadow',
-                dragId === q.id && 'relative z-10 shadow-cardHover ring-2 ring-gold-500',
+                'relative rounded-sm transition-shadow duration-200',
+                dragId === q.id
+                  ? 'z-10 cursor-grabbing select-none shadow-cardHover ring-2 ring-gold-500'
+                  : 'cursor-grab',
               )}
             >
               <AdminCard interactive>
@@ -270,10 +352,7 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
                     type="button"
                     aria-label={`Drag to reorder: ${q.question.en}. Or press the up and down arrow keys.`}
                     title="Drag to reorder"
-                    onPointerDown={(e) => startDrag(e, q.id)}
-                    onPointerMove={dragMove}
-                    onPointerUp={endDrag}
-                    onPointerCancel={endDrag}
+                    data-grip
                     onKeyDown={(e) => {
                       if (e.key === 'ArrowUp') {
                         e.preventDefault()
@@ -287,7 +366,6 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
                     className={cn(
                       'grid h-10 w-7 shrink-0 place-items-center rounded-sm text-slate hover:bg-[#F1F1EF] hover:text-navy-900',
                       'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50',
-                      dragId === q.id ? 'cursor-grabbing' : 'cursor-grab',
                     )}
                   >
                     <svg viewBox="0 0 10 16" className="h-4 w-2.5" fill="currentColor" aria-hidden>
