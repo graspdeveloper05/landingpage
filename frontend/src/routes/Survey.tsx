@@ -111,11 +111,17 @@ export function Survey() {
 
   return (
     <>
-      <PageHero title={formTitle} sub={shortDescription ? description || undefined : undefined} />
+      {/* Room at the bottom of the banner for the form's first card, which
+          overlaps its lower edge as in Google Forms. */}
+      <PageHero
+        title={formTitle}
+        sub={shortDescription ? description || undefined : undefined}
+        className="pb-16 sm:pb-20"
+      />
 
-      <section className="bg-cream-deep pb-24 pt-8 sm:pt-12">
+      <section className="bg-cream-deep pb-24">
         <div className="shell">
-          <div className="mx-auto max-w-3xl space-y-6">
+          <div className="relative z-10 mx-auto -mt-12 max-w-3xl space-y-6 sm:-mt-14">
             <FormIntro
               description={shortDescription ? undefined : description}
               meta={

@@ -1,5 +1,6 @@
 import { Ornament } from '@/components/ui/Ornament'
 import { Picture } from '@/components/ui/Picture'
+import { cn } from '@/lib/cn'
 
 /**
  * The banner opening every route other than the homepage.
@@ -15,9 +16,12 @@ export function PageHero({
   sub,
   image = '/scenes/colonnade',
   position = 'center',
+  className,
 }: {
   title: string
   sub?: string
+  /** Extra classes for the band, e.g. room at the bottom for a card to overlap. */
+  className?: string
   /**
    * Base path of the band's photograph, without extension. Each page can
    * carry its own -- Programme uses the interior the client supplied for it.
@@ -32,7 +36,12 @@ export function PageHero({
   return (
     // A minimum height rather than a fixed one: a long title (a form's, say)
     // grows the band on a phone instead of being cut off by it.
-    <section className="relative isolate flex min-h-[clamp(9rem,20vw,13.5rem)] items-center overflow-hidden border-b border-hair bg-cream py-6">
+    <section
+      className={cn(
+        'relative isolate flex min-h-[clamp(9rem,20vw,13.5rem)] items-center overflow-hidden border-b border-hair bg-cream py-6',
+        className,
+      )}
+    >
       <Picture
         base={image}
         alt=""

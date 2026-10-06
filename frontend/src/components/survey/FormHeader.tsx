@@ -37,7 +37,7 @@ export function FormIntro({
   if (!lead && !steps && !progress?.intro) return null
 
   return (
-    <div className="anim-rise overflow-hidden rounded-sm border border-hair bg-white shadow-card">
+    <div className="anim-rise overflow-hidden rounded-sm border border-hair bg-white shadow-[0_24px_60px_-28px_rgba(10,22,40,0.45)]">
       <span
         aria-hidden
         className="block h-1 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600"
