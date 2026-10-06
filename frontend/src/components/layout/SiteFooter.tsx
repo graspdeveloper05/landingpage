@@ -91,26 +91,28 @@ export function SiteFooter() {
             <ul className="flex gap-2.5 lg:justify-end">
               {/* Only networks with a real address. An icon linking to "#"
                   looks exactly like a working one until somebody taps it. */}
-              {socialLinks.filter((l) => l.url && l.url !== '#').map(({ id, icon, network, url, owner }) => {
-                const Icon = SOCIAL_ICONS[icon]
-                return (
-                  <li key={id}>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex h-11 w-11 items-center justify-center border border-cream/20 text-cream/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-500 hover:text-gold-500"
-                    >
-                      <Icon className="h-[18px] w-[18px]" />
-                      <span className="sr-only">
-                        {owner
-                          ? t('footer.socialOf', { owner, network })
-                          : t('footer.socialOn', { network })}
-                      </span>
-                    </a>
-                  </li>
-                )
-              })}
+              {socialLinks
+                .filter((l) => l.url && l.url !== '#')
+                .map(({ id, icon, network, url, owner }) => {
+                  const Icon = SOCIAL_ICONS[icon]
+                  return (
+                    <li key={id}>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex h-11 w-11 items-center justify-center border border-cream/20 text-cream/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-500 hover:text-gold-500"
+                      >
+                        <Icon className="h-[18px] w-[18px]" />
+                        <span className="sr-only">
+                          {owner
+                            ? t('footer.socialOf', { owner, network })
+                            : t('footer.socialOn', { network })}
+                        </span>
+                      </a>
+                    </li>
+                  )
+                })}
             </ul>
 
             <ul className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-1 text-micro text-cream/65 lg:justify-end">
@@ -152,9 +154,24 @@ export function SiteFooter() {
 
         <Ornament className="my-10" tone="light" />
 
-        <p className="text-center text-micro text-cream/60 lg:text-left">
-          {t('footer.copyright')}
-        </p>
+        {/* Room on the right (and, on a phone, below) for the back-to-top button. */}
+        <div className="flex flex-col items-center gap-2 text-micro text-cream/60 pb-16 lg:flex-row lg:justify-between lg:pb-0 lg:pr-14">
+          <p className="text-center lg:text-left">{t('footer.copyright')}</p>
+          {/* The developer's credit, under the copyright on a phone. */}
+          <p className="text-center lg:text-right">
+            {t('footer.poweredBy')}{' '}
+            <a
+              href="https://graspsoftwaresolutions.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-1.5 font-semibold text-cream/80 transition-colors hover:text-gold-500"
+            >
+              Grasp Software Solutions, Malaysia
+              <ExternalIcon className="h-2 w-2 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              <span className="sr-only">({t('common.newTab')})</span>
+            </a>
+          </p>
+        </div>
       </div>
 
       <Modal

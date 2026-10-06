@@ -544,6 +544,8 @@ const src = {
       '© 2026 斯里尼加拉对话。由 Chevening 马来西亚校友会主办。',
       '© 2026 சேரி நெகாரா உரையாடல். Chevening Alumni Malaysia ஏற்பாடு செய்கிறது.',
     ),
+    // Before the developer's name, which stays as it is in every language.
+    poweredBy: L('Powered by', 'Dikuasakan oleh', '技术支持：', 'தொழில்நுட்ப ஆதரவு:'),
     linksNote: L(
       'Official websites, opening in a new tab.',
       'Laman web rasmi, dibuka dalam tab baharu.',
