@@ -35,6 +35,9 @@ const GROUP_LANGUAGES: { lang: keyof GroupName; label: string }[] = [
 
 const EMPTY_NAME: GroupName = { en: '', ms: '', zh: '', ta: '' }
 
+/** The server no longer has it: deleted in another tab, or by someone else. */
+const gone = (e: unknown) => e instanceof AdminError && e.status === 404
+
 /**
  * §10 — the partners and sponsors band.
  *
@@ -76,6 +79,7 @@ export function SponsorsAdmin() {
       load()
     } catch (e) {
       toast.error(reachable(e))
+      if (gone(e)) load()
     }
   }
 
@@ -119,6 +123,7 @@ export function SponsorsAdmin() {
       load()
     } catch (e) {
       toast.error(e instanceof AdminError && e.fields.tier ? e.fields.tier : reachable(e))
+      if (gone(e)) load()
     }
   }
 
@@ -198,6 +203,11 @@ export function SponsorsAdmin() {
                     onSaved={(saved) => {
                       setNaming(null)
                       toast.success(`Renamed to “${saved.name.en}”.`)
+                      load()
+                    }}
+                    onGone={(message) => {
+                      setNaming(null)
+                      toast.error(message)
                       load()
                     }}
                   />
@@ -334,10 +344,13 @@ function GroupForm({
   group,
   onCancel,
   onSaved,
+  onGone,
 }: {
   group: Group | null
   onCancel: () => void
   onSaved: (group: Group) => void
+  /** The group was deleted meanwhile (in another tab, say). */
+  onGone?: (message: string) => void
 }) {
   const [name, setName] = useState<GroupName>(() => ({ ...EMPTY_NAME, ...(group?.name ?? {}) }))
   const [error, setError] = useState<string | null>(null)
@@ -356,6 +369,10 @@ function GroupForm({
         : await adminApi.post<Group>('/admin/sponsor-tiers', { name })
       onSaved(saved)
     } catch (e) {
+      if (gone(e) && onGone) {
+        onGone(reachable(e))
+        return
+      }
       setError(
         e instanceof AdminError && Object.keys(e.fields).length > 0
           ? Object.values(e.fields)[0]

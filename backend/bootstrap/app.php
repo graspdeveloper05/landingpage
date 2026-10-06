@@ -1,8 +1,11 @@
 <?php
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -58,5 +61,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        /*
+         * A record the URL names but the database no longer has -- most often
+         * a page left open in one tab while the thing was deleted in another.
+         * Laravel's own message ("No query results for model [App\Models\
+         * SponsorTier] 6") reached the panel word for word; this says what
+         * happened and what to do, in the same words on every admin page.
+         */
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            if ($request->is('api/*') && $e->getPrevious() instanceof ModelNotFoundException) {
+                return response()->json([
+                    'message' => 'That item no longer exists: it may have been deleted in another tab. Reload the page to see the current list.',
+                ], 404);
+            }
+        });
     })->create();

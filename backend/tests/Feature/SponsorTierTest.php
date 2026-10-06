@@ -127,6 +127,14 @@ class SponsorTierTest extends TestCase
         $this->assertSame(Sponsor::where('tier', 'silver')->count(), $list['silver']['sponsors_count']);
     }
 
+    public function test_a_group_already_deleted_says_so_plainly(): void
+    {
+        // Open in one tab, deleted in another: the rename finds nothing.
+        $this->admin()->putJson('/api/admin/sponsor-tiers/9999', ['name' => ['en' => 'Technology Partner']])
+            ->assertNotFound()
+            ->assertJsonPath('message', 'That item no longer exists: it may have been deleted in another tab. Reload the page to see the current list.');
+    }
+
     public function test_group_endpoints_need_a_session(): void
     {
         $this->postJson('/api/admin/sponsor-tiers', ['name' => ['en' => 'X']])->assertUnauthorized();
