@@ -473,6 +473,57 @@
   animation: admin-shake 0.4s ease-in-out;
 }
 
+/* The form builder and its settings. A choice made answers back: a small pop
+   on what was picked, a line that cross-fades when its meaning changes, and a
+   save bar that rises into place. Covered by the reduced-motion rule below. */
+@keyframes admin-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.admin-pop {
+  animation: admin-pop 0.32s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+}
+
+@keyframes admin-fade {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+
+.admin-fade {
+  animation: admin-fade 0.28s ease-out both;
+}
+
+@keyframes admin-bar-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.admin-bar-up {
+  animation: admin-bar-up 0.4s cubic-bezier(0.22, 0.68, 0.28, 1) 0.25s both;
+}
+
+/* Opening or closing a block by its height: the outer grid row goes from 0fr
+   to 1fr, the inner clips. */
+.admin-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.22, 0.68, 0.28, 1),
+    opacity 0.22s ease-out;
+  opacity: 0;
+}
+
+.admin-collapse.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.admin-collapse > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
 /* The indeterminate progress bar. Two runs at different speeds, so it reads
    as activity rather than as a measured percentage -- we do not know how long
    the server will take and should not imply that we do. */
