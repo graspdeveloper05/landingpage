@@ -315,9 +315,16 @@ export function SurveyDetail({ id, onBack }: { id: number; onBack: () => void })
 
       <section>
         <div className="mb-2 flex items-center justify-between gap-3">
-          <h3 className="text-[0.82rem] font-semibold uppercase tracking-wide text-slate">
-            Questions
-          </h3>
+          <div>
+            <h3 className="text-[0.82rem] font-semibold uppercase tracking-wide text-slate">
+              Questions
+            </h3>
+            {questions.length > 1 && (
+              <p className="mt-0.5 text-micro text-slate">
+                Drag a question up or down to change its order; it saves when you let go.
+              </p>
+            )}
+          </div>
           <AdminButton onClick={() => setEditing('new')}>Add question</AdminButton>
         </div>
 
