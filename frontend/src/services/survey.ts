@@ -5,28 +5,44 @@ export type Text = { en: string } & Partial<Record<'ms' | 'zh' | 'ta', string | 
 
 export interface PublicQuestion {
   id: number
-  type: 'choice' | 'checkbox' | 'rating' | 'text'
+  type: 'choice' | 'checkbox' | 'rating' | 'text' | 'grid'
   question: Text
+  /** A note under the question. */
+  help: Text | null
+  /** A heading that starts a new page at this question. */
+  section: { title: Text; intro?: Text | null } | null
   options: Text[] | null
+  /** A statement table's rows; its options are the shared scale. */
+  statements: Text[] | null
+  /** A single choice shown as numbered scale cards. */
+  layout: 'scale' | null
+  max_choices: number | null
+  /** An "Other" option after the last, with a box for what it is. */
+  has_other: boolean
+  max_length: number | null
   /** Optional questions can be left blank; the skip is still sent. */
   is_required: boolean
   answered: boolean
 }
 
+export type Detail = 'name' | 'email' | 'mobile' | 'organisation'
+export type DetailMode = 'required' | 'optional' | 'off'
+
 export interface PublicSurvey {
   id: number
   form_type: 'survey' | 'feedback'
+  slug: string | null
   title: Text
   description: Text | null
+  /** Which details the form asks for before its questions. */
+  fields: Record<Detail, DetailMode>
+  details_note: Text | null
   status: 'draft' | 'open' | 'closed'
   questions: PublicQuestion[]
 }
 
 /** What the person types before answering; kept with each answer. */
-export interface Identity {
-  email: string
-  mobile: string
-}
+export type Identity = Record<Detail, string>
 
 export type TestimonialCredit = 'anonymous' | 'first_name' | 'full_name' | 'full_name_org'
 
@@ -55,23 +71,23 @@ export class SurveyError extends Error {
  */
 const identityKey = (surveyId: string) => `snd.survey.${surveyId}`
 
-const isIdentity = (v: unknown): v is Identity =>
-  !!v &&
-  typeof v === 'object' &&
-  ['email', 'mobile'].every(
-    (k) =>
-      typeof (v as Record<string, unknown>)[k] === 'string' &&
-      (v as Record<string, string>)[k].trim() !== '',
-  )
+export const EMPTY_IDENTITY: Identity = { name: '', email: '', mobile: '', organisation: '' }
 
-/** The details typed for this survey on this phone, if both are there. */
+/** The details typed for this survey on this phone, if any were kept. */
 export function savedIdentity(surveyId: string): Identity | null {
   try {
     // The sign-in used to keep a token under one shared key; it means nothing now.
     localStorage.removeItem('snd.survey')
     const raw = localStorage.getItem(identityKey(surveyId))
     const parsed: unknown = raw ? JSON.parse(raw) : null
-    return isIdentity(parsed) ? parsed : null
+    if (!parsed || typeof parsed !== 'object') return null
+    const v = parsed as Record<string, unknown>
+    return {
+      name: typeof v.name === 'string' ? v.name : '',
+      email: typeof v.email === 'string' ? v.email : '',
+      mobile: typeof v.mobile === 'string' ? v.mobile : '',
+      organisation: typeof v.organisation === 'string' ? v.organisation : '',
+    }
   } catch {
     return null
   }
@@ -113,12 +129,22 @@ export const surveyApi = {
       ...who,
       ...entry,
     }),
-  /** `submission` ties one anonymous submit's answers together. */
-  answer: (questionId: number, who: Identity, answer: string, submission?: string) =>
+  /**
+   * `submission` ties one submit's answers together; `other` is the text
+   * typed for "Other", when chosen.
+   */
+  answer: (
+    questionId: number,
+    who: Identity,
+    answer: string,
+    submission?: string,
+    other?: string,
+  ) =>
     call<{ message: string }>('POST', `/survey/questions/${questionId}/answer`, {
       ...who,
       answer,
       submission,
+      other,
     }),
 }
 

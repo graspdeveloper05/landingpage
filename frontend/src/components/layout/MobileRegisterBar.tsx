@@ -27,6 +27,9 @@ export function MobileRegisterBar() {
   }, [])
 
   if (pathname === '/rsvp') return null
+  // A form being filled in on a phone needs its own Submit, not a second
+  // call to action over the last question.
+  if (/^\/(survey|feedback|checkin)(\/|$)/.test(pathname)) return null
 
   return (
     <div
@@ -37,12 +40,8 @@ export function MobileRegisterBar() {
       )}
     >
       <div className="shell flex items-center justify-between gap-4 py-3">
-        <p className="tnum text-micro leading-tight text-cream/65">
-          {date}
-        </p>
-        <RegisterLink className="px-6">
-          {t('rsvp.cta')}
-        </RegisterLink>
+        <p className="tnum text-micro leading-tight text-cream/65">{date}</p>
+        <RegisterLink className="px-6">{t('rsvp.cta')}</RegisterLink>
       </div>
     </div>
   )

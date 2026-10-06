@@ -1,29 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
-import { Ornament } from '@/components/ui/Ornament'
 import {
+  EMPTY_IDENTITY,
   newSubmissionId,
   pick,
   savedIdentity,
   saveIdentity,
   surveyApi,
   SurveyError,
+  type Detail,
   type Identity,
   type PublicQuestion,
   type PublicSurvey,
   type TestimonialCredit,
   type TestimonialEntry,
+  type Text,
 } from '@/services/survey'
 
 /**
- * One survey, at its own link. Registered attendees sign in with the email
- * or mobile they registered with, answer, and hand the phone on.
- *
- * Dressed like the RSVP section -- the navy room with the interior faintly
- * behind it -- since it is the same people at the same event.
+ * One form, at its own link: a survey, the participant feedback form, or
+ * questions from the floor. Laid out as the organising team's mock forms
+ * are: a navy masthead carrying each section's heading, then the questions
+ * as white cards on the cream page, a section to a page.
  */
 export function Survey() {
   const { id = '' } = useParams()
@@ -32,13 +33,14 @@ export function Survey() {
   const [survey, setSurvey] = useState<PublicSurvey | null>(null)
   const [missing, setMissing] = useState(false)
   const [thanked, setThanked] = useState(false)
+  const [page, setPage] = useState({ title: '', intro: '', at: 0, of: 1 })
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
   const load = useCallback(
     () =>
       surveyApi
-        .get(id, identity?.email)
+        .get(id, identity?.email || undefined)
         .then((s) => {
           setSurvey(s)
           setMissing(false)
@@ -73,74 +75,70 @@ export function Survey() {
     return () => window.clearInterval(timer)
   }, [live, load])
 
-  const forget = useCallback(() => {
-    saveIdentity(id, null)
-    setIdentity(null)
-  }, [id])
-
-  // Moving to another survey's link: its own details, or the details step.
+  // Moving to another survey's link: its own details, or none.
   useEffect(() => {
     setIdentity(savedIdentity(id))
   }, [id])
 
-  // "Back to survey" after the thank-you: the sign-in step again, so the next
-  // person can answer on the same phone or tablet.
-  const finish = useCallback(() => {
+  // "Back" after the thank-you starts again. A form that knows people by
+  // email forgets them, so the next person on the same phone starts clean;
+  // one without email keeps the name, for someone asking a second question.
+  const again = useCallback(() => {
     setThanked(false)
-    forget()
+    if (survey && survey.fields.email !== 'off') {
+      saveIdentity(id, null)
+      setIdentity(null)
+    }
     window.scrollTo({ top: 0 })
-  }, [forget])
+  }, [id, survey])
 
-  const title = survey ? pick(survey.title, locale) : t('survey.title')
-  const description = survey?.description ? pick(survey.description, locale) : undefined
+  const formTitle = survey ? pick(survey.title, locale) : t('survey.title')
+  const showForm = survey && !thanked && !missing && survey.status === 'open'
 
   return (
     <>
-      <section className="pb-20 pt-28 sm:pt-32">
-        <div className="shell relative">
-          <div className="mx-auto max-w-2xl rounded-sm border border-navy-900/10 bg-white px-6 py-10 shadow-[0_18px_50px_-24px_rgba(11,33,64,0.35)] sm:px-12 sm:py-14">
-            <header className="mb-10 text-center">
-              <h1 className="font-display text-[2rem] font-semibold leading-tight text-navy-950 sm:text-[2.6rem]">
-                {title}
-              </h1>
-              {description && (
-                <p className="mx-auto mt-3 max-w-xl text-lead text-slate">{description}</p>
-              )}
-              <Ornament className="mt-6" />
-            </header>
+      <Masthead
+        eyebrow={showForm && page.title ? formTitle : t('survey.brand')}
+        title={showForm && page.title ? page.title : formTitle}
+        intro={showForm ? page.intro : undefined}
+        progress={showForm && page.of > 1 ? { at: page.at, of: page.of } : undefined}
+      />
 
+      <section className="bg-cream-deep pb-24 pt-10 sm:pt-14">
+        <div className="shell">
+          <div className="mx-auto max-w-3xl">
             {thanked ? (
-              <Thanks onBack={finish} />
+              <Thanks
+                feedback={survey?.form_type === 'feedback'}
+                another={!!survey && survey.fields.email === 'off'}
+                onBack={again}
+              />
             ) : missing ? (
               <Notice>{t('survey.missing')}</Notice>
-            ) : survey && survey.status !== 'open' ? (
+            ) : !survey ? null : survey.status !== 'open' ? (
               <Notice>{t('survey.notOpen')}</Notice>
-            ) : !survey ? null : survey.form_type !== 'feedback' && !identity ? (
-              <Identify
-                onIdentified={(next) => {
-                  saveIdentity(id, next)
-                  setIdentity(next)
-                }}
-              />
+            ) : survey.questions.length === 0 ? (
+              <Notice>{t('survey.wait')}</Notice>
             ) : (
-              survey &&
-              (survey.questions.length === 0 ? (
-                <Notice>{t('survey.wait')}</Notice>
-              ) : (
-                <AnswerForm
-                  surveyLink={id}
-                  isFeedback={survey.form_type === 'feedback'}
-                  questions={survey.questions}
-                  // Feedback forms are anonymous: no details step, none sent.
-                  who={identity ?? ANONYMOUS}
-                  onDone={load}
-                  onForget={forget}
-                  onSubmitted={() => {
-                    setThanked(true)
-                    window.scrollTo({ top: 0, behavior: 'smooth' })
-                  }}
-                />
-              ))
+              <AnswerForm
+                // A new person (details forgotten, or someone else's saved)
+                // starts on a clean form rather than the last one's details.
+                key={`${survey.id}-${identity?.email ?? ''}-${identity ? 1 : 0}`}
+                survey={survey}
+                surveyLink={id}
+                saved={identity}
+                onPage={setPage}
+                onDone={load}
+                onSubmitted={(who) => {
+                  if (Object.values(who).some((v) => v.trim())) {
+                    saveIdentity(id, who)
+                    setIdentity(who)
+                  }
+                  setThanked(true)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+                onFinished={again}
+              />
             )}
           </div>
         </div>
@@ -150,176 +148,277 @@ export function Survey() {
 }
 
 /**
- * The card's closing state, after submitting or on returning to a survey
- * already finished: a thank-you, the way on to the programme, and the way
- * back to the start for the next person.
+ * The navy band under the site header, continuing it: the form's name above
+ * the current section's heading, its introduction, and how far along this
+ * page is. Faint gold rings sit at the right edge, as on the printed mock.
  */
-function Thanks({ onBack }: { onBack: () => void }) {
+function Masthead({
+  eyebrow,
+  title,
+  intro,
+  progress,
+}: {
+  eyebrow: string
+  title: string
+  intro?: string
+  progress?: { at: number; of: number }
+}) {
   const { t } = useI18n()
 
   return (
-    <div role="status" className="text-center">
+    <section className="relative isolate overflow-hidden bg-navy-950 text-cream">
+      <svg
+        aria-hidden
+        viewBox="0 0 400 400"
+        className="pointer-events-none absolute -right-24 top-1/2 -z-10 h-[28rem] w-[28rem] -translate-y-1/2 text-gold-500/25 sm:-right-10"
+        fill="none"
+        stroke="currentColor"
+      >
+        {[80, 120, 160, 200].map((r) => (
+          <circle key={r} cx="200" cy="200" r={r} strokeWidth="1" />
+        ))}
+      </svg>
+
+      <div className="shell py-10 sm:py-14">
+        <div className="mx-auto max-w-3xl">
+          <span aria-hidden className="block h-[3px] w-12 bg-gold-500" />
+          <p className="mt-4 text-small font-semibold tracking-[0.04em] text-gold-400">{eyebrow}</p>
+          <h1
+            key={title}
+            className="anim-rise mt-2 font-display text-[2.1rem] font-medium leading-[1.08] text-cream sm:text-[3.2rem]"
+          >
+            {title}
+          </h1>
+          {intro && <p className="mt-4 max-w-2xl text-lead text-cream/75">{intro}</p>}
+        </div>
+      </div>
+
+      {progress && (
+        <div className="shell pb-6">
+          <div className="mx-auto flex max-w-3xl items-center gap-4">
+            <div
+              className="h-[3px] flex-1 overflow-hidden bg-white/10"
+              role="progressbar"
+              aria-valuemin={1}
+              aria-valuemax={progress.of}
+              aria-valuenow={progress.at + 1}
+              aria-label={t('survey.page', { page: progress.at + 1, pages: progress.of })}
+            >
+              <div
+                className="h-full bg-gold-500 transition-[width] duration-500 ease-gentle"
+                style={{ width: `${((progress.at + 1) / progress.of) * 100}%` }}
+              />
+            </div>
+            <span className="tnum shrink-0 text-micro font-semibold text-cream/70">
+              {t('survey.page', { page: progress.at + 1, pages: progress.of })}
+            </span>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
+/** A closed, missing or waiting state. */
+function Notice({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-sm border border-hair bg-white px-6 py-12 text-center shadow-card">
+      <p className="font-display text-h3 text-navy-950">{children}</p>
+    </div>
+  )
+}
+
+/**
+ * After submitting, or on returning to a form already finished: a thank-you,
+ * the way on to the programme, and the way back for the next person.
+ */
+function Thanks({
+  feedback,
+  another,
+  onBack,
+}: {
+  feedback: boolean
+  /** A form without email takes another submission: "Send another". */
+  another?: boolean
+  onBack: () => void
+}) {
+  const { t } = useI18n()
+
+  return (
+    <div
+      role="status"
+      className="anim-rise rounded-sm border border-hair bg-white px-6 py-12 text-center shadow-card sm:px-12"
+    >
       <span
         aria-hidden
-        className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-700 text-[2rem] text-white"
+        className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-gold-500 text-navy-950"
       >
-        ✓
+        <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7">
+          <path
+            d="M5 12.5l4.5 4.5L19 7.5"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </span>
-      <h2 className="mt-5 font-display text-[1.75rem] text-navy-950">{t('survey.thanksTitle')}</h2>
-      <p className="mt-2 text-body text-slate">{t('survey.thanksBody')}</p>
-      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+      <h2 className="mx-auto mt-6 max-w-xl font-display text-[1.75rem] leading-snug text-navy-950 sm:text-[2.1rem]">
+        {t(feedback ? 'survey.feedbackThanksTitle' : 'survey.thanksTitle')}
+      </h2>
+      <p className="mx-auto mt-3 max-w-lg text-body text-slate">
+        {t(feedback ? 'survey.feedbackThanksBody' : 'survey.thanksBody')}
+      </p>
+      <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
         <ButtonLink to="/programme" withArrow>
           {t('survey.viewProgramme')}
         </ButtonLink>
         <Button type="button" variant="outlineNavy" onClick={onBack}>
-          {t('survey.backToSurvey')}
+          {another ? t('survey.sendAnother') : t('survey.backToSurvey')}
         </Button>
       </div>
     </div>
   )
 }
 
-/** Who answers a feedback form: nobody in particular. */
-const ANONYMOUS: Identity = { email: '', mobile: '' }
-
-/** A closed, missing or waiting state, in the RSVP section's voice. */
-function Notice({ children }: { children: React.ReactNode }) {
-  return <p className="text-center font-display text-h3 text-navy-950">{children}</p>
-}
-
-/**
- * The first step: who is answering. Checked here, before any question, so a
- * mistyped email is caught once rather than on every answer.
- */
-function Identify({ onIdentified }: { onIdentified: (identity: Identity) => void }) {
-  const { t } = useI18n()
-  const [values, setValues] = useState<Identity>({ email: '', mobile: '' })
-  const [errors, setErrors] = useState<Partial<Record<keyof Identity, string>>>({})
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault()
-    const next: Partial<Record<keyof Identity, string>> = {}
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim()))
-      next.email = t('survey.emailInvalid')
-    // Malaysian and international numbers, as the RSVP form accepts.
-    if (!/^\+?[0-9\s-]{8,16}$/.test(values.mobile.trim())) next.mobile = t('survey.mobileInvalid')
-    setErrors(next)
-    if (Object.keys(next).length > 0) return
-    onIdentified({
-      email: values.email.trim().toLowerCase(),
-      mobile: values.mobile.trim(),
-    })
-  }
-
-  const field = (key: keyof Identity, type: string, autoComplete: string) => (
-    <label className="block text-left">
-      <span className="text-micro font-medium uppercase tracking-[0.08em] text-slate">
-        {t(`survey.${key}`)}
-      </span>
-      <input
-        type={type}
-        value={values[key]}
-        onChange={(e) => {
-          setValues((v) => ({ ...v, [key]: e.target.value }))
-          setErrors(({ [key]: _cleared, ...rest }) => rest)
-        }}
-        autoComplete={autoComplete}
-        required
-        aria-invalid={errors[key] ? true : undefined}
-        aria-describedby={errors[key] ? `survey-${key}-error` : undefined}
-        className={cn(
-          'mt-2 block min-h-[48px] w-full rounded-sm border bg-white px-4 text-body text-navy-950',
-          'transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold-500/40',
-          errors[key]
-            ? 'border-red-400 bg-red-50'
-            : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
-        )}
-      />
-      {errors[key] && (
-        <span
-          id={`survey-${key}-error`}
-          className="mt-1.5 flex items-center gap-1.5 text-micro text-red-700"
-        >
-          <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-red-600" />
-          {errors[key]}
-        </span>
-      )}
-    </label>
-  )
-
-  return (
-    <form onSubmit={submit} noValidate className="mx-auto max-w-md text-center">
-      <p className="text-body text-navy-900/80">{t('survey.signIn')}</p>
-
-      <div className="mt-8 space-y-5">
-        {field('email', 'email', 'email')}
-        {field('mobile', 'tel', 'tel')}
-      </div>
-
-      <Button type="submit" withArrow className="mt-8 w-full">
-        {t('survey.continue')}
-      </Button>
-    </form>
-  )
-}
-
-/** Questions shown per page of the answer form. */
+/** Questions to a page when a form has no section headings. */
 const PAGE_SIZE = 10
 
+interface Page {
+  section: { title: Text; intro?: Text | null } | null
+  questions: PublicQuestion[]
+  testimonial?: boolean
+}
+
 /**
- * Every open question with one Submit at the foot. Answers are kept here,
- * keyed by question, so the ten-second refresh that brings in a newly opened
- * question does not wipe what has been chosen for the others.
+ * A new page at each section heading; a form without headings is cut every
+ * ten questions. A feedback form ends with a page for the testimonial.
+ */
+function paginate(questions: PublicQuestion[], feedback: boolean): Page[] {
+  const sectioned = questions.some((q) => q.section)
+  const pages: Page[] = []
+  for (const q of questions) {
+    const last = pages[pages.length - 1]
+    if (!last || (sectioned ? !!q.section : last.questions.length >= PAGE_SIZE)) {
+      pages.push({ section: q.section, questions: [q] })
+    } else {
+      last.questions.push(q)
+    }
+  }
+  if (feedback) pages.push({ section: null, questions: [], testimonial: true })
+  return pages
+}
+
+type DetailErrors = Partial<Record<Detail, string>>
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Malaysian and international numbers, as the RSVP form accepts.
+const MOBILE = /^\+?[0-9\s-]{8,16}$/
+
+/** Each detail the form asks: given when required, well-formed when given. */
+function checkDetails(
+  fields: PublicSurvey['fields'],
+  v: Identity,
+  t: (k: string) => string,
+): DetailErrors {
+  const errors: DetailErrors = {}
+  const asked = (d: Detail) => fields[d] !== 'off'
+  const needed = (d: Detail) => fields[d] === 'required'
+  if (needed('name') && !v.name.trim()) errors.name = t('survey.nameInvalid')
+  if (asked('email') && (needed('email') || v.email.trim()) && !EMAIL.test(v.email.trim())) {
+    errors.email = t('survey.emailInvalid')
+  }
+  if (asked('mobile') && (needed('mobile') || v.mobile.trim()) && !MOBILE.test(v.mobile.trim())) {
+    errors.mobile = t('survey.mobileInvalid')
+  }
+  if (needed('organisation') && !v.organisation.trim()) errors.organisation = t('survey.required')
+  return errors
+}
+
+/** Options not on the numbered scale: "Not sure", "N/A". */
+const OFF_SCALE = /^(not sure|n\/a|tidak pasti)/i
+
+/** Whether an answer counts as given, for each kind of question. */
+function answered(q: PublicQuestion, value: string | undefined): boolean {
+  if (!value?.trim()) return false
+  if (q.type === 'grid') {
+    const parts = value.split(',')
+    return parts.length === (q.statements?.length ?? 0) && parts.every((p) => p !== '')
+  }
+  return true
+}
+
+/**
+ * The questions, a page at a time, with one Submit at the end. Answers are
+ * kept here, keyed by question, so the ten-second refresh that brings in a
+ * newly opened question does not wipe what has been chosen for the others.
  */
 function AnswerForm({
+  survey,
   surveyLink,
-  isFeedback,
-  questions,
-  who,
+  saved,
+  onPage,
   onDone,
-  onForget,
   onSubmitted,
+  onFinished,
 }: {
+  survey: PublicSurvey
   surveyLink: string
-  /** Feedback forms end with the testimonial section. */
-  isFeedback: boolean
-  questions: PublicQuestion[]
-  who: Identity
+  saved: Identity | null
+  onPage: (page: { title: string; intro: string; at: number; of: number }) => void
   onDone: () => void
-  onForget: () => void
-  /** Every answer was recorded. */
-  onSubmitted: () => void
+  onSubmitted: (who: Identity) => void
+  onFinished: () => void
 }) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const feedback = survey.form_type === 'feedback'
+  const fields = survey.fields
+  const asksDetails = Object.values(fields).some((m) => m !== 'off')
+
+  const [who, setWho] = useState<Identity>(() => saved ?? EMPTY_IDENTITY)
+  const [detailErrors, setDetailErrors] = useState<DetailErrors>({})
   const [answers, setAnswers] = useState<Record<number, string>>({})
+  const [others, setOthers] = useState<Record<number, string>>({})
   const [errors, setErrors] = useState<Record<number, string>>({})
   const [sent, setSent] = useState<Set<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-
   const [page, setPage] = useState(0)
   const [testimonial, setTestimonial] = useState<TestimonialEntry>(EMPTY_TESTIMONIAL)
   const [testimonialErrors, setTestimonialErrors] = useState<TestimonialErrors>({})
-  // One id for this filling-in, kept across a retry, so the admin sees one
-  // anonymous response rather than loose answers.
+  // One id for this filling-in, kept across a retry, so the admin reads one
+  // response rather than loose answers.
   const submission = useRef(newSubmissionId())
 
+  // A testimonial on a form that asks for a name credits it from there.
+  const named = fields.name !== 'off'
   // A testimonial is sent only when written and permitted; without either,
   // the feedback goes on its own, as the form promises.
-  const sharing = isFeedback && testimonial.quote.trim() !== '' && testimonial.consent
+  const sharing = feedback && testimonial.quote.trim() !== '' && testimonial.consent
 
-  const isDone = (q: PublicQuestion) => q.answered || sent.has(q.id)
-  const pending = questions.filter((q) => !isDone(q))
-  const filled = pending.filter((q) => answers[q.id]?.trim()).length
+  const pending = survey.questions.filter((q) => !q.answered && !sent.has(q.id))
+  const pages = useMemo(() => paginate(pending, feedback), [pending, feedback])
+  const current = Math.min(page, pages.length - 1)
+  const here = pages[current]
+  const lastPage = current === pages.length - 1
+  // Numbered by place in the whole form, answered ones included.
+  const numberOf = (q: PublicQuestion) => survey.questions.indexOf(q) + 1
+  const total = survey.questions.length
 
-  // Ten to a page. Clamped, because a question the moderator closes while
-  // someone is on the last page can leave that page empty.
-  const pages = Math.max(1, Math.ceil(pending.length / PAGE_SIZE))
-  const current = Math.min(page, pages - 1)
-  const onPage = pending.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE)
-  const lastPage = current === pages - 1
-  // Only a required question left empty holds the form back.
-  const blank = (q: PublicQuestion) => q.is_required && !answers[q.id]?.trim()
+  // The masthead shows this page's section heading.
+  const sectionTitle = here?.testimonial
+    ? t('survey.testimonialPageTitle')
+    : here?.section
+      ? pick(here.section.title, locale)
+      : ''
+  const sectionIntro = here?.testimonial
+    ? t('survey.testimonialPageIntro')
+    : here?.section?.intro
+      ? pick(here.section.intro, locale)
+      : ''
+  useEffect(() => {
+    onPage({ title: sectionTitle, intro: sectionIntro, at: current, of: pages.length })
+  }, [sectionTitle, sectionIntro, current, pages.length, onPage])
 
   const goTo = (next: number) => {
     setPage(next)
@@ -327,12 +426,38 @@ function AnswerForm({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  /** Marks the unanswered questions and says so; true when there were none. */
+  /** What stops a question going in: blank when required, Other unnamed, a table half done. */
+  const problem = (q: PublicQuestion): string | null => {
+    const value = answers[q.id]
+    if (q.type === 'grid' && value?.replace(/,/g, '') && !answered(q, value)) {
+      return t('survey.statementNeeded')
+    }
+    if (q.is_required && !answered(q, value)) {
+      return q.type === 'grid' ? t('survey.statementNeeded') : t('survey.required')
+    }
+    const otherIndex = q.has_other ? String(q.options?.length ?? 0) : null
+    if (otherIndex && value?.split(',').includes(otherIndex) && !others[q.id]?.trim()) {
+      return t('survey.otherNeeded')
+    }
+    return null
+  }
+
+  /** Marks what is missing on these questions; true when nothing is. */
   const check = (list: PublicQuestion[], message: string) => {
-    const missing = list.filter(blank)
-    if (missing.length === 0) return true
-    setErrors(Object.fromEntries(missing.map((q) => [q.id, t('survey.required')])))
+    const found = Object.fromEntries(
+      list.map((q) => [q.id, problem(q)]).filter(([, p]) => p !== null),
+    ) as Record<number, string>
+    setErrors(found)
+    if (Object.keys(found).length === 0) return true
     setError(message)
+    return false
+  }
+
+  const checkWho = () => {
+    const found = checkDetails(fields, who, t)
+    setDetailErrors(found)
+    if (Object.keys(found).length === 0) return true
+    setError(t('survey.detailsCheck'))
     return false
   }
 
@@ -340,27 +465,33 @@ function AnswerForm({
     e.preventDefault()
     setError(null)
 
-    // Each page is answered in full before the next one opens.
     if (!lastPage) {
-      if (check(onPage, t('survey.answerPage'))) goTo(current + 1)
+      if (current === 0 && asksDetails && !checkWho()) return
+      if (check(here.questions, t('survey.answerPage'))) goTo(current + 1)
       return
     }
 
-    // Every question is required: a half-answered survey is sent as nothing,
-    // with the gaps marked, rather than as a partial set. A gap on an earlier
-    // page (a question opened there since) takes them back to it.
+    // Everything again before sending: details first, then any gap on an
+    // earlier page (a question opened there since) takes them back to it.
+    if (asksDetails && !checkWho()) {
+      if (current !== 0) goTo(0)
+      setError(t('survey.detailsCheck'))
+      return
+    }
     if (!check(pending, t('survey.answerAll'))) {
-      const first = pending.findIndex(blank)
-      const firstPage = Math.floor(first / PAGE_SIZE)
-      if (firstPage !== current) {
-        setPage(firstPage)
+      const first = pages.findIndex((p) => p.questions.some((q) => problem(q)))
+      if (first !== -1 && first !== current) {
+        setPage(first)
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
       return
     }
 
-    if (sharing) {
-      const problems = checkTestimonial(testimonial, t)
+    const entry: TestimonialEntry = named
+      ? { ...testimonial, name: who.name, organisation: who.organisation }
+      : testimonial
+    if (sharing && !named) {
+      const problems = checkTestimonial(entry, t)
       setTestimonialErrors(problems)
       if (Object.keys(problems).length > 0) {
         setError(t('survey.testimonialCheck'))
@@ -372,13 +503,20 @@ function AnswerForm({
     setErrors({})
     const failed: Record<number, string> = {}
     const done = new Set(sent)
+    const details: Identity = {
+      name: who.name.trim(),
+      email: who.email.trim().toLowerCase(),
+      mobile: who.mobile.trim(),
+      organisation: who.organisation.trim(),
+    }
 
     // One request per answer, so a question that closed meanwhile fails on
     // its own and the rest still count.
     for (const q of pending) {
       try {
         // A skipped optional question is sent empty, so it is not asked again.
-        await surveyApi.answer(q.id, who, answers[q.id] ?? '', submission.current)
+        const value = answered(q, answers[q.id]) ? (answers[q.id] ?? '') : ''
+        await surveyApi.answer(q.id, details, value, submission.current, others[q.id])
         done.add(q.id)
       } catch (err) {
         if (err instanceof SurveyError && err.status === 409) done.add(q.id)
@@ -391,7 +529,7 @@ function AnswerForm({
     let testimonialFailed = false
     if (sharing && Object.keys(failed).length === 0) {
       try {
-        await surveyApi.testimonial(surveyLink, who, testimonial)
+        await surveyApi.testimonial(surveyLink, details, entry)
       } catch (err) {
         if (!(err instanceof SurveyError && err.status === 409)) testimonialFailed = true
       }
@@ -400,47 +538,79 @@ function AnswerForm({
     setSent(done)
     setErrors(failed)
     setBusy(false)
-    if (testimonialFailed) {
+    if (testimonialFailed || Object.keys(failed).length > 0) {
       setError(t('survey.error'))
+      if (Object.keys(failed).length > 0) onDone()
       return
     }
-    if (Object.keys(failed).length > 0) {
-      setError(t('survey.error'))
-      onDone()
-    } else {
-      setAnswers({})
-      setTestimonial(EMPTY_TESTIMONIAL)
-      onSubmitted()
-    }
+    setAnswers({})
+    setOthers({})
+    setTestimonial(EMPTY_TESTIMONIAL)
+    setPage(0)
+    // A fresh id for whoever fills the form in next on this phone.
+    submission.current = newSubmissionId()
+    setSent(new Set())
+    onSubmitted(details)
   }
 
-  // Someone who has answered everything open sees the same thank-you, not
-  // their finished questions again.
+  // Someone who has answered everything open sees the thank-you, not their
+  // finished questions again.
   if (pending.length === 0) {
-    return <Thanks onBack={onForget} />
+    return <Thanks feedback={feedback} another={fields.email === 'off'} onBack={onFinished} />
   }
+
+  const description = survey.description ? pick(survey.description, locale) : ''
+  const minutes = Math.max(1, Math.round(total * 0.4))
 
   return (
-    <form onSubmit={submit} noValidate>
-      <ol className="divide-y divide-navy-900/10 border-y border-navy-900/10">
-        {onPage.map((q, i) => (
-          <QuestionField
-            key={q.id}
-            number={current * PAGE_SIZE + i + 1}
-            question={q}
-            done={false}
-            value={answers[q.id] ?? ''}
-            error={errors[q.id]}
-            onChange={(v) => {
-              setAnswers((all) => ({ ...all, [q.id]: v }))
-              setErrors(({ [q.id]: _cleared, ...rest }) => rest)
-            }}
-          />
-        ))}
-      </ol>
+    <form onSubmit={submit} noValidate className="space-y-5">
+      {current === 0 && (description || total > 1) && (
+        <div className="pb-2">
+          {description && <p className="max-w-2xl text-lead text-navy-900/85">{description}</p>}
+          {total > 1 && (
+            <p className="mt-3 text-small font-semibold text-gold-700">
+              {t('survey.length', { count: total, minutes })}
+            </p>
+          )}
+        </div>
+      )}
 
-      {isFeedback && lastPage && (
+      {current === 0 && asksDetails && (
+        <DetailsCard
+          fields={fields}
+          note={survey.details_note ? pick(survey.details_note, locale) : ''}
+          value={who}
+          errors={detailErrors}
+          onChange={(next, key) => {
+            setWho(next)
+            setDetailErrors(({ [key]: _cleared, ...rest }) => rest)
+          }}
+        />
+      )}
+
+      {here.questions.map((q) => (
+        <QuestionCard
+          key={q.id}
+          number={numberOf(q)}
+          question={q}
+          value={answers[q.id] ?? ''}
+          other={others[q.id] ?? ''}
+          error={errors[q.id]}
+          onChange={(v) => {
+            setAnswers((all) => ({ ...all, [q.id]: v }))
+            setErrors(({ [q.id]: _cleared, ...rest }) => rest)
+          }}
+          onOther={(v) => {
+            setOthers((all) => ({ ...all, [q.id]: v }))
+            setErrors(({ [q.id]: _cleared, ...rest }) => rest)
+          }}
+        />
+      ))}
+
+      {here.testimonial && (
         <TestimonialFields
+          firstNumber={total + 1}
+          named={named}
           value={testimonial}
           errors={testimonialErrors}
           onChange={(next) => {
@@ -450,22 +620,13 @@ function AnswerForm({
         />
       )}
 
-      <div className="mt-8 flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col-reverse items-stretch gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p aria-live="polite" className="text-small text-slate">
-          {error ? (
+          {error && (
             <span role="alert" className="flex items-center gap-2 text-red-700">
-              <span aria-hidden className="block h-1.5 w-1.5 shrink-0 rotate-45 bg-gold-400" />
+              <span aria-hidden className="block h-1.5 w-1.5 shrink-0 rotate-45 bg-red-600" />
               {error}
             </span>
-          ) : (
-            <>
-              {pages > 1 && (
-                <span className="block font-medium text-navy-900">
-                  {t('survey.page', { page: current + 1, pages })}
-                </span>
-              )}
-              {t('survey.progress', { done: filled, total: pending.length })}
-            </>
           )}
         </p>
         <div className="flex flex-col-reverse gap-3 sm:flex-row">
@@ -488,200 +649,553 @@ function AnswerForm({
   )
 }
 
-function QuestionField({
+/** The white card every part of the form sits in. */
+function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn('rounded-sm border border-hair bg-white p-5 shadow-card sm:p-8', className)}>
+      {children}
+    </div>
+  )
+}
+
+const inputClass = (invalid: boolean) =>
+  cn(
+    'mt-1.5 block min-h-[48px] w-full rounded-sm border bg-cream px-4 text-body text-navy-950',
+    'transition-colors duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/40',
+    invalid
+      ? 'border-red-400 bg-red-50'
+      : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
+  )
+
+function FieldError({ id, children }: { id: string; children?: string }) {
+  if (!children) return null
+  return (
+    <span id={id} className="mt-1.5 flex items-center gap-1.5 text-micro text-red-700">
+      <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-red-600" />
+      {children}
+    </span>
+  )
+}
+
+/** Who is answering: only the details this form asks for, and its note. */
+function DetailsCard({
+  fields,
+  note,
+  value,
+  errors,
+  onChange,
+}: {
+  fields: PublicSurvey['fields']
+  note: string
+  value: Identity
+  errors: DetailErrors
+  onChange: (next: Identity, key: Detail) => void
+}) {
+  const { t } = useI18n()
+  const shown: { key: Detail; type: string; auto: string }[] = (
+    [
+      { key: 'name', type: 'text', auto: 'name' },
+      { key: 'email', type: 'email', auto: 'email' },
+      { key: 'mobile', type: 'tel', auto: 'tel' },
+      { key: 'organisation', type: 'text', auto: 'organization' },
+    ] as const
+  ).filter((f) => fields[f.key] !== 'off')
+
+  return (
+    <Card>
+      <h2 className="font-display text-[1.35rem] text-navy-950">{t('survey.detailsHeading')}</h2>
+      <div className="mt-5 grid gap-x-6 gap-y-5 sm:grid-cols-2">
+        {shown.map(({ key, type, auto }) => (
+          <label key={key} className="block">
+            <span className="text-small font-semibold text-navy-950">
+              {t(`survey.${key}`)}
+              {fields[key] === 'required' ? (
+                <span aria-hidden className="text-gold-600">
+                  {' '}
+                  *
+                </span>
+              ) : (
+                <span className="font-normal text-slate"> ({t('survey.optional')})</span>
+              )}
+            </span>
+            <input
+              type={type}
+              value={value[key]}
+              onChange={(e) => onChange({ ...value, [key]: e.target.value }, key)}
+              autoComplete={auto}
+              required={fields[key] === 'required'}
+              aria-invalid={errors[key] ? true : undefined}
+              aria-describedby={errors[key] ? `detail-${key}-error` : undefined}
+              className={inputClass(!!errors[key])}
+            />
+            <FieldError id={`detail-${key}-error`}>{errors[key]}</FieldError>
+          </label>
+        ))}
+      </div>
+      {note && <p className="mt-5 border-t border-hair pt-4 text-small text-slate">{note}</p>}
+    </Card>
+  )
+}
+
+/** One question: its number, wording and note, then the way to answer it. */
+function QuestionCard({
   number,
   question,
-  done,
   value,
+  other,
   error,
   onChange,
+  onOther,
 }: {
   number: number
   question: PublicQuestion
-  done: boolean
   value: string
+  other: string
   error?: string
   onChange: (value: string) => void
+  onOther: (value: string) => void
 }) {
   const { t, locale } = useI18n()
   const text = pick(question.question, locale)
+  const help = question.help ? pick(question.help, locale) : ''
   const errorId = `q${question.id}-error`
+  const hint =
+    question.type === 'checkbox' && question.max_choices
+      ? t('survey.selectUpTo', { n: question.max_choices })
+      : question.type === 'checkbox' && (question.options?.length ?? 0) > 1
+        ? t('survey.selectAll')
+        : question.layout === 'scale'
+          ? t('survey.selectOne')
+          : ''
 
   return (
-    <li className="grid grid-cols-[2.25rem_1fr] gap-x-4 py-8 sm:grid-cols-[3rem_1fr]">
-      <span
-        aria-hidden
-        className="tnum font-display text-[1.75rem] leading-none text-gold-500 sm:text-[2.25rem]"
-      >
-        {number}
-      </span>
-
+    <Card>
       <fieldset aria-describedby={error ? errorId : undefined} className="min-w-0">
-        <legend className="font-display text-[1.2rem] leading-snug text-navy-950 sm:text-[1.35rem]">
-          {text}
-          {!question.is_required && (
-            <span className="ml-2 font-sans text-small text-slate">({t('survey.optional')})</span>
-          )}
-        </legend>
-
-        {done ? (
-          <p className="mt-4 flex items-center gap-2 text-small text-gold-700">
-            <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-gold-400" />
-            {t('survey.thanks')}
-          </p>
-        ) : (
-          <div className="mt-5">
-            {question.type === 'choice' && (
-              <div className="space-y-2.5">
-                {question.options?.map((o, i) => {
-                  const checked = value === String(i)
-                  return (
-                    <label
-                      key={i}
-                      className={cn(
-                        'flex min-h-[52px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-3 text-body transition-colors duration-200',
-                        'focus-within:ring-2 focus-within:ring-gold-500/60',
-                        checked
-                          ? 'border-gold-500 bg-gold-500/10 text-navy-950'
-                          : 'border-navy-900/15 bg-white text-navy-900 hover:border-gold-500/60',
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name={`q${question.id}`}
-                        checked={checked}
-                        onChange={() => onChange(String(i))}
-                        className="sr-only"
-                      />
-                      <span
-                        aria-hidden
-                        className={cn(
-                          'grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors',
-                          checked ? 'border-gold-500' : 'border-navy-900/30',
-                        )}
-                      >
-                        {checked && <span className="block h-2.5 w-2.5 rounded-full bg-gold-500" />}
-                      </span>
-                      {pick(o, locale)}
-                    </label>
-                  )
-                })}
-              </div>
-            )}
-
-            {question.type === 'checkbox' && (
-              <div className="space-y-2.5">
-                {/* A lone tickbox (consent) needs no "select all" hint. */}
-                {(question.options?.length ?? 0) > 1 && (
-                  <p className="text-small text-slate">{t('survey.selectAll')}</p>
-                )}
-                {question.options?.map((o, i) => {
-                  // The answer is the ticked option numbers, e.g. "0,2".
-                  const ticked = value ? value.split(',') : []
-                  const checked = ticked.includes(String(i))
-                  const toggle = () =>
-                    onChange(
-                      (checked ? ticked.filter((v) => v !== String(i)) : [...ticked, String(i)])
-                        .map(Number)
-                        .sort((a, b) => a - b)
-                        .join(','),
-                    )
-                  return (
-                    <label
-                      key={i}
-                      className={cn(
-                        'flex min-h-[52px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-3 text-body transition-colors duration-200',
-                        'focus-within:ring-2 focus-within:ring-gold-500/60',
-                        checked
-                          ? 'border-gold-500 bg-gold-500/10 text-navy-950'
-                          : 'border-navy-900/15 bg-white text-navy-900 hover:border-gold-500/60',
-                      )}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={toggle}
-                        className="sr-only"
-                      />
-                      <span
-                        aria-hidden
-                        className={cn(
-                          'grid h-5 w-5 shrink-0 place-items-center rounded-sm border-2 transition-colors',
-                          checked ? 'border-gold-500 bg-gold-500 text-white' : 'border-navy-900/30',
-                        )}
-                      >
-                        {checked && (
-                          <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
-                            <path
-                              d="M3 8.5l3 3 7-7"
-                              stroke="currentColor"
-                              strokeWidth="2.2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        )}
-                      </span>
-                      {pick(o, locale)}
-                    </label>
-                  )
-                })}
-              </div>
-            )}
-
-            {question.type === 'rating' && (
-              <div role="radiogroup" aria-label={text} className="flex gap-1.5 sm:gap-2">
-                {[1, 2, 3, 4, 5].map((n) => {
-                  const lit = Number(value) >= n
-                  return (
-                    <button
-                      key={n}
-                      type="button"
-                      role="radio"
-                      aria-checked={value === String(n)}
-                      aria-label={t('survey.stars', { n })}
-                      onClick={() => onChange(String(n))}
-                      className={cn(
-                        'grid h-12 w-12 place-items-center rounded-sm text-[1.6rem] transition-colors duration-200 sm:h-14 sm:w-14',
-                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/60',
-                        lit ? 'text-gold-500' : 'text-navy-900/20 hover:text-gold-500/60',
-                      )}
-                    >
-                      ★
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-
-            {question.type === 'text' && (
-              <textarea
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                maxLength={1000}
-                rows={4}
-                aria-label={text}
-                placeholder={t('survey.typeHere')}
-                className={cn(
-                  'block w-full rounded-sm border bg-white px-4 py-3 text-body text-navy-950',
-                  'transition-colors duration-200 placeholder:text-slate/50 focus:bg-white focus:outline-none',
-                  error
-                    ? 'border-red-400'
-                    : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
-                )}
-              />
-            )}
-
-            {error && (
-              <p id={errorId} className="mt-2 flex items-center gap-1.5 text-micro text-red-700">
-                <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-gold-400" />
-                {error}
-              </p>
-            )}
+        <div className="grid grid-cols-[2.75rem_1fr] gap-x-3 sm:grid-cols-[3.75rem_1fr]">
+          <span
+            aria-hidden
+            className="tnum font-display text-[2rem] leading-none text-gold-500 sm:text-[2.6rem]"
+          >
+            {String(number).padStart(2, '0')}
+          </span>
+          <div className="min-w-0">
+            <legend className="text-[1.08rem] font-semibold leading-snug text-navy-950 sm:text-[1.2rem]">
+              {text}
+              {!question.is_required && (
+                <span className="ml-2 text-small font-normal text-slate">
+                  ({t('survey.optional')})
+                </span>
+              )}
+            </legend>
+            {help && <p className="mt-2 text-small text-slate">{help}</p>}
+            {hint && <p className="mt-2 text-small font-semibold text-gold-700">{hint}</p>}
           </div>
-        )}
+        </div>
+
+        <div className="mt-5 sm:pl-[4.5rem]">
+          {question.type === 'choice' && question.layout === 'scale' && (
+            <ScaleInput question={question} value={value} onChange={onChange} />
+          )}
+          {question.type === 'choice' && question.layout !== 'scale' && (
+            <OptionsInput
+              question={question}
+              value={value}
+              other={other}
+              onChange={onChange}
+              onOther={onOther}
+            />
+          )}
+          {question.type === 'checkbox' && (
+            <OptionsInput
+              multiple
+              question={question}
+              value={value}
+              other={other}
+              onChange={onChange}
+              onOther={onOther}
+            />
+          )}
+          {question.type === 'grid' && (
+            <GridInput question={question} value={value} onChange={onChange} />
+          )}
+          {question.type === 'rating' && (
+            <StarsInput label={text} value={value} onChange={onChange} />
+          )}
+          {question.type === 'text' && (
+            <TextInput
+              label={text}
+              max={question.max_length ?? 1000}
+              invalid={!!error}
+              value={value}
+              onChange={onChange}
+            />
+          )}
+          <FieldError id={errorId}>{error}</FieldError>
+        </div>
       </fieldset>
-    </li>
+    </Card>
+  )
+}
+
+const optionClass = (checked: boolean, disabled = false) =>
+  cn(
+    'flex min-h-[52px] cursor-pointer items-center gap-3.5 rounded-sm border px-4 py-3 text-body transition-colors duration-200',
+    'focus-within:ring-2 focus-within:ring-gold-500/60',
+    checked
+      ? 'border-gold-500 bg-gold-500/10 text-navy-950'
+      : 'border-navy-900/15 bg-white text-navy-900 hover:border-gold-500/60',
+    disabled && 'cursor-not-allowed opacity-45 hover:border-navy-900/15',
+  )
+
+function Mark({ checked, square }: { checked: boolean; square?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'grid h-5 w-5 shrink-0 place-items-center border-2 transition-colors',
+        square ? 'rounded-sm' : 'rounded-full',
+        checked
+          ? square
+            ? 'border-gold-500 bg-gold-500 text-white'
+            : 'border-gold-500'
+          : 'border-navy-900/30',
+      )}
+    >
+      {checked &&
+        (square ? (
+          <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
+            <path
+              d="M3 8.5l3 3 7-7"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          <span className="block h-2.5 w-2.5 rounded-full bg-gold-500" />
+        ))}
+    </span>
+  )
+}
+
+/**
+ * A list to pick one from, or to tick (up to a maximum, when there is one).
+ * "Other" comes last and opens a box for what it is.
+ */
+function OptionsInput({
+  question,
+  multiple,
+  value,
+  other,
+  onChange,
+  onOther,
+}: {
+  question: PublicQuestion
+  multiple?: boolean
+  value: string
+  other: string
+  onChange: (value: string) => void
+  onOther: (value: string) => void
+}) {
+  const { t, locale } = useI18n()
+  const labels = (question.options ?? []).map((o) => pick(o, locale))
+  if (question.has_other) labels.push(t('survey.other'))
+  const otherIndex = question.has_other ? labels.length - 1 : -1
+  const ticked = value ? value.split(',') : []
+  const full = !!multiple && !!question.max_choices && ticked.length >= question.max_choices
+  // Short options sit two to a row; long ones keep the full width.
+  const twoUp = labels.length > 4 && labels.every((l) => l.length <= 48)
+
+  const toggle = (i: number) => {
+    if (!multiple) return onChange(String(i))
+    const on = ticked.includes(String(i))
+    onChange(
+      (on ? ticked.filter((v) => v !== String(i)) : [...ticked, String(i)])
+        .map(Number)
+        .sort((a, b) => a - b)
+        .join(','),
+    )
+  }
+
+  const otherChosen = otherIndex >= 0 && ticked.includes(String(otherIndex))
+
+  return (
+    <>
+      <div className={cn('grid gap-2.5', twoUp && 'sm:grid-cols-2')}>
+        {labels.map((label, i) => {
+          const checked = multiple ? ticked.includes(String(i)) : value === String(i)
+          const disabled = full && !checked
+          return (
+            <label key={i} className={optionClass(checked, disabled)}>
+              <input
+                type={multiple ? 'checkbox' : 'radio'}
+                name={`q${question.id}`}
+                checked={checked}
+                disabled={disabled}
+                onChange={() => toggle(i)}
+                className="sr-only"
+              />
+              <Mark checked={checked} square={multiple} />
+              <span>{label}</span>
+            </label>
+          )
+        })}
+      </div>
+      {otherChosen && (
+        <input
+          value={other}
+          onChange={(e) => onOther(e.target.value)}
+          maxLength={300}
+          placeholder={t('survey.otherPlaceholder')}
+          aria-label={t('survey.other')}
+          autoFocus
+          className={inputClass(false)}
+        />
+      )}
+    </>
+  )
+}
+
+/** Static class names for the scale's columns (Tailwind reads them as written). */
+const SCALE_COLUMNS: Record<number, string> = {
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-3',
+  4: 'sm:grid-cols-4',
+  5: 'sm:grid-cols-5',
+  6: 'sm:grid-cols-6',
+  7: 'sm:grid-cols-7',
+}
+
+/**
+ * A single choice as numbered cards, 1 to 5 across on a wide screen and a
+ * numbered list on a phone. "Not sure" stands apart, off the scale.
+ */
+function ScaleInput({
+  question,
+  value,
+  onChange,
+}: {
+  question: PublicQuestion
+  value: string
+  onChange: (value: string) => void
+}) {
+  const { locale } = useI18n()
+  const all = (question.options ?? []).map((o, i) => ({
+    i,
+    label: pick(o, locale),
+    off: OFF_SCALE.test(o.en),
+  }))
+  const scale = all.filter((o) => !o.off)
+  const extra = all.filter((o) => o.off)
+
+  return (
+    <div role="radiogroup" aria-label={pick(question.question, locale)}>
+      <div className={cn('grid gap-2', SCALE_COLUMNS[scale.length])}>
+        {scale.map((o, n) => {
+          const checked = value === String(o.i)
+          return (
+            <label
+              key={o.i}
+              className={cn(
+                'flex min-h-[56px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-2.5 transition-colors duration-200',
+                'sm:min-h-[104px] sm:flex-col sm:justify-center sm:gap-1.5 sm:px-2 sm:text-center',
+                'focus-within:ring-2 focus-within:ring-gold-500/60',
+                checked
+                  ? 'border-navy-900 bg-navy-900 text-cream'
+                  : 'border-gold-500/35 bg-[#FBF9F3] text-navy-900 hover:border-gold-500',
+              )}
+            >
+              <input
+                type="radio"
+                name={`q${question.id}`}
+                checked={checked}
+                onChange={() => onChange(String(o.i))}
+                className="sr-only"
+              />
+              <span
+                aria-hidden
+                className={cn(
+                  'tnum w-6 shrink-0 font-display text-[1.6rem] leading-none sm:w-auto sm:text-[1.9rem]',
+                  checked ? 'text-gold-400' : 'text-gold-600',
+                )}
+              >
+                {n + 1}
+              </span>
+              <span className="text-small leading-tight sm:text-[0.8rem]">{o.label}</span>
+            </label>
+          )
+        })}
+      </div>
+      {extra.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {extra.map((o) => {
+            const checked = value === String(o.i)
+            return (
+              <label
+                key={o.i}
+                className={cn(
+                  'inline-flex min-h-[44px] cursor-pointer items-center rounded-full border px-5 text-small transition-colors duration-200',
+                  'focus-within:ring-2 focus-within:ring-gold-500/60',
+                  checked
+                    ? 'border-navy-900 bg-navy-900 text-cream'
+                    : 'border-navy-900/15 bg-white text-slate hover:border-gold-500/60',
+                )}
+              >
+                <input
+                  type="radio"
+                  name={`q${question.id}`}
+                  checked={checked}
+                  onChange={() => onChange(String(o.i))}
+                  className="sr-only"
+                />
+                {o.label}
+              </label>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * A statement table: each statement in turn, with the shared scale under it.
+ * The answer is one choice per statement, "0,2,1,0"; a statement not yet
+ * answered is an empty place.
+ */
+function GridInput({
+  question,
+  value,
+  onChange,
+}: {
+  question: PublicQuestion
+  value: string
+  onChange: (value: string) => void
+}) {
+  const { locale } = useI18n()
+  const statements = question.statements ?? []
+  const picked = value ? value.split(',') : statements.map(() => '')
+  const set = (row: number, i: number) => {
+    const next = statements.map((_, r) => picked[r] ?? '')
+    next[row] = String(i)
+    onChange(next.join(','))
+  }
+
+  return (
+    <div className="divide-y divide-hair border-y border-hair">
+      {statements.map((s, row) => (
+        <div key={row} role="radiogroup" aria-label={pick(s, locale)} className="py-4">
+          <p className="text-body font-medium text-navy-950">{pick(s, locale)}</p>
+          <div
+            className={cn(
+              'mt-3 flex flex-wrap gap-1.5 sm:grid',
+              SCALE_COLUMNS[question.options?.length ?? 5],
+            )}
+          >
+            {(question.options ?? []).map((o, i) => {
+              const checked = picked[row] === String(i)
+              return (
+                <label
+                  key={i}
+                  className={cn(
+                    'flex min-h-[40px] cursor-pointer items-center rounded-full border px-3.5 py-1.5 text-small leading-tight transition-colors duration-200',
+                    'sm:min-h-[48px] sm:justify-center sm:rounded-sm sm:px-2 sm:text-center sm:text-[0.8rem]',
+                    'focus-within:ring-2 focus-within:ring-gold-500/60',
+                    checked
+                      ? 'border-navy-900 bg-navy-900 text-cream'
+                      : 'border-navy-900/15 bg-white text-navy-900 hover:border-gold-500/60',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name={`q${question.id}-${row}`}
+                    checked={checked}
+                    onChange={() => set(row, i)}
+                    className="sr-only"
+                  />
+                  {pick(o, locale)}
+                </label>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function StarsInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  const { t } = useI18n()
+  return (
+    <div role="radiogroup" aria-label={label} className="flex gap-1.5 sm:gap-2">
+      {[1, 2, 3, 4, 5].map((n) => {
+        const lit = Number(value) >= n
+        return (
+          <button
+            key={n}
+            type="button"
+            role="radio"
+            aria-checked={value === String(n)}
+            aria-label={t('survey.stars', { n })}
+            onClick={() => onChange(String(n))}
+            className={cn(
+              'grid h-12 w-12 place-items-center rounded-sm text-[1.6rem] transition-colors duration-200 sm:h-14 sm:w-14',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/60',
+              lit ? 'text-gold-500' : 'text-navy-900/20 hover:text-gold-500/60',
+            )}
+          >
+            ★
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function TextInput({
+  label,
+  max,
+  invalid,
+  value,
+  onChange,
+}: {
+  label: string
+  max: number
+  invalid: boolean
+  value: string
+  onChange: (value: string) => void
+}) {
+  const { t } = useI18n()
+  return (
+    <>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        maxLength={max}
+        rows={max <= 300 ? 3 : 5}
+        aria-label={label}
+        placeholder={t('survey.typeHere')}
+        className={cn(
+          'block w-full rounded-sm border bg-cream px-4 py-3 text-body text-navy-950',
+          'transition-colors duration-200 placeholder:text-slate/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/40',
+          invalid
+            ? 'border-red-400'
+            : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
+        )}
+      />
+      <p className="tnum mt-1.5 text-right text-micro text-slate">
+        {t('survey.chars', { n: value.length, max })}
+      </p>
+    </>
   )
 }
 
@@ -705,148 +1219,149 @@ function checkTestimonial(entry: TestimonialEntry, t: (key: string) => string): 
   return errors
 }
 
-const CREDITS: TestimonialCredit[] = ['anonymous', 'first_name', 'full_name', 'full_name_org']
-
 /**
- * The testimonial section every feedback form ends with, as the organising
- * team's form sets it out: an optional reflection, how to credit it (with
- * only the fields that credit needs), and an unticked permission box.
+ * The testimonial page every feedback form ends with: an optional
+ * reflection, how to credit it, and an unticked permission box. A form that
+ * asked for a name credits from it ("Anonymous participant" or "Full name
+ * and organisation"); one that did not asks for what the credit needs.
  */
 function TestimonialFields({
+  firstNumber,
+  named,
   value,
   errors,
   onChange,
 }: {
+  firstNumber: number
+  named: boolean
   value: TestimonialEntry
   errors: TestimonialErrors
   onChange: (next: TestimonialEntry) => void
 }) {
   const { t } = useI18n()
   const set = (patch: Partial<TestimonialEntry>) => onChange({ ...value, ...patch })
-  const input = (invalid: boolean) =>
-    cn(
-      'mt-2 block min-h-[48px] w-full rounded-sm border bg-white px-4 text-body text-navy-950',
-      'transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold-500/40',
-      invalid
-        ? 'border-red-400 bg-red-50'
-        : 'border-navy-900/15 hover:border-gold-300 focus:border-gold-500',
-    )
+  const credits: TestimonialCredit[] = named
+    ? ['anonymous', 'full_name_org']
+    : ['anonymous', 'first_name', 'full_name', 'full_name_org']
+  const number = (n: number) => (
+    <span
+      aria-hidden
+      className="tnum font-display text-[2rem] leading-none text-gold-500 sm:text-[2.6rem]"
+    >
+      {String(n).padStart(2, '0')}
+    </span>
+  )
 
   return (
-    <section aria-labelledby="testimonial-heading" className="mt-10 space-y-6">
-      <div>
-        <h2 id="testimonial-heading" className="font-display text-[1.35rem] text-navy-950">
-          {t('survey.testimonialHeading')}{' '}
-          <span className="font-sans text-small text-slate">({t('survey.optional')})</span>
-        </h2>
-        <p className="mt-1 text-small text-slate">{t('survey.testimonialIntro')}</p>
-      </div>
-
-      <label className="block">
-        <span className="font-semibold text-navy-950">{t('survey.testimonialQuestion')}</span>
-        <span className="block text-small text-slate">{t('survey.testimonialHint')}</span>
-        <textarea
-          value={value.quote}
-          onChange={(e) => set({ quote: e.target.value })}
-          maxLength={1000}
-          rows={4}
-          className="mt-2 block w-full rounded-sm border border-navy-900/15 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gold-500/40"
-        />
-      </label>
-
-      <fieldset>
-        <legend className="font-semibold text-navy-950">{t('survey.creditQuestion')}</legend>
-        <p className="text-small text-slate">{t('survey.creditHint')}</p>
-        <div className="mt-3 space-y-2.5">
-          {CREDITS.map((credit) => {
-            const checked = value.credit === credit
-            return (
-              <label
-                key={credit}
-                className={cn(
-                  'flex min-h-[52px] cursor-pointer items-center gap-4 rounded-sm border px-4 py-3 text-body transition-colors duration-200',
-                  'focus-within:ring-2 focus-within:ring-gold-500/60',
-                  checked
-                    ? 'border-gold-500 bg-gold-500/10 text-navy-950'
-                    : 'border-navy-900/15 bg-white text-navy-900 hover:border-gold-500/60',
-                )}
-              >
-                <input
-                  type="radio"
-                  name="testimonial-credit"
-                  checked={checked}
-                  onChange={() => set({ credit })}
-                  className="sr-only"
-                />
-                <span
-                  aria-hidden
-                  className={cn(
-                    'grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors',
-                    checked ? 'border-gold-500' : 'border-navy-900/30',
-                  )}
-                >
-                  {checked && <span className="block h-2.5 w-2.5 rounded-full bg-gold-500" />}
-                </span>
-                {t(`survey.credit_${credit}`)}
-              </label>
-            )
-          })}
-        </div>
-
-        {/* Only the fields the chosen credit needs. */}
-        {value.credit !== 'anonymous' && (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-micro font-medium uppercase tracking-[0.08em] text-slate">
-                {t('survey.creditName')}
+    <>
+      <Card>
+        <div className="grid grid-cols-[2.75rem_1fr] gap-x-3 sm:grid-cols-[3.75rem_1fr]">
+          {number(firstNumber)}
+          <label htmlFor="testimonial-quote" className="min-w-0">
+            <span className="block text-[1.08rem] font-semibold leading-snug text-navy-950 sm:text-[1.2rem]">
+              {t('survey.testimonialQuestion')}
+              <span className="ml-2 text-small font-normal text-slate">
+                ({t('survey.optional')})
               </span>
-              <input
-                value={value.name}
-                onChange={(e) => set({ name: e.target.value })}
-                autoComplete="name"
-                aria-invalid={errors.name ? true : undefined}
-                className={input(!!errors.name)}
-              />
-              {errors.name && (
-                <span className="mt-1.5 block text-micro text-red-700">{errors.name}</span>
-              )}
-            </label>
-            {value.credit === 'full_name_org' && (
-              <label className="block">
-                <span className="text-micro font-medium uppercase tracking-[0.08em] text-slate">
-                  {t('survey.creditOrganisation')}
-                </span>
-                <input
-                  value={value.organisation}
-                  onChange={(e) => set({ organisation: e.target.value })}
-                  autoComplete="organization"
-                  aria-invalid={errors.organisation ? true : undefined}
-                  className={input(!!errors.organisation)}
-                />
-                {errors.organisation && (
-                  <span className="mt-1.5 block text-micro text-red-700">
-                    {errors.organisation}
+            </span>
+            <span className="mt-2 block text-small text-slate">{t('survey.testimonialHint')}</span>
+          </label>
+        </div>
+        <div className="mt-5 sm:pl-[4.5rem]">
+          <textarea
+            id="testimonial-quote"
+            value={value.quote}
+            onChange={(e) => set({ quote: e.target.value })}
+            maxLength={1000}
+            rows={4}
+            className="block w-full rounded-sm border border-navy-900/15 bg-cream px-4 py-3 text-body text-navy-950 transition-colors duration-200 hover:border-gold-300 focus:border-gold-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/40"
+          />
+        </div>
+      </Card>
+
+      <Card>
+        <fieldset className="min-w-0">
+          <div className="grid grid-cols-[2.75rem_1fr] gap-x-3 sm:grid-cols-[3.75rem_1fr]">
+            {number(firstNumber + 1)}
+            <div className="min-w-0">
+              <legend className="text-[1.08rem] font-semibold leading-snug text-navy-950 sm:text-[1.2rem]">
+                {t('survey.creditQuestion')}
+              </legend>
+              <p className="mt-2 text-small text-slate">
+                {named ? t('survey.creditNamedHint') : t('survey.creditHint')}
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 space-y-2.5 sm:pl-[4.5rem]">
+            {credits.map((credit) => {
+              const checked = value.credit === credit
+              return (
+                <label key={credit} className={optionClass(checked)}>
+                  <input
+                    type="radio"
+                    name="testimonial-credit"
+                    checked={checked}
+                    onChange={() => set({ credit })}
+                    className="sr-only"
+                  />
+                  <Mark checked={checked} />
+                  {t(`survey.credit_${credit}`)}
+                </label>
+              )
+            })}
+
+            {/* Only the fields the chosen credit needs, on a form without a name. */}
+            {!named && value.credit !== 'anonymous' && (
+              <div className="grid gap-4 pt-2 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-small font-semibold text-navy-950">
+                    {t('survey.creditName')}
                   </span>
+                  <input
+                    value={value.name}
+                    onChange={(e) => set({ name: e.target.value })}
+                    autoComplete="name"
+                    aria-invalid={errors.name ? true : undefined}
+                    className={inputClass(!!errors.name)}
+                  />
+                  <FieldError id="credit-name-error">{errors.name}</FieldError>
+                </label>
+                {value.credit === 'full_name_org' && (
+                  <label className="block">
+                    <span className="text-small font-semibold text-navy-950">
+                      {t('survey.creditOrganisation')}
+                    </span>
+                    <input
+                      value={value.organisation}
+                      onChange={(e) => set({ organisation: e.target.value })}
+                      autoComplete="organization"
+                      aria-invalid={errors.organisation ? true : undefined}
+                      className={inputClass(!!errors.organisation)}
+                    />
+                    <FieldError id="credit-org-error">{errors.organisation}</FieldError>
+                  </label>
                 )}
-              </label>
+              </div>
             )}
           </div>
-        )}
-      </fieldset>
+        </fieldset>
+      </Card>
 
-      <div>
-        <p className="font-semibold text-navy-950">{t('survey.consentHeading')}</p>
-        <label className="mt-2 flex cursor-pointer items-start gap-3">
+      <Card className="border-gold-500/40 bg-[#FBF9F3]">
+        <label className="flex cursor-pointer items-start gap-4">
           <input
             type="checkbox"
             checked={value.consent}
             onChange={(e) => set({ consent: e.target.checked })}
             className="mt-1 h-5 w-5 shrink-0 accent-[#C9A227]"
           />
-          <span className="text-body text-navy-900">{t('survey.consentText')}</span>
+          <span>
+            <span className="block font-semibold text-navy-950">{t('survey.consentHeading')}</span>
+            <span className="mt-1.5 block text-body text-navy-900">{t('survey.consentText')}</span>
+          </span>
         </label>
-        <p className="mt-3 text-small text-slate">{t('survey.consentNote')}</p>
-      </div>
-    </section>
+        <p className="mt-4 text-small text-slate">{t('survey.consentNote')}</p>
+      </Card>
+    </>
   )
 }
