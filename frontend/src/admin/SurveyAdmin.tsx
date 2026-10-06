@@ -51,6 +51,8 @@ export function SurveyAdmin() {
   const [adding, setAdding] = useState(false)
   const [openId, setOpenId] = useState<number | null>(null)
   const [viewing, setViewing] = useState<AdminSurvey | null>(null)
+  // The form being switched on or off, so its button cannot be pressed twice.
+  const [switching, setSwitching] = useState<number | null>(null)
   const toast = useToast()
 
   // A failure clears `list` to [] as well as setting the error: leaving it
@@ -69,6 +71,28 @@ export function SurveyAdmin() {
   useEffect(() => {
     load()
   }, [])
+
+  /** Active takes answers; Inactive stops them. Same call as the form's own page. */
+  async function setActive(survey: AdminSurvey, active: boolean) {
+    setSwitching(survey.id)
+    try {
+      const saved = await adminApi.put<AdminSurvey>(`/admin/surveys/${survey.id}`, {
+        title: survey.title,
+        description: survey.description,
+        status: active ? 'open' : 'closed',
+      })
+      setList(
+        (all) => all?.map((x) => (x.id === saved.id ? { ...x, status: saved.status } : x)) ?? all,
+      )
+      toast.success(
+        active ? `"${survey.title.en}" is active.` : `"${survey.title.en}" is inactive.`,
+      )
+    } catch (e) {
+      toast.error(e instanceof AdminError ? e.message : 'Could not change the form.')
+    } finally {
+      setSwitching(null)
+    }
+  }
 
   async function remove(survey: AdminSurvey) {
     if (!confirm(`Delete "${survey.title.en}" and all its answers? This cannot be undone.`)) return
@@ -124,8 +148,8 @@ export function SurveyAdmin() {
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[0.78rem] text-slate">
-          Each form has its own link and QR code. Under Edit, choose which details it asks
-          (name, email, phone, organisation).
+          Each form has its own link and QR code. Under Edit, choose which details it asks (name,
+          email, phone, organisation).
         </p>
         <AdminButton onClick={() => setAdding(true)}>Add survey</AdminButton>
       </div>
@@ -164,6 +188,23 @@ export function SurveyAdmin() {
               </div>
               <StatusChip status={s.status} />
               <div className="flex items-center gap-1">
+                {s.status === 'open' ? (
+                  <AdminButton
+                    variant="danger"
+                    disabled={switching === s.id}
+                    onClick={() => setActive(s, false)}
+                  >
+                    Deactivate
+                  </AdminButton>
+                ) : (
+                  <AdminButton
+                    variant="success"
+                    disabled={switching === s.id}
+                    onClick={() => setActive(s, true)}
+                  >
+                    Activate
+                  </AdminButton>
+                )}
                 <button
                   type="button"
                   onClick={() => setViewing(s)}
