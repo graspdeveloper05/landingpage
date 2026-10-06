@@ -3,7 +3,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
-import { FormBand, FormCard, type FormProgress } from '@/components/survey/FormHeader'
+import { PageHero } from '@/components/layout/PageHero'
+import { BANNER_TEXT, FormIntro, type FormProgress } from '@/components/survey/FormHeader'
 import { Smiley } from '@/components/survey/Smiley'
 import {
   EMPTY_IDENTITY,
@@ -103,19 +104,20 @@ export function Survey() {
     survey.status === 'open' &&
     survey.questions.some((q) => !q.answered)
   const total = survey?.questions.length ?? 0
+  const description = showForm && survey.description ? pick(survey.description, locale) : ''
+  // A short description goes under the title in the banner, as on the other
+  // pages; a long one would not fit there, so it opens the card instead.
+  const shortDescription = description.length <= BANNER_TEXT
 
   return (
     <>
-      <FormBand />
+      <PageHero title={formTitle} sub={shortDescription ? description || undefined : undefined} />
 
-      <section className="bg-cream-deep pb-24">
+      <section className="bg-cream-deep pb-24 pt-8 sm:pt-12">
         <div className="shell">
-          <div className="mx-auto max-w-3xl">
-            <FormCard
-              title={formTitle}
-              description={
-                showForm && survey.description ? pick(survey.description, locale) : undefined
-              }
+          <div className="mx-auto max-w-3xl space-y-6">
+            <FormIntro
+              description={shortDescription ? undefined : description}
               meta={
                 showForm && total > 1
                   ? t('survey.length', {
@@ -127,7 +129,7 @@ export function Survey() {
               progress={showForm ? page : undefined}
             />
 
-            <div className="mt-6">
+            <div>
               {thanked ? (
                 <Thanks
                   feedback={survey?.form_type === 'feedback'}

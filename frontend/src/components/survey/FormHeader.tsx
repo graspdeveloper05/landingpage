@@ -1,37 +1,5 @@
 import { cn } from '@/lib/cn'
 import { useI18n } from '@/i18n'
-import { Picture } from '@/components/ui/Picture'
-
-/**
- * The top of a form, as Google and Microsoft Forms lay it out: a header
- * picture across the page (Seri Negara's colonnade, under a navy tint so
- * the site header above runs into it), and the form's own white card
- * overlapping its lower edge. The card carries the title, the introduction
- * on the first page, and, for a form of several parts, the steps with the
- * current one marked. The site header already carries the name and emblem,
- * so the band carries none.
- */
-export function FormBand() {
-  return (
-    <section
-      aria-hidden
-      className="relative isolate h-44 overflow-hidden bg-navy-950 sm:h-60 lg:h-64"
-    >
-      <Picture
-        base="/scenes/colonnade"
-        alt=""
-        width={768}
-        height={469}
-        loading="eager"
-        className="absolute inset-0 -z-10"
-        imgClassName="anim-pan h-full w-full object-cover object-[50%_40%]"
-      />
-      {/* Darker at the top, where it meets the navy site header, and at the
-          bottom, under the card; the columns show clearly between. */}
-      <div className="absolute inset-0 bg-gradient-to-b from-navy-950/80 via-navy-950/35 to-navy-950/75" />
-    </section>
-  )
-}
 
 export interface FormProgress {
   /** The current page, from 0. */
@@ -42,51 +10,65 @@ export interface FormProgress {
   intro: string
 }
 
-export function FormCard({
-  title,
+/** A description short enough to sit under the title in the page banner. */
+export const BANNER_TEXT = 140
+
+/**
+ * Under the page banner (PageHero, as on Speakers and About), the form's
+ * own card: on the first page a description too long for the banner and
+ * the form's length; on a form of several parts, the steps with the current
+ * one marked; and the current section's introduction. Nothing to say, no
+ * card.
+ */
+export function FormIntro({
   description,
   meta,
   progress,
-  children,
 }: {
-  title: string
   /** Shown on the first page only. */
   description?: string
-  /** "3 questions · about 1 min". */
+  /** "3 questions · about 1 min", on the first page only. */
   meta?: string
   progress?: FormProgress
-  children?: React.ReactNode
 }) {
   const first = !progress || progress.at === 0
+  const steps = !!progress && progress.steps.length > 1
+  const lead = first && (description || meta)
+  if (!lead && !steps && !progress?.intro) return null
 
   return (
-    <div className="anim-rise relative -mt-24 overflow-hidden rounded-sm border border-hair bg-white shadow-[0_24px_60px_-28px_rgba(10,22,40,0.45)] sm:-mt-28">
+    <div className="anim-rise overflow-hidden rounded-sm border border-hair bg-white shadow-card">
       <span
         aria-hidden
-        className="block h-1.5 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600"
+        className="block h-1 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600"
       />
-      <div className="px-5 pb-6 pt-6 sm:px-10 sm:pb-8 sm:pt-9">
-        <h1 className="font-display text-[1.9rem] font-medium leading-[1.12] text-navy-950 sm:text-[2.6rem]">
-          {title}
-        </h1>
+      <div className="px-5 py-5 sm:px-8 sm:py-6">
         {first && description && (
-          <p className="mt-3 max-w-2xl text-lead text-navy-900/80">{description}</p>
+          <p className="max-w-2xl text-lead text-navy-900/85">{description}</p>
         )}
-        {first && meta && <p className="mt-3 text-small font-semibold text-gold-700">{meta}</p>}
+        {first && meta && (
+          <p className={cn('text-small font-semibold text-gold-700', description && 'mt-3')}>
+            {meta}
+          </p>
+        )}
 
-        {progress && progress.steps.length > 1 && (
-          <Stepper at={progress.at} steps={progress.steps} />
+        {steps && (
+          <div className={cn(lead && 'mt-5 border-t border-hair pt-5')}>
+            <Stepper at={progress.at} steps={progress.steps} />
+          </div>
         )}
 
         {progress?.intro && (
           <p
             key={`${progress.at}-${progress.intro}`}
-            className="anim-fade mt-5 border-l-2 border-gold-500 pl-4 text-body text-navy-900/80"
+            className={cn(
+              'anim-fade border-l-2 border-gold-500 pl-4 text-body text-navy-900/80',
+              (lead || steps) && 'mt-5',
+            )}
           >
             {progress.intro}
           </p>
         )}
-        {children}
       </div>
     </div>
   )
@@ -106,7 +88,7 @@ function Stepper({ at, steps }: { at: number; steps: string[] }) {
   const filled = n > 1 ? (at / (n - 1)) * (100 - 2 * edge) : 0
 
   return (
-    <div className="mt-7 border-t border-hair pt-6">
+    <div>
       <p className="sr-only">
         {t('survey.page', { page: at + 1, pages: n })}: {steps[at]}
       </p>

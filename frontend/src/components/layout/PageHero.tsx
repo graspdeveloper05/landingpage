@@ -30,7 +30,9 @@ export function PageHero({
   position?: string
 }) {
   return (
-    <section className="relative isolate flex h-[clamp(9rem,20vw,13.5rem)] items-center overflow-hidden border-b border-hair bg-cream">
+    // A minimum height rather than a fixed one: a long title (a form's, say)
+    // grows the band on a phone instead of being cut off by it.
+    <section className="relative isolate flex min-h-[clamp(9rem,20vw,13.5rem)] items-center overflow-hidden border-b border-hair bg-cream py-6">
       <Picture
         base={image}
         alt=""
@@ -51,6 +53,12 @@ export function PageHero({
             'radial-gradient(95% 135% at 0% 50%, rgba(252,252,251,0.97) 0%, rgba(252,252,251,0.9) 26%, rgba(252,252,251,0.5) 46%, rgba(252,252,251,0) 66%)',
         }}
       />
+      {/* On a phone the type runs the full width, past that lift, so a wash
+          across the whole band keeps it legible there. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-cream/60 sm:hidden"
+      />
       {/* No fade to cream along the bottom edge. It bleached a 64px strip
           clean across the photograph, which is more damage than the hairline
           border it was there to soften. The border does that job on its own. */}
@@ -60,10 +68,7 @@ export function PageHero({
           {title}
         </h1>
         {sub && (
-          <p
-            className="anim-rise mt-2 text-lead text-navy-800"
-            style={{ animationDelay: '0.1s' }}
-          >
+          <p className="anim-rise mt-2 text-lead text-navy-800" style={{ animationDelay: '0.1s' }}>
             {sub}
           </p>
         )}
