@@ -15,9 +15,6 @@ class Sponsor extends Model
         'sort_order' => 'integer',
     ];
 
-    /** The client's own billing, in the order the band shows them. */
-    public const TIERS = ['foundingPatron', 'convenedBy', 'gold', 'silver', 'marketing'];
-
     public function toPublicArray(): array
     {
         return [

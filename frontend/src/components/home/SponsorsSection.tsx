@@ -2,8 +2,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { useI18n } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { SectionHeading } from '@/components/ui/SectionHeading'
-import { useSponsors } from '@/lib/useContent'
-import { SPONSOR_TIERS } from '@/data/types'
+import { useSponsorGroups, useSponsors } from '@/lib/useContent'
 
 /**
  * Partners and sponsors — added at the client's request, and edited in the
@@ -15,14 +14,20 @@ import { SPONSOR_TIERS } from '@/data/types'
  * what a sponsor tier is not supposed to imply within itself.
  */
 export function SponsorsSection() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const sponsors = useSponsors()
-  // Grouped in the client's billing order, and a tier nobody is in is left
-  // out rather than shown as a heading over an empty space.
-  const tiers = SPONSOR_TIERS.map((key) => ({
-    key,
-    logos: sponsors.filter((s) => s.tier === key),
-  })).filter((tier) => tier.logos.length > 0)
+  const groups = useSponsorGroups()
+  // Grouped in the order the panel set, and a group nobody is in is left
+  // out rather than shown as a heading over an empty space. A group named in
+  // the panel reads in the visitor's language, else English; the bundled
+  // groups (name null) read from the locale files, as they always did.
+  const tiers = groups
+    .map((group) => ({
+      key: group.key,
+      label: group.name?.[locale] || group.name?.en || t(`sponsors.${group.key}`),
+      logos: sponsors.filter((s) => s.tier === group.key),
+    }))
+    .filter((tier) => tier.logos.length > 0)
   const order = tiers.flatMap((tier) => tier.logos)
 
   if (tiers.length === 0) return null
@@ -43,7 +48,7 @@ export function SponsorsSection() {
             <div key={tier.key}>
               <Reveal delay={ti * 120}>
                 <h3 className="text-center text-micro font-semibold uppercase tracking-[0.18em] text-gold-700">
-                  {t(`sponsors.${tier.key}`)}
+                  {tier.label}
                 </h3>
               </Reveal>
               <ul className="mt-4 flex flex-wrap justify-center gap-3 sm:gap-4">
@@ -122,7 +127,10 @@ function Tile({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${label} (${t('common.newTab')})`}
-      className={className + ' focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500'}
+      className={
+        className +
+        ' focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500'
+      }
       style={style}
     >
       {children}

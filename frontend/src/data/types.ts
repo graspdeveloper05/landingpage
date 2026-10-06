@@ -144,7 +144,8 @@ export type GoogleFormField =
 export interface Sponsor {
   id: number
   name: string
-  tier: SponsorTier
+  /** The key of its group (a SponsorGroup), as the panel set it. */
+  tier: string
   logo: string
   /** Their website, when the team has entered one: the logo opens it. */
   link?: string | null
@@ -153,10 +154,24 @@ export interface Sponsor {
   height?: number | null
 }
 
-/** The client's own billing, in the order the band shows them. */
-export const SPONSOR_TIERS = ['foundingPatron', 'convenedBy', 'gold', 'silver', 'marketing'] as const
+/**
+ * The groups the band started with, in its order. The panel can now add,
+ * rename and reorder groups; this list is only the bundled fallback, named
+ * from the locale files, for when the server cannot be reached.
+ */
+export const SPONSOR_TIERS = [
+  'foundingPatron',
+  'convenedBy',
+  'gold',
+  'silver',
+  'marketing',
+] as const
 
-export type SponsorTier = (typeof SPONSOR_TIERS)[number]
+/** One group of the band, named in the panel; null name falls back to the locale files. */
+export interface SponsorGroup {
+  key: string
+  name: Partial<Record<Locale, string>> | null
+}
 
 export interface QuickLink {
   id: string

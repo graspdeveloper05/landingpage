@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\RegistrationExportController;
 use App\Http\Controllers\Api\Admin\SessionController;
 use App\Http\Controllers\Api\Admin\SpeakerAdminController;
 use App\Http\Controllers\Api\Admin\SponsorAdminController;
+use App\Http\Controllers\Api\Admin\SponsorTierAdminController;
 use App\Http\Controllers\Api\Admin\SurveyAdminController;
 use App\Http\Controllers\Api\Admin\SurveyExportController;
 use App\Http\Controllers\Api\Admin\SurveyQuestionAdminController;
@@ -47,6 +48,7 @@ Route::get('/event', [EventController::class, 'show']);
 Route::get('/speakers', [SpeakerController::class, 'index']);
 Route::get('/programme', [ProgrammeController::class, 'index']);
 Route::get('/sponsors', [SponsorController::class, 'index']);
+Route::get('/sponsor-tiers', [SponsorController::class, 'tiers']);
 
 /*
 | §12 — spam protection. Six attempts per minute per IP is generous for a
@@ -125,6 +127,11 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/sponsors/logo', [SponsorAdminController::class, 'logo']);
     Route::put('/sponsors/{sponsor}', [SponsorAdminController::class, 'update']);
     Route::delete('/sponsors/{sponsor}', [SponsorAdminController::class, 'destroy']);
+    Route::get('/sponsor-tiers', [SponsorTierAdminController::class, 'index']);
+    Route::post('/sponsor-tiers', [SponsorTierAdminController::class, 'store']);
+    Route::post('/sponsor-tiers/reorder', [SponsorTierAdminController::class, 'reorder']);
+    Route::put('/sponsor-tiers/{sponsorTier}', [SponsorTierAdminController::class, 'update']);
+    Route::delete('/sponsor-tiers/{sponsorTier}', [SponsorTierAdminController::class, 'destroy']);
 
     Route::get('/analytics', AnalyticsController::class);
 

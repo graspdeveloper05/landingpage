@@ -6,7 +6,9 @@ import type {
   RegistrationRecord,
   Speaker,
   Sponsor,
+  SponsorGroup,
 } from '@/data/types'
+import { SPONSOR_TIERS } from '@/data/types'
 
 /**
  * The only file that knows where data comes from.
@@ -178,6 +180,14 @@ async function fetchOrFallback<T>(path: string, fallback: T): Promise<T> {
 
 export async function getSponsors(): Promise<Sponsor[]> {
   return fetchOrFallback('/api/sponsors', sponsors)
+}
+
+/** The band's groups in order; the bundled five, named from the locale files, as the fallback. */
+export async function getSponsorGroups(): Promise<SponsorGroup[]> {
+  return fetchOrFallback(
+    '/api/sponsor-tiers',
+    SPONSOR_TIERS.map((key) => ({ key, name: null })),
+  )
 }
 
 export async function getSpeakers(): Promise<Speaker[]> {

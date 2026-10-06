@@ -89,7 +89,8 @@ class SponsorAdminController extends Controller
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:150'],
-            'tier' => ['required', Rule::in(Sponsor::TIERS)],
+            // One of the groups the panel has made (sponsor_tiers.key).
+            'tier' => ['required', 'string', Rule::exists('sponsor_tiers', 'key')],
             // Either an upload or one of the logos shipped with the site.
             'logo' => ['required', 'string', 'max:200', 'regex:#^/(storage/sponsors|partners)/[A-Za-z0-9._-]+$#'],
             // Their website. https or http only: this becomes a link on the
@@ -99,6 +100,7 @@ class SponsorAdminController extends Controller
             'height' => ['nullable', 'integer', 'min:1', 'max:20000'],
         ], [
             'name.required' => 'Enter the sponsor’s name.',
+            'tier.exists' => 'Choose one of the groups.',
             'logo.required' => 'Upload a logo.',
             'logo.regex' => 'Upload a logo.',
             'link.url' => 'Enter the full web address, starting with https://',

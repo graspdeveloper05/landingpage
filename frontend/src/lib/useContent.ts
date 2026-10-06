@@ -6,9 +6,18 @@ import {
   speakers as bundledSpeakers,
   sponsors as bundledSponsors,
 } from '@/data'
-import { getEvent, getProgramme, getSpeakers, getSponsors } from '@/services/api'
+import { getEvent, getProgramme, getSpeakers, getSponsorGroups, getSponsors } from '@/services/api'
 import { useI18n } from '@/i18n'
-import { SPEAKER_ROLES, type Chairman, type EventDetails, type ProgrammeItem, type Speaker, type Sponsor } from '@/data/types'
+import {
+  SPEAKER_ROLES,
+  SPONSOR_TIERS,
+  type Chairman,
+  type EventDetails,
+  type ProgrammeItem,
+  type Speaker,
+  type Sponsor,
+  type SponsorGroup,
+} from '@/data/types'
 
 /*
  * Speakers and the programme, as edited by the organising team.
@@ -114,6 +123,32 @@ export function useSponsors(): Sponsor[] {
       })
       .catch(() => {
         // Keep the bundled band rather than showing none.
+      })
+    return () => {
+      live = false
+    }
+  }, [])
+
+  return list
+}
+
+/**
+ * The band's groups, named and ordered in the panel. Starts from the five it
+ * always had, named from the locale files, like the sponsors themselves.
+ */
+export function useSponsorGroups(): SponsorGroup[] {
+  const [list, setList] = useState<SponsorGroup[]>(() =>
+    SPONSOR_TIERS.map((key) => ({ key, name: null })),
+  )
+
+  useEffect(() => {
+    let live = true
+    getSponsorGroups()
+      .then((data) => {
+        if (live) setList(data)
+      })
+      .catch(() => {
+        // Keep the bundled groups.
       })
     return () => {
       live = false
