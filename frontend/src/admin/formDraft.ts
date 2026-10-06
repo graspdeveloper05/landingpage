@@ -21,7 +21,7 @@ export const KINDS: { kind: QuestionKind; label: string; hint: string }[] = [
   { kind: 'checkbox', label: 'Checkboxes', hint: 'Tick one or more' },
   { kind: 'scale', label: 'Numbered scale', hint: '1 to 5, e.g. Very weak … Very strong' },
   { kind: 'grid', label: 'Agree / disagree table', hint: 'One answer for each statement' },
-  { kind: 'rating', label: 'Star rating', hint: '1 to 5 stars' },
+  { kind: 'rating', label: 'Rating', hint: 'Stars or smileys, 1 to 5' },
   { kind: 'text', label: 'Written answer', hint: 'A sentence or a paragraph' },
 ]
 
@@ -68,6 +68,8 @@ export interface Draft {
   hasOther: boolean
   maxChoices: number | null
   maxLength: number | null
+  /** A rating shown as faces rather than stars. */
+  smileys: boolean
   required: boolean
   status: SurveyStatus
 }
@@ -99,6 +101,7 @@ export function fromQuestion(q: AdminSurveyQuestion): Draft {
     hasOther: q.has_other,
     maxChoices: q.max_choices,
     maxLength: q.max_length,
+    smileys: q.layout === 'smileys',
     required: q.is_required,
     status: q.status,
   }
@@ -116,6 +119,7 @@ export function blankDraft(withSection = false): Draft {
     hasOther: false,
     maxChoices: null,
     maxLength: null,
+    smileys: false,
     required: false,
     status: 'open',
   }
@@ -153,7 +157,7 @@ export function toPayload(d: Draft) {
     section: d.section && d.section.title.en.trim() ? d.section : null,
     options: hasOptionList(d.kind) ? d.options : null,
     statements: d.kind === 'grid' ? d.statements : null,
-    layout: d.kind === 'scale' ? 'scale' : null,
+    layout: d.kind === 'scale' ? 'scale' : d.kind === 'rating' && d.smileys ? 'smileys' : null,
     // A limit at or above the number of boxes limits nothing.
     max_choices:
       d.kind === 'checkbox' && d.maxChoices && d.maxChoices < choiceCount(d)

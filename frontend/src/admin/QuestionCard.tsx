@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
+import { Smiley } from '@/components/survey/Smiley'
 import type { AdminSurveyQuestion, FormType, Locale, Localized } from './client'
 import {
   KINDS,
@@ -211,13 +212,13 @@ export function QuestionCard({
             />
             <span aria-hidden className="mx-2 h-6 w-px bg-[#E6E5E1]" />
             <MoreMenu draft={draft} disabled={translating} onChange={onChange} />
-            <IconButton label="Duplicate" onClick={onDuplicate}>
+            <IconButton label="Duplicate" onClick={onDuplicate} withText>
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <rect x="6.5" y="6.5" width="10" height="10" rx="1.5" />
                 <path d="M13.5 6.5V4.5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2" />
               </svg>
             </IconButton>
-            <IconButton label="Delete" onClick={onDelete} danger>
+            <IconButton label="Delete" onClick={onDelete} danger withText>
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <path d="M4 6h12M8 6V4.5h4V6M6 6l.7 10h6.6L14 6" strokeLinejoin="round" />
               </svg>
@@ -362,12 +363,11 @@ function AnswerEditor({
 
   if (draft.kind === 'rating') {
     return (
-      <p className="pl-1 text-[1.4rem] tracking-[0.15em] text-gold-500" aria-label="Five stars">
-        ★★★★★
-        <span className="ml-3 align-middle text-micro tracking-normal text-slate">
-          Attendees choose 1 to 5 stars
-        </span>
-      </p>
+      <RatingEditor
+        smileys={draft.smileys}
+        disabled={translating}
+        onChange={(smileys) => set({ smileys })}
+      />
     )
   }
 
@@ -748,6 +748,110 @@ function SectionBreak({
   )
 }
 
+/** What each point of a rating means, as the attendee form names the faces. */
+const RATING_NAMES = ['Very poor', 'Poor', 'Okay', 'Good', 'Excellent']
+
+/**
+ * A rating's look: stars or smileys, always 1 to 5, so answers given before
+ * a switch keep their meaning. The row underneath is live: point at a face
+ * or star to see what it stands for, as attendees will.
+ */
+function RatingEditor({
+  smileys,
+  disabled,
+  onChange,
+}: {
+  smileys: boolean
+  disabled: boolean
+  onChange: (smileys: boolean) => void
+}) {
+  const [near, setNear] = useState(0)
+
+  return (
+    <div className="pl-1">
+      <div
+        role="radiogroup"
+        aria-label="Rating style"
+        className="inline-flex rounded-sm border border-[#DDDCD8] bg-[#F4F4F2] p-0.5"
+      >
+        {[
+          { value: false, label: 'Stars', icon: <span className="text-[0.95rem]">★</span> },
+          {
+            value: true,
+            label: 'Smileys',
+            icon: <Smiley level={5} className="h-4 w-4" />,
+          },
+        ].map((o) => {
+          const on = smileys === o.value
+          return (
+            <button
+              key={o.label}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              disabled={disabled}
+              onClick={() => onChange(o.value)}
+              className={cn(
+                'flex min-h-[30px] items-center gap-1.5 rounded-[3px] px-3 text-[0.78rem] font-semibold transition-all duration-200',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50 disabled:cursor-not-allowed disabled:opacity-50',
+                on
+                  ? 'bg-white text-navy-950 shadow-[0_1px_3px_rgba(10,22,40,0.15)]'
+                  : 'text-slate hover:text-navy-950',
+              )}
+            >
+              <span className={on ? 'text-gold-600' : undefined}>{o.icon}</span>
+              {o.label}
+            </button>
+          )
+        })}
+      </div>
+
+      <div
+        key={String(smileys)}
+        className="admin-fade mt-4 flex flex-wrap items-center gap-x-1.5 gap-y-2"
+        onPointerLeave={() => setNear(0)}
+      >
+        {[1, 2, 3, 4, 5].map((n) =>
+          smileys ? (
+            <span
+              key={n}
+              onPointerEnter={() => setNear(n)}
+              className={cn(
+                'sv-face grid h-10 w-10 place-items-center transition-colors duration-200',
+                near === n ? 'is-on text-navy-950' : 'text-navy-900/40',
+              )}
+            >
+              <span className="block h-full w-full">
+                <Smiley level={n} className="h-full w-full" />
+              </span>
+            </span>
+          ) : (
+            <span
+              key={n}
+              onPointerEnter={() => setNear(n)}
+              className={cn(
+                'text-[1.6rem] leading-none transition-[color,transform] duration-200',
+                near >= n ? 'scale-110 text-gold-500' : 'text-gold-500/45',
+              )}
+            >
+              ★
+            </span>
+          ),
+        )}
+        <span className="ml-2 text-micro text-slate">
+          {near
+            ? smileys
+              ? `${near} · ${RATING_NAMES[near - 1]}`
+              : `${near} of 5 stars`
+            : smileys
+              ? 'Attendees pick a face, from 1 Very poor to 5 Excellent'
+              : 'Attendees choose 1 to 5 stars'}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 /* ---------------------------------------------------------------- previews */
 
 /** The answer area as attendees will see it, in miniature. */
@@ -757,7 +861,15 @@ function Preview({ draft, lang }: { draft: Draft; lang: Locale }) {
   const text = (v: Localized) => pickText(v, lang)
 
   if (draft.kind === 'rating') {
-    return <span className="mt-2 block text-[1rem] tracking-[0.12em] text-gold-500">★★★★★</span>
+    return draft.smileys ? (
+      <span className="mt-2 flex gap-1 text-gold-600">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <Smiley key={n} level={n} className="h-5 w-5" />
+        ))}
+      </span>
+    ) : (
+      <span className="mt-2 block text-[1rem] tracking-[0.12em] text-gold-500">★★★★★</span>
+    )
   }
   if (draft.kind === 'text') {
     return (
@@ -1193,12 +1305,15 @@ function IconButton({
   onClick,
   danger,
   disabled,
+  withText,
   children,
 }: {
   label: string
   onClick: () => void
   danger?: boolean
   disabled?: boolean
+  /** The label beside the icon (from a small screen up), not only on hover. */
+  withText?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -1209,12 +1324,18 @@ function IconButton({
       aria-label={label}
       title={label}
       className={cn(
-        'grid h-[34px] w-[34px] place-items-center rounded-sm text-slate transition-colors [&_svg]:h-[18px] [&_svg]:w-[18px]',
+        'flex h-[34px] items-center justify-center gap-1.5 rounded-sm text-slate transition-colors [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:shrink-0',
+        withText ? 'min-w-[34px] px-2 text-[0.8rem] font-semibold' : 'w-[34px]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50 disabled:cursor-not-allowed disabled:opacity-40',
         danger ? 'hover:bg-red-50 hover:text-red-700' : 'hover:bg-[#F1F1EF] hover:text-navy-950',
       )}
     >
       {children}
+      {withText && (
+        <span aria-hidden className="hidden sm:inline">
+          {label}
+        </span>
+      )}
     </button>
   )
 }

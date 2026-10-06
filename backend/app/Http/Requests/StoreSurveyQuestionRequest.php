@@ -134,7 +134,8 @@ class StoreSurveyQuestionRequest extends FormRequest
     /**
      * The validated fields, with each setting kept only where it means
      * something: options for choices, statements for a table, a scale for a
-     * single choice, a maximum for checkboxes, a limit for written answers.
+     * single choice, smileys for a rating, a maximum for checkboxes, a limit
+     * for written answers.
      */
     public function toQuestion(): array
     {
@@ -144,7 +145,12 @@ class StoreSurveyQuestionRequest extends FormRequest
             ? array_values($data['options'])
             : null;
         $data['statements'] = $type === 'grid' && isset($data['statements']) ? array_values($data['statements']) : null;
-        $data['layout'] = $type === 'choice' && ($data['layout'] ?? null) === 'scale' ? 'scale' : null;
+        $layout = $data['layout'] ?? null;
+        $data['layout'] = match (true) {
+            $type === 'choice' && $layout === 'scale' => 'scale',
+            $type === 'rating' && $layout === 'smileys' => 'smileys',
+            default => null,
+        };
         $data['max_choices'] = $type === 'checkbox' ? ($data['max_choices'] ?? null) : null;
         $data['has_other'] = in_array($type, ['choice', 'checkbox'], true) && ($data['has_other'] ?? false);
         $data['max_length'] = $type === 'text' ? ($data['max_length'] ?? null) : null;

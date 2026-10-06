@@ -240,6 +240,31 @@ class EventFormsTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('statements');
     }
 
+    public function test_a_rating_can_show_smileys_and_only_a_rating_keeps_them(): void
+    {
+        $survey = $this->form();
+
+        $rating = $this->admin()->postJson("/api/admin/surveys/{$survey->id}/questions", [
+            'type' => 'rating', 'question' => ['en' => 'How was the venue?'], 'layout' => 'smileys',
+            'status' => 'open',
+        ])->assertCreated()->assertJsonPath('layout', 'smileys');
+
+        // The attendee page is told, and the answer is still 1 to 5.
+        $this->getJson("/api/survey/{$survey->id}")->assertJsonPath('questions.0.layout', 'smileys');
+        $q = SurveyQuestion::find($rating->json('id'));
+        $this->answer($q, '5')->assertCreated();
+        $this->answer($q, '6')->assertUnprocessable();
+
+        // Smileys mean nothing on a choice, and a scale nothing on a rating.
+        $this->postJson("/api/admin/surveys/{$survey->id}/questions", [
+            'type' => 'choice', 'question' => ['en' => 'Pick'], 'options' => [['en' => 'A'], ['en' => 'B']],
+            'layout' => 'smileys',
+        ])->assertCreated()->assertJsonPath('layout', null);
+        $this->postJson("/api/admin/surveys/{$survey->id}/questions", [
+            'type' => 'rating', 'question' => ['en' => 'Stars'], 'layout' => 'scale',
+        ])->assertCreated()->assertJsonPath('layout', null);
+    }
+
     public function test_an_admin_sets_the_details_a_form_asks_for(): void
     {
         $this->admin()->postJson('/api/admin/surveys', [

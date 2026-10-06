@@ -868,6 +868,33 @@
   animation: sv-shake 0.42s ease-in-out;
 }
 
+/* Smiley rating. A face wiggles once under the mouse; the chosen one fills
+   gold and bounces. The disc is the face's outline circle (Smiley.tsx). */
+.sv-face .sv-face-disc {
+  fill: transparent;
+  transition: fill 0.3s ease, stroke 0.3s ease;
+}
+.sv-face.is-on .sv-face-disc {
+  fill: #e8c462;
+}
+.sv-face:not(.is-on):hover > span {
+  animation: sv-wiggle 0.5s ease-in-out;
+}
+@keyframes sv-wiggle {
+  0%, 100% { transform: rotate(0) scale(1); }
+  25% { transform: rotate(-9deg) scale(1.1); }
+  60% { transform: rotate(7deg) scale(1.1); }
+}
+.sv-face-pick {
+  animation: sv-face-pick 0.55s cubic-bezier(0.22, 0.68, 0.28, 1) both;
+}
+@keyframes sv-face-pick {
+  0% { transform: scale(0.7) rotate(0); }
+  45% { transform: scale(1.22) rotate(-8deg); }
+  70% { transform: scale(0.96) rotate(4deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

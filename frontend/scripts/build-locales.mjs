@@ -697,6 +697,12 @@ const src = {
       'தொடர, இந்தப் பக்கத்திலுள்ள அனைத்து கேள்விகளுக்கும் பதிலளிக்கவும்.',
     ),
     stars: L('{{n}} out of 5', '{{n}} daripada 5', '5 分中的 {{n}} 分', '5 இல் {{n}}'),
+    // The five faces of a smiley rating, 1 to 5.
+    face1: L('Very poor', 'Sangat lemah', '很差', 'மிகவும் மோசம்'),
+    face2: L('Poor', 'Lemah', '较差', 'மோசம்'),
+    face3: L('Okay', 'Sederhana', '一般', 'சராசரி'),
+    face4: L('Good', 'Baik', '好', 'நன்று'),
+    face5: L('Excellent', 'Cemerlang', '非常好', 'மிகச் சிறப்பு'),
     wait: L('Please wait for the next question.', 'Sila tunggu soalan seterusnya.', '请等待下一个问题。', 'அடுத்த கேள்விக்காக காத்திருக்கவும்.'),
     notOpen: L(
       'This survey is not open right now.',

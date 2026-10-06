@@ -4,6 +4,7 @@ import { useI18n } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { SurveyRings, useLean } from '@/components/survey/SurveyRings'
+import { Smiley } from '@/components/survey/Smiley'
 import {
   EMPTY_IDENTITY,
   OFF_SCALE,
@@ -890,9 +891,12 @@ function QuestionCard({
           {question.type === 'grid' && (
             <GridInput question={question} value={value} onChange={onChange} />
           )}
-          {question.type === 'rating' && (
-            <StarsInput label={text} value={value} onChange={onChange} />
-          )}
+          {question.type === 'rating' &&
+            (question.layout === 'smileys' ? (
+              <SmileysInput label={text} value={value} onChange={onChange} />
+            ) : (
+              <StarsInput label={text} value={value} onChange={onChange} />
+            ))}
           {question.type === 'text' && (
             <TextInput
               label={text}
@@ -1199,6 +1203,75 @@ function GridInput({
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+/**
+ * A rating of 1 to 5 as faces, from very poor to excellent. A face wiggles
+ * under the mouse and says what it means; the chosen one fills gold with a
+ * small bounce and the others step back.
+ */
+function SmileysInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  const { t } = useI18n()
+  const [near, setNear] = useState(0)
+  const picked = Number(value) || 0
+  const named = near || picked
+
+  return (
+    <div>
+      <div
+        role="radiogroup"
+        aria-label={label}
+        className="flex justify-between gap-1 sm:justify-start sm:gap-3"
+        onPointerLeave={() => setNear(0)}
+      >
+        {[1, 2, 3, 4, 5].map((n) => {
+          const on = picked === n
+          return (
+            <button
+              key={n}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              aria-label={t(`survey.face${n}`)}
+              onClick={() => onChange(String(n))}
+              onPointerEnter={(e) => e.pointerType === 'mouse' && setNear(n)}
+              onFocus={() => setNear(n)}
+              onBlur={() => setNear(0)}
+              className={cn(
+                'sv-face grid h-12 w-12 place-items-center rounded-full transition-[transform,opacity,color] duration-300 ease-gentle sm:h-16 sm:w-16',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/60 focus-visible:ring-offset-2',
+                on ? 'is-on scale-110 text-navy-950' : 'text-navy-900/35 hover:text-gold-600',
+                picked > 0 && !on && 'opacity-75 hover:opacity-100',
+              )}
+            >
+              {/* Re-keyed when chosen, so the bounce plays each time. */}
+              <span
+                key={on ? `on-${n}` : 'off'}
+                className={cn('block h-full w-full', on && 'sv-face-pick')}
+              >
+                <Smiley level={n} className="h-full w-full" />
+              </span>
+            </button>
+          )
+        })}
+      </div>
+      {/* What the face under the mouse, or the chosen one, means. Screen
+          readers have it from each face's own name. */}
+      <p aria-hidden className="mt-2.5 min-h-[1.25rem] text-small font-semibold text-gold-700">
+        <span key={named} className="anim-fade inline-block">
+          {named ? t(`survey.face${named}`) : ''}
+        </span>
+      </p>
     </div>
   )
 }

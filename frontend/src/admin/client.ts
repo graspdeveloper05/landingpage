@@ -246,7 +246,7 @@ export interface AdminSurveyQuestion {
   section: { title: PartialLocalized; intro?: PartialLocalized | null } | null
   options: PartialLocalized[] | null
   statements: PartialLocalized[] | null
-  layout: 'scale' | null
+  layout: 'scale' | 'smileys' | null
   max_choices: number | null
   has_other: boolean
   max_length: number | null

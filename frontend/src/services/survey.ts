@@ -15,7 +15,7 @@ export interface PublicQuestion {
   /** A statement table's rows; its options are the shared scale. */
   statements: Text[] | null
   /** A single choice shown as numbered scale cards. */
-  layout: 'scale' | null
+  layout: 'scale' | 'smileys' | null
   max_choices: number | null
   /** An "Other" option after the last, with a box for what it is. */
   has_other: boolean

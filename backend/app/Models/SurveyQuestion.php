@@ -17,8 +17,11 @@ class SurveyQuestion extends Model
     /** The types answered by picking from a list of options. */
     public const WITH_OPTIONS = ['choice', 'checkbox', 'grid'];
 
-    /** How a choice question is shown: a list, or numbered scale cards. */
-    public const LAYOUTS = ['list', 'scale'];
+    /**
+     * How a question is shown: a choice as a list or numbered scale cards; a
+     * rating as stars (no layout) or smileys. A rating is 1 to 5 either way.
+     */
+    public const LAYOUTS = ['list', 'scale', 'smileys'];
 
     protected $fillable = [
         'type', 'question', 'help', 'section', 'options', 'statements', 'layout',
