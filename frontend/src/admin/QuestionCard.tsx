@@ -255,7 +255,7 @@ const langLabel = (lang: Locale) => LANGUAGES.find((l) => l.code === lang)?.labe
  * A text the team types. In English it is a plain box; in another language
  * the English sits above in grey and the box takes the translation.
  */
-function TextField({
+export function TextField({
   value,
   lang,
   onChange,

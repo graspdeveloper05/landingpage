@@ -7,7 +7,7 @@ import { SkeletonRows } from './Loading'
 import { FormBuilder } from './FormBuilder'
 import { SurveyResults } from './SurveyResults'
 import { SurveyShare } from './SurveyShare'
-import { SurveyForm } from './SurveyAdmin'
+import { SurveyForm } from './FormSettings'
 
 /**
  * One form's page: its heading and on/off switch, the link and QR code,

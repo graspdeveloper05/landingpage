@@ -1,25 +1,13 @@
 import { useEffect, useState } from 'react'
-import { cn } from '@/lib/cn'
-import {
-  adminApi,
-  AdminError,
-  reachable,
-  toLocalized,
-  type AdminSurvey,
-  type Locale,
-  type Localized,
-  type FormType,
-  type SurveyStatus,
-  type FormDetail,
-  type DetailMode,
-} from './client'
-import { AdminButton, AdminCard, AdminField, LocalizedFieldset, Notice } from './ui'
+import { adminApi, AdminError, reachable, type AdminSurvey } from './client'
+import { AdminButton, AdminCard, Notice } from './ui'
 import { useToast } from './Toast'
 import { SkeletonRows } from './Loading'
 import { SurveyDetail } from './SurveyDetail'
 import { StatusChip } from './SurveyResults'
 import { surveyUrl } from './SurveyShare'
 import { SurveyResponses } from './SurveyResponses'
+import { SurveyForm } from './FormSettings'
 
 /** People with a list beside them: who answered. */
 function ResponsesIcon() {
@@ -136,7 +124,7 @@ export function SurveyAdmin() {
         onCancel={() => setAdding(false)}
         onSaved={(saved) => {
           setAdding(false)
-          toast.success('Survey saved.')
+          toast.success('Form created. Now add its questions.')
           // A new survey has no questions yet, so go straight to adding them.
           setOpenId(saved.id)
         }}
@@ -151,7 +139,7 @@ export function SurveyAdmin() {
           Each form has its own link and QR code. Under Edit, choose which details it asks (name,
           email, phone, organisation).
         </p>
-        <AdminButton onClick={() => setAdding(true)}>Add survey</AdminButton>
+        <AdminButton onClick={() => setAdding(true)}>+ New form</AdminButton>
       </div>
 
       {error && (
@@ -224,240 +212,5 @@ export function SurveyAdmin() {
         ))}
       </div>
     </>
-  )
-}
-
-/* -------------------------------------------------------------------------- */
-
-/** The details a form can ask for, in the order the form shows them. */
-const DETAILS: { key: FormDetail; label: string }[] = [
-  { key: 'name', label: 'Full name' },
-  { key: 'email', label: 'Email' },
-  { key: 'mobile', label: 'Phone' },
-  { key: 'organisation', label: 'Organisation' },
-]
-
-const FORM_TYPES: { value: FormType; label: string; hint: string }[] = [
-  { value: 'survey', label: 'Survey', hint: 'Live polls and questions' },
-  { value: 'feedback', label: 'Feedback', hint: 'Participant feedback form' },
-]
-
-const STATUS_CHOICES: { active: boolean; label: string; hint: string }[] = [
-  { active: true, label: 'Active', hint: 'Taking answers' },
-  { active: false, label: 'Inactive', hint: 'Not taking answers' },
-]
-
-export function SurveyForm({
-  survey,
-  onCancel,
-  onSaved,
-}: {
-  survey: AdminSurvey | null
-  onCancel: () => void
-  onSaved: (saved: AdminSurvey) => void
-}) {
-  const [title, setTitle] = useState<Localized>(toLocalized(survey?.title))
-  const [description, setDescription] = useState<Localized>(toLocalized(survey?.description))
-  const [status, setStatus] = useState<SurveyStatus>(survey?.status ?? 'draft')
-  const [formType, setFormType] = useState<FormType>(survey?.form_type ?? 'survey')
-  const [slug, setSlug] = useState(survey?.slug ?? '')
-  // A form that never chose keeps what it always asked: email and phone for
-  // a survey, nothing for (anonymous) feedback.
-  const [fields, setFields] = useState<Record<FormDetail, DetailMode>>(() => {
-    const set =
-      survey?.fields ??
-      (survey?.form_type === 'feedback' ? {} : { email: 'required', mobile: 'required' })
-    return {
-      name: set.name ?? 'off',
-      email: set.email ?? 'off',
-      mobile: set.mobile ?? 'off',
-      organisation: set.organisation ?? 'off',
-    }
-  })
-  const [detailsNote, setDetailsNote] = useState<Localized>(toLocalized(survey?.details_note))
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  const localeErrors = (prefix: string) =>
-    Object.fromEntries(
-      Object.entries(fieldErrors)
-        .filter(([k]) => k.startsWith(`${prefix}.`))
-        .map(([k, v]) => [k.slice(prefix.length + 1) as Locale, v]),
-    ) as Partial<Record<Locale, string>>
-
-  async function save(e: React.FormEvent) {
-    e.preventDefault()
-    setBusy(true)
-    setError(null)
-    setFieldErrors({})
-    try {
-      const common = {
-        form_type: formType,
-        title,
-        description,
-        slug,
-        fields,
-        details_note: detailsNote,
-      }
-      const payload = survey ? { ...common, status } : common
-      const saved = survey
-        ? await adminApi.put<AdminSurvey>(`/admin/surveys/${survey.id}`, payload)
-        : await adminApi.post<AdminSurvey>('/admin/surveys', payload)
-      onSaved(saved)
-    } catch (e) {
-      if (e instanceof AdminError) {
-        setFieldErrors(e.fields)
-        setError(
-          Object.keys(e.fields).length > 0 ? 'Some fields need attention — see below.' : e.message,
-        )
-      } else {
-        setError('Could not save.')
-      }
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <form onSubmit={save}>
-      <h2 className="mb-4 text-[0.95rem] font-semibold text-navy-950">
-        {survey ? 'Edit survey' : 'Add survey'}
-      </h2>
-
-      <AdminCard className="space-y-4">
-        <fieldset>
-          <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">Form type</legend>
-          <div className="flex flex-wrap gap-2">
-            {FORM_TYPES.map((f) => (
-              <button
-                key={f.value}
-                type="button"
-                onClick={() => setFormType(f.value)}
-                aria-pressed={formType === f.value}
-                className={cn(
-                  'rounded-sm border px-3 py-1.5 text-left',
-                  formType === f.value
-                    ? 'border-navy-900 bg-navy-900 text-cream'
-                    : 'border-[#DDDCD8] bg-white text-navy-900 hover:border-gold-500',
-                )}
-              >
-                <span className="block text-[0.78rem] font-semibold">{f.label}</span>
-                <span className="block text-micro opacity-75">{f.hint}</span>
-              </button>
-            ))}
-          </div>
-        </fieldset>
-
-        <LocalizedFieldset
-          label="Title"
-          hint="The heading attendees see. Only English is required; empty languages show the English."
-          value={title}
-          onChange={setTitle}
-          errors={localeErrors('title')}
-        />
-        <LocalizedFieldset
-          label="Description (optional)"
-          hint="A line under the heading, e.g. what the survey is for."
-          value={description}
-          onChange={setDescription}
-          errors={localeErrors('description')}
-          multiline
-        />
-
-        <AdminField
-          label="Short link (optional)"
-          hint="Lowercase words and dashes, e.g. pre-event. The link then stays the same, so a QR code can be printed before the form is ready."
-          error={fieldErrors.slug}
-          value={slug}
-          onChange={(v) => setSlug(v.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-          placeholder="pre-event"
-        />
-
-        <fieldset>
-          <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">
-            Details to ask
-          </legend>
-          <p className="mb-2 text-[0.7rem] text-slate">
-            Asked on the first page, before the questions. Without email, the form is anonymous and
-            anyone can send it more than once (useful for questions from the floor).
-          </p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {DETAILS.map((d) => (
-              <label
-                key={d.key}
-                className="flex items-center justify-between gap-3 rounded-sm border border-[#DDDCD8] px-3 py-2"
-              >
-                <span className="text-[0.82rem] font-semibold text-navy-900">{d.label}</span>
-                <select
-                  value={fields[d.key]}
-                  onChange={(e) =>
-                    setFields((f) => ({ ...f, [d.key]: e.target.value as DetailMode }))
-                  }
-                  className="rounded-sm border border-[#DDDCD8] bg-white px-2 py-1 text-[0.8rem]"
-                >
-                  <option value="required">Required</option>
-                  <option value="optional">Optional</option>
-                  <option value="off">Don't ask</option>
-                </select>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <LocalizedFieldset
-          label="Note beside the details (optional)"
-          hint="E.g. how answers are used and who can see them."
-          value={detailsNote}
-          onChange={setDetailsNote}
-          errors={localeErrors('details_note')}
-          multiline
-        />
-
-        {/* A new survey starts inactive; status is chosen once it exists. */}
-        {survey && (
-          <fieldset>
-            <legend className="mb-1 text-[0.78rem] font-semibold text-navy-900">Status</legend>
-            <p className="mb-2 text-[0.7rem] text-slate">
-              Attendees can answer only while the survey is active. Questions are activated one by
-              one on the survey's page.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {STATUS_CHOICES.map((s) => (
-                <button
-                  key={s.label}
-                  type="button"
-                  // Inactive keeps a never-opened survey as it was, and stops
-                  // one that was taking answers.
-                  onClick={() =>
-                    setStatus(s.active ? 'open' : status === 'open' ? 'closed' : status)
-                  }
-                  aria-pressed={(status === 'open') === s.active}
-                  className={cn(
-                    'rounded-sm border px-3 py-1.5 text-left',
-                    (status === 'open') === s.active
-                      ? 'border-navy-900 bg-navy-900 text-cream'
-                      : 'border-[#DDDCD8] bg-white text-navy-900 hover:border-gold-500',
-                  )}
-                >
-                  <span className="block text-[0.78rem] font-semibold">{s.label}</span>
-                  <span className="block text-micro opacity-75">{s.hint}</span>
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        )}
-      </AdminCard>
-
-      <div className="sticky bottom-0 -mx-4 -mb-4 mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-[#DDDCD8] bg-white px-4 py-3 shadow-[0_-6px_16px_-8px_rgba(11,33,64,0.25)] sm:-mx-6 sm:-mb-6 sm:px-6">
-        {error && <Notice kind="error">{error}</Notice>}
-        <AdminButton variant="quiet" onClick={onCancel}>
-          Cancel
-        </AdminButton>
-        <AdminButton type="submit" disabled={busy}>
-          {busy ? 'Saving…' : 'Save'}
-        </AdminButton>
-      </div>
-    </form>
   )
 }
