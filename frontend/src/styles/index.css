@@ -688,22 +688,11 @@
 /* ---------------------------------------------------------------------------
  * The attendee form (/survey, /feedback)
  *
- * One quiet thing moves on its own: the drawing of Seri Negara drifting in
- * the navy band (anim-pan). Everything else moves when the person does
+ * One quiet thing moves on its own: the colonnade photograph easing in the
+ * header band (anim-pan). Everything else moves when the person does
  * something: a page arriving, a choice taken, a step completed, a gap
  * pointed out. The reduced-motion rule below ends all of it after one frame.
  * ------------------------------------------------------------------------ */
-
-/* The sepia drawing turned to pale gold lines on navy: inverted so its white
-   paper goes black, which the screen blend then drops. */
-.sv-heritage {
-  filter: invert(1) sepia(1) saturate(1.8) hue-rotate(-8deg) brightness(0.95);
-  mix-blend-mode: screen;
-  opacity: 0.45;
-  /* Faded out at its edges, so the paper's faint tint leaves no frame. */
-  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 45%, #000 55%, transparent 100%);
-  mask-image: radial-gradient(ellipse 50% 50% at 50% 45%, #000 55%, transparent 100%);
-}
 
 /* The current step: a navy circle with a slow gold halo. */
 .sv-head::after {

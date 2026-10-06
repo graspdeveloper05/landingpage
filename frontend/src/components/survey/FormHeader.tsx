@@ -1,43 +1,34 @@
 import { cn } from '@/lib/cn'
 import { useI18n } from '@/i18n'
+import { Picture } from '@/components/ui/Picture'
 
 /**
- * The top of a form, as Google and Microsoft Forms lay it out: a short navy
- * band with Seri Negara drawn into it, and the form's own white card
- * overlapping the band's lower edge. The card carries the title, the
- * introduction on the first page, and, for a form of several parts, the
- * steps with the current one marked.
+ * The top of a form, as Google and Microsoft Forms lay it out: a header
+ * picture across the page (Seri Negara's colonnade, under a navy tint so
+ * the site header above runs into it), and the form's own white card
+ * overlapping its lower edge. The card carries the title, the introduction
+ * on the first page, and, for a form of several parts, the steps with the
+ * current one marked. The site header already carries the name and emblem,
+ * so the band carries none.
  */
 export function FormBand() {
-  const { t } = useI18n()
   return (
-    <section className="relative isolate overflow-hidden bg-navy-950 text-cream">
-      {/* The building, drawn in pale gold lines on the navy, drifting slowly. */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <picture>
-          <source srcSet="/scenes/heritage.webp" type="image/webp" />
-          <img
-            src="/scenes/heritage.jpg"
-            alt=""
-            className="sv-heritage anim-pan absolute -right-[8%] top-[-12%] h-[150%] w-auto max-w-none sm:right-[2%] lg:right-[6%]"
-          />
-        </picture>
-        <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/85 to-navy-950/30" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-navy-950 to-transparent" />
-      </div>
-
-      <div className="shell pb-32 pt-8 sm:pb-36 sm:pt-10">
-        <div className="anim-fade mx-auto flex max-w-3xl items-center gap-3">
-          <picture>
-            <source srcSet="/brand/emblem-gold.webp" type="image/webp" />
-            <img src="/brand/emblem-gold.png" alt="" aria-hidden className="h-9 w-auto sm:h-10" />
-          </picture>
-          <span className="h-7 w-px bg-gold-500/40" aria-hidden />
-          <span className="text-small font-semibold tracking-[0.04em] text-gold-400">
-            {t('survey.brand')}
-          </span>
-        </div>
-      </div>
+    <section
+      aria-hidden
+      className="relative isolate h-44 overflow-hidden bg-navy-950 sm:h-60 lg:h-64"
+    >
+      <Picture
+        base="/scenes/colonnade"
+        alt=""
+        width={768}
+        height={469}
+        loading="eager"
+        className="absolute inset-0 -z-10"
+        imgClassName="anim-pan h-full w-full object-cover object-[50%_40%]"
+      />
+      {/* Darker at the top, where it meets the navy site header, and at the
+          bottom, under the card; the columns show clearly between. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-navy-950/80 via-navy-950/35 to-navy-950/75" />
     </section>
   )
 }
