@@ -37,11 +37,9 @@ export function FormIntro({
   if (!lead && !steps && !progress?.intro) return null
 
   return (
-    <div className="anim-rise overflow-hidden rounded-sm border border-hair bg-white shadow-[0_24px_60px_-28px_rgba(10,22,40,0.45)]">
-      <span
-        aria-hidden
-        className="block h-1 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600"
-      />
+    // Not overflow-hidden: the rainbow edge's glow spreads above the card.
+    <div className="anim-rise relative isolate rounded-sm border border-hair bg-white shadow-[0_24px_60px_-28px_rgba(10,22,40,0.45)]">
+      <span aria-hidden className="sv-rainbow block h-1.5 rounded-t-sm" />
       <div className="px-5 py-5 sm:px-8 sm:py-6">
         {first && description && (
           <p className="max-w-2xl text-lead text-navy-900/85">{description}</p>

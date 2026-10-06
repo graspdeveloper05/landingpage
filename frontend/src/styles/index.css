@@ -694,6 +694,40 @@
  * pointed out. The reduced-motion rule below ends all of it after one frame.
  * ------------------------------------------------------------------------ */
 
+/* The top edge of the form's first card: a rainbow that drifts slowly
+   along it, with a blurred copy behind spreading the colour out over the
+   banner as a glow. The gradient repeats itself, so the drift loops without
+   a seam. */
+.sv-rainbow {
+  position: relative;
+  background-image: linear-gradient(
+    90deg,
+    #ff5f6d,
+    #ffc371,
+    #f9f871,
+    #5ee7a5,
+    #4facfe,
+    #a66cff,
+    #ff5f6d
+  );
+  background-size: 200% 100%;
+  animation: sv-rainbow 8s linear infinite;
+}
+.sv-rainbow::after {
+  content: '';
+  position: absolute;
+  inset: -6px 0 0;
+  z-index: -1;
+  background: inherit;
+  filter: blur(14px);
+  opacity: 0.9;
+}
+@keyframes sv-rainbow {
+  to {
+    background-position: 200% 0;
+  }
+}
+
 /* The current step: a gold-ringed circle with a slow gold halo. */
 .sv-head::after {
   content: '';
