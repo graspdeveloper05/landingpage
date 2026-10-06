@@ -407,6 +407,36 @@ function AnswerForm({
     onPage({ at: current, steps: stepsKey.split('\u0001'), intro: sectionIntro })
   }, [stepsKey, sectionIntro, current, onPage])
 
+  // The Next / Submit row, for the last question on a page to bring up.
+  const actions = useRef<HTMLDivElement>(null)
+
+  /**
+   * After a one-tap answer (a choice, a scale, stars or a face, or the last
+   * row of a table), the next question comes into view, as in Typeform; the
+   * last one on the page brings up the Next or Submit button. Only when the
+   * question goes from unanswered to answered, so changing an answer leaves
+   * the page where it is. Ticks and typing never move it: there may be more
+   * to come. "Other" waits for its text.
+   */
+  const moveOn = (q: PublicQuestion, before: string | undefined, value: string) => {
+    const otherPicked = q.has_other && value === String(q.options?.length ?? 0)
+    const oneTap = q.type === 'rating' || q.type === 'grid' || (q.type === 'choice' && !otherPicked)
+    if (!oneTap || answered(q, before) || !answered(q, value)) return
+    const next = here.questions[here.questions.indexOf(q) + 1]
+    const target = next ? document.getElementById(`question-${next.id}`) : actions.current
+    if (!target) return
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    // A moment first, so the choice is seen to take.
+    window.setTimeout(
+      () =>
+        target.scrollIntoView({
+          behavior: still ? 'auto' : 'smooth',
+          block: next ? 'start' : 'center',
+        }),
+      380,
+    )
+  }
+
   const goTo = (next: number) => {
     setBackwards(next < current)
     setPage(next)
@@ -579,6 +609,7 @@ function AnswerForm({
             error={errors[q.id]}
             done={answered(q, answers[q.id]) && !errors[q.id]}
             onChange={(v) => {
+              moveOn(q, answers[q.id], v)
               setAnswers((all) => ({ ...all, [q.id]: v }))
               setErrors(({ [q.id]: _cleared, ...rest }) => rest)
             }}
@@ -603,7 +634,10 @@ function AnswerForm({
         )}
       </div>
 
-      <div className="flex flex-col-reverse items-stretch gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        ref={actions}
+        className="flex flex-col-reverse items-stretch gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between"
+      >
         <p aria-live="polite" className="text-small text-slate">
           {error && (
             <span role="alert" className="flex items-center gap-2 text-red-700">
@@ -633,9 +667,20 @@ function AnswerForm({
 }
 
 /** The white card every part of the form sits in. */
-function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+function Card({
+  children,
+  className,
+  id,
+}: {
+  children: React.ReactNode
+  className?: string
+  id?: string
+}) {
   return (
-    <div className={cn('rounded-sm border border-hair bg-white p-5 shadow-card sm:p-8', className)}>
+    <div
+      id={id}
+      className={cn('rounded-sm border border-hair bg-white p-5 shadow-card sm:p-8', className)}
+    >
       {children}
     </div>
   )
@@ -756,8 +801,9 @@ function QuestionCard({
 
   return (
     <Card
+      id={`question-${question.id}`}
       className={cn(
-        'transition-[border-color,box-shadow] duration-300',
+        'scroll-mt-28 transition-[border-color,box-shadow] duration-300',
         error && 'sv-shake !border-red-300 ring-1 ring-red-200',
       )}
     >
