@@ -269,7 +269,9 @@ interface Page {
 
 /**
  * A new page at each section heading; a form without headings is cut every
- * ten questions. A feedback form ends with a page for the testimonial.
+ * ten questions. A feedback form ends with the testimonial: on its own page,
+ * or, on a form of sections, under the last section's questions, so its
+ * parts are the ones the organisers named.
  */
 function paginate(questions: PublicQuestion[], feedback: boolean): Page[] {
   const sectioned = questions.some((q) => q.section)
@@ -282,7 +284,10 @@ function paginate(questions: PublicQuestion[], feedback: boolean): Page[] {
       last.questions.push(q)
     }
   }
-  if (feedback) pages.push({ section: null, questions: [], testimonial: true })
+  if (feedback) {
+    if (sectioned) pages[pages.length - 1].testimonial = true
+    else pages.push({ section: null, questions: [], testimonial: true })
+  }
   return pages
 }
 
@@ -387,19 +392,19 @@ function AnswerForm({
   // details" for a first page that asks them, else "Part 2".
   const stepsKey = pages
     .map((p, i) =>
-      p.testimonial
-        ? t('survey.testimonialPageTitle')
-        : p.section
-          ? pick(p.section.title, locale)
+      p.section
+        ? pick(p.section.title, locale)
+        : p.testimonial
+          ? t('survey.testimonialPageTitle')
           : i === 0 && asksDetails
             ? t('survey.detailsHeading')
             : t('survey.part', { n: i + 1 }),
     )
     .join('\u0001')
-  const sectionIntro = here?.testimonial
-    ? t('survey.testimonialPageIntro')
-    : here?.section?.intro
-      ? pick(here.section.intro, locale)
+  const sectionIntro = here?.section?.intro
+    ? pick(here.section.intro, locale)
+    : here?.testimonial
+      ? t('survey.testimonialPageIntro')
       : ''
   // Joined into one string so the effect runs when the names change, not on
   // every render's fresh array.
