@@ -22,6 +22,8 @@ interface ChairmanForm {
   letter: Localized
   /** '' means no photograph yet; the site draws its own stand-in. */
   portrait: string
+  /** His LinkedIn profile; '' for none. */
+  linkedin: string
 }
 
 const BLANK: ChairmanForm = {
@@ -32,6 +34,7 @@ const BLANK: ChairmanForm = {
   quote: { ...EMPTY_LOCALIZED },
   letter: { ...EMPTY_LOCALIZED },
   portrait: '',
+  linkedin: '',
 }
 
 /**
@@ -54,7 +57,12 @@ export function ChairmanAdmin() {
     setError(null)
     return adminApi
       .get<{
-        chairman: (Omit<ChairmanForm, 'letter'> & { letter: Localized | null }) | null
+        chairman:
+          | (Omit<ChairmanForm, 'letter' | 'linkedin'> & {
+              letter: Localized | null
+              linkedin?: string | null
+            })
+          | null
         edition: number
       }>('/admin/chairman')
       .then((r) => {
@@ -62,7 +70,15 @@ export function ChairmanAdmin() {
         // bundled record then, and this form opens empty rather than showing
         // values that are not actually stored.
         // The letter is null on an edition saved before it existed.
-        setForm(r.chairman ? { ...r.chairman, letter: r.chairman.letter ?? { ...EMPTY_LOCALIZED } } : BLANK)
+        setForm(
+          r.chairman
+            ? {
+                ...r.chairman,
+                letter: r.chairman.letter ?? { ...EMPTY_LOCALIZED },
+                linkedin: r.chairman.linkedin ?? '',
+              }
+            : BLANK,
+        )
         setEdition(r.edition)
       })
       .catch((e) => {
@@ -169,6 +185,15 @@ export function ChairmanAdmin() {
                 placeholder="Chevening Alumni Malaysia"
               />
             </div>
+
+            <AdminField
+              label="LinkedIn profile"
+              value={form.linkedin}
+              onChange={(v) => set('linkedin', v)}
+              error={fieldErrors.linkedin}
+              placeholder="https://www.linkedin.com/in/your-name"
+              hint="Optional. When set, a LinkedIn link under his name on the home and About pages opens this profile in a new tab."
+            />
 
             <LocalizedFieldset
               label="Designation"

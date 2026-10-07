@@ -44,6 +44,16 @@ class ChairmanAdminController extends Controller
             $request->merge(['portrait' => '']);
         }
 
+        // A LinkedIn address as people copy it: "linkedin.com/in/name" or
+        // "http://..." both become https, and blank becomes none.
+        if ($request->has('linkedin')) {
+            $link = trim((string) $request->input('linkedin'));
+            if ($link !== '' && ! preg_match('#^https?://#i', $link)) {
+                $link = 'https://'.$link;
+            }
+            $request->merge(['linkedin' => $link === '' ? null : preg_replace('#^http://#i', 'https://', $link)]);
+        }
+
         $data = $request->validate([
             // Name and organisation read the same in every language.
             'name' => ['required', 'string', 'max:150'],
@@ -91,12 +101,23 @@ class ChairmanAdminController extends Controller
                 'present', 'string', 'max:255',
                 'regex:#^$|^/storage/portraits/[0-9a-f-]{36}\.[a-z]{3,4}$|^/portraits/[a-z0-9-]+\.svg$#',
             ],
+
+            /*
+             * His LinkedIn profile. It becomes a link on the public site, so
+             * LinkedIn's own address and nothing else: not javascript:, and
+             * not another site whose name merely starts with linkedin.com.
+             */
+            'linkedin' => [
+                'sometimes', 'nullable', 'string', 'max:300',
+                'regex:#^https://([a-z0-9-]+\.)?linkedin\.com(/\S*)?$#i',
+            ],
         ], [
             'designation.*.required' => 'The designation is needed in all four languages.',
             'message.*.required' => 'The welcome message is needed in all four languages.',
             'quote.*.required' => 'The pull quote is needed in all four languages.',
             'letter.*.required_with' => 'The full welcome is needed in all four languages.',
             'portrait.regex' => 'Upload the photograph again -- that path is not one of ours.',
+            'linkedin.regex' => 'Enter a LinkedIn profile address, e.g. https://www.linkedin.com/in/your-name',
         ]);
 
         $setting = EventSetting::current();
@@ -122,6 +143,9 @@ class ChairmanAdminController extends Controller
                 ? null
                 : $data['letter'],
             'chairman_portrait' => $data['portrait'],
+            // Only when sent: an older panel tab that knows nothing of the
+            // field leaves the saved link as it was.
+            ...(array_key_exists('linkedin', $data) ? ['chairman_linkedin' => $data['linkedin']] : []),
         ]);
 
         return response()->json(['chairman' => $setting->fresh()->chairmanArray()]);

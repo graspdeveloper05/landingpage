@@ -1,6 +1,7 @@
 import { useI18n, useLocalized } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
+import { LinkedInLink } from '@/components/ui/LinkedInLink'
 import { portraitSrc } from '@/lib/portrait'
 import { useChairman } from '@/lib/useContent'
 
@@ -24,7 +25,10 @@ export function ChairmanLetter() {
   const letter = chairman.letter ? L(chairman.letter) : ''
   if (!letter.trim()) return null
 
-  const paragraphs = letter.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+  const paragraphs = letter
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
 
   return (
     <section id="welcome" className="scroll-mt-24 border-t border-hair bg-cream py-section">
@@ -37,7 +41,10 @@ export function ChairmanLetter() {
       <div className="shell grid items-start gap-x-14 gap-y-10 md:mx-auto md:max-w-[62rem] md:grid-cols-[15rem_minmax(0,1fr)]">
         <Reveal variant="left" className="md:sticky md:top-28">
           <figure className="relative mx-auto max-w-[15rem]">
-            <span aria-hidden className="absolute -inset-1.5 rounded-sm border border-gold-500/35" />
+            <span
+              aria-hidden
+              className="absolute -inset-1.5 rounded-sm border border-gold-500/35"
+            />
             <img
               src={portraitSrc(chairman.portrait)}
               alt=""
@@ -77,6 +84,7 @@ export function ChairmanLetter() {
             <p className="font-display text-h3 italic text-gold-700">{chairman.name}</p>
             <p className="mt-2 text-small text-navy-800">{L(chairman.designation)}</p>
             <p className="text-small text-slate">{chairman.organisation}</p>
+            <LinkedInLink href={chairman.linkedin} name={chairman.name} className="mt-2" />
           </div>
         </Reveal>
       </div>

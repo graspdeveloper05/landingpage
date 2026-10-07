@@ -18,7 +18,7 @@ class EventSetting extends Model
         'edition', 'date', 'date_label', 'start_time', 'time_label',
         'event_name', 'subtitle', 'hero_image',
         'chairman_name', 'chairman_organisation', 'chairman_designation',
-        'chairman_message', 'chairman_quote', 'chairman_letter', 'chairman_portrait',
+        'chairman_message', 'chairman_quote', 'chairman_letter', 'chairman_portrait', 'chairman_linkedin',
         'venue', 'venue_address', 'maps_url', 'map_embed_url', 'capacity',
         'registration_open', 'google_form_url', 'google_form', 'registration_mode', 'google_sync_secret', 'google_webapp_url',
     ];
@@ -109,6 +109,8 @@ class EventSetting extends Model
             // and the About page then simply has no letter to show.
             'letter' => $this->chairman_letter,
             'portrait' => (string) $this->chairman_portrait,
+            // His LinkedIn profile, or null: his name links to it when set.
+            'linkedin' => $this->chairman_linkedin ?: null,
         ];
     }
 

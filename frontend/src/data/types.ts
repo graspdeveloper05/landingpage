@@ -48,6 +48,8 @@ export interface Chairman {
    * line. Optional: an edition can have only the short message.
    */
   letter?: Localized | null
+  /** His LinkedIn profile; a link under his name when set. */
+  linkedin?: string | null
   placeholder?: boolean
 }
 

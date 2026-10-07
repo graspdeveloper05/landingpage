@@ -3,6 +3,7 @@ import { useI18n, useLocalized } from '@/i18n'
 import { Reveal } from '@/components/ui/Reveal'
 import { Ornament } from '@/components/ui/Ornament'
 import { ExternalIcon, QuoteMark } from '@/components/ui/Icons'
+import { LinkedInLink } from '@/components/ui/LinkedInLink'
 import { portraitSrc } from '@/lib/portrait'
 import { useChairman } from '@/lib/useContent'
 
@@ -28,7 +29,10 @@ export function ChairmanWelcome() {
             image alone would slide it out of its own frame.
           */}
           <figure className="anim-drift relative mx-auto max-w-[220px] lg:mx-0">
-            <span aria-hidden className="absolute -inset-1.5 rounded-sm border border-gold-500/35" />
+            <span
+              aria-hidden
+              className="absolute -inset-1.5 rounded-sm border border-gold-500/35"
+            />
             <img
               src={portraitSrc(chairman.portrait)}
               alt=""
@@ -70,6 +74,7 @@ export function ChairmanWelcome() {
               <p className="text-body font-semibold text-navy-900">{chairman.name}</p>
               <p className="text-small text-slate">{L(chairman.designation)}</p>
               <p className="text-small text-slate">{chairman.organisation}</p>
+              <LinkedInLink href={chairman.linkedin} name={chairman.name} className="mt-1" />
             </div>
 
             <Link
