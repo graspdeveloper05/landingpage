@@ -76,8 +76,9 @@ class EventFormsSeeder extends Seeder
             ],
             'fields' => ['name' => 'required', 'email' => 'required', 'mobile' => 'off', 'organisation' => 'optional'],
             'details_note' => [
-                'en' => 'Responses are linked to your name for the organising team’s review. Use the same email as your registration, so your answers can be compared after the dialogue. Findings will be presented collectively. Named quotations require your permission.',
-                'ms' => 'Jawapan dikaitkan dengan nama anda untuk semakan pasukan penganjur. Gunakan e-mel yang sama seperti pendaftaran anda supaya jawapan anda dapat dibandingkan selepas dialog. Dapatan akan dibentangkan secara kolektif. Petikan bernama memerlukan kebenaran anda.',
+                // The client's own wording (7 Oct).
+                'en' => 'Responses will be linked to your name for the organising team’s review. Findings will be presented collectively. Your name will not be attached to a published quotation without your permission.',
+                'ms' => 'Jawapan akan dikaitkan dengan nama anda untuk semakan pasukan penganjur. Dapatan akan dibentangkan secara kolektif. Nama anda tidak akan dilampirkan pada petikan yang diterbitkan tanpa kebenaran anda.',
             ],
             'questions' => [
                 [

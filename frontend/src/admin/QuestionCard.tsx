@@ -424,6 +424,12 @@ function AnswerEditor({
   }
 
   const min = draft.kind === 'checkbox' && formType === 'feedback' ? 1 : 2
+  // An "Other (please specify)" typed as an ordinary option: offered as the
+  // write-in "Other" instead, which is what whoever typed it meant.
+  const typedOther =
+    (draft.kind === 'choice' || draft.kind === 'checkbox') && !draft.hasOther
+      ? draft.options.findIndex((o) => TYPED_OTHER.test(o.en) || TYPED_OTHER.test(o.ms ?? ''))
+      : -1
   return (
     <>
       <OptionList
@@ -467,6 +473,26 @@ function AnswerEditor({
             : undefined
         }
       />
+      {typedOther >= 0 && !structural && (
+        <div className="admin-fade mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-sm border border-amber-200 bg-amber-50 px-3 py-2">
+          <p className="min-w-0 flex-1 text-micro text-amber-900">
+            “{draft.options[typedOther].en}” is an ordinary choice, so attendees get no box to type
+            in. Make it the write-in “Other” and they can say what they mean.
+          </p>
+          <button
+            type="button"
+            onClick={() =>
+              set({
+                options: draft.options.filter((_, i) => i !== typedOther),
+                hasOther: true,
+              })
+            }
+            className="min-h-[30px] shrink-0 rounded-sm bg-navy-900 px-3 text-micro font-semibold text-cream hover:bg-navy-800"
+          >
+            Make it a write-in “Other”
+          </button>
+        </div>
+      )}
       {draft.kind === 'scale' && !translating && (
         <p className="mt-2 pl-1 text-micro text-slate">
           Shown as numbered cards. An option starting “Not sure” or “N/A” is set apart, unnumbered.
@@ -475,6 +501,9 @@ function AnswerEditor({
     </>
   )
 }
+
+/** An option typed as "Other (please specify)", which gives no box to type in. */
+const TYPED_OTHER = /^\s*(others?|lain-lain)\b/i
 
 /**
  * The options (or statements) as rows: a marker, the text, a remove button,
