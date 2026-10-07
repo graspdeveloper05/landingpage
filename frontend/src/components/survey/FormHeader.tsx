@@ -91,11 +91,22 @@ function Introduction({ text }: { text: string }) {
       <p className="mt-4 font-display text-[1.45rem] leading-snug text-navy-950 sm:text-[1.7rem]">
         {first}
       </p>
-      {rest.map((line, i) => (
-        <p key={i} className="mt-3 text-body leading-relaxed text-slate">
-          {line}
-        </p>
-      ))}
+      {rest.map((line, i) =>
+        // With a paragraph still to come, the line under the heading is its
+        // subtitle: gold and set apart, as the client asked.
+        i === 0 && rest.length > 1 ? (
+          <p
+            key={i}
+            className="mt-2 border-l-2 border-gold-500 pl-3 text-[1.05rem] font-semibold leading-snug text-gold-700"
+          >
+            {line}
+          </p>
+        ) : (
+          <p key={i} className="mt-3 text-body leading-relaxed text-slate">
+            {line}
+          </p>
+        ),
+      )}
     </div>
   )
 }
