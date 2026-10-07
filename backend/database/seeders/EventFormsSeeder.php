@@ -71,8 +71,9 @@ class EventFormsSeeder extends Seeder
             'status' => 'open',
             'title' => ['en' => 'Before the Dialogue', 'ms' => 'Sebelum Dialog'],
             'description' => [
-                'en' => 'Your views on Malaysia’s shared future. Help shape the conversation on belonging and nationhood. There are no right or wrong answers; please share your honest views.',
-                'ms' => 'Pandangan anda tentang masa depan bersama Malaysia. Bantu membentuk perbincangan tentang rasa kekitaan dan kebangsaan. Tiada jawapan betul atau salah; sila kongsikan pandangan jujur anda.',
+                // Two lines: the first is shown as a heading over the second.
+                'en' => "Your views on Malaysia’s shared future\nHelp shape the conversation on belonging and nationhood. There are no right or wrong answers. Please share your honest views.",
+                'ms' => "Pandangan anda tentang masa depan bersama Malaysia\nBantu membentuk perbincangan tentang rasa kekitaan dan kebangsaan. Tiada jawapan betul atau salah. Sila kongsikan pandangan jujur anda.",
             ],
             'fields' => ['name' => 'required', 'email' => 'required', 'mobile' => 'off', 'organisation' => 'optional'],
             'details_note' => [

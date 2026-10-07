@@ -108,7 +108,7 @@ export function Survey() {
   const description = showForm && survey.description ? pick(survey.description, locale) : ''
   // A short description goes under the title in the banner, as on the other
   // pages; a long one would not fit there, so it opens the card instead.
-  const shortDescription = description.length <= BANNER_TEXT
+  const shortDescription = description.length <= BANNER_TEXT && !description.includes('\n')
 
   return (
     <>
@@ -760,7 +760,24 @@ function DetailsCard({
           </label>
         ))}
       </div>
-      {note && <p className="mt-5 border-t border-hair pt-4 text-small text-slate">{note}</p>}
+      {/* Usually how the answers are used: a quiet panel with a lock, so it
+          reads as a promise rather than small print. */}
+      {note && (
+        <div className="mt-6 flex gap-3 rounded-sm border border-gold-500/25 bg-[#FBF9F3] px-4 py-3.5">
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            aria-hidden
+            className="mt-0.5 h-4 w-4 shrink-0 text-gold-600"
+          >
+            <rect x="4" y="9" width="12" height="8" rx="1.5" />
+            <path d="M7 9V6.5a3 3 0 0 1 6 0V9" strokeLinecap="round" />
+          </svg>
+          <p className="whitespace-pre-line text-small leading-relaxed text-navy-900/80">{note}</p>
+        </div>
+      )}
     </Card>
   )
 }

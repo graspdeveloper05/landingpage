@@ -41,9 +41,7 @@ export function FormIntro({
       {/* The site's navy, as the client asked: one colour for the forms. */}
       <span aria-hidden className="block h-1.5 rounded-t-sm bg-navy-900" />
       <div className="px-5 py-5 sm:px-8 sm:py-6">
-        {first && description && (
-          <p className="max-w-2xl text-lead text-navy-900/85">{description}</p>
-        )}
+        {first && description && <Introduction text={description} />}
         {first && meta && (
           <p className={cn('text-small font-semibold text-gold-700', description && 'mt-3')}>
             {meta}
@@ -68,6 +66,36 @@ export function FormIntro({
           </p>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * The form's introduction, as the client's mock lays it out. Written on
+ * several lines in the panel, the first line is a heading in the display
+ * serif and the rest the paragraph under it: "Your views on Malaysia's
+ * shared future" over "Help shape the conversation…". On one line, it is
+ * simply the paragraph.
+ */
+function Introduction({ text }: { text: string }) {
+  const [first, ...rest] = text
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+  if (rest.length === 0) {
+    return <p className="max-w-2xl text-lead leading-relaxed text-navy-900/85">{first}</p>
+  }
+  return (
+    <div className="max-w-2xl">
+      <span aria-hidden className="block h-[3px] w-10 bg-gold-500" />
+      <p className="mt-4 font-display text-[1.45rem] leading-snug text-navy-950 sm:text-[1.7rem]">
+        {first}
+      </p>
+      {rest.map((line, i) => (
+        <p key={i} className="mt-3 text-body leading-relaxed text-slate">
+          {line}
+        </p>
+      ))}
     </div>
   )
 }
